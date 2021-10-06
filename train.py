@@ -27,6 +27,8 @@ def train(args):
     train_cnt, valid_cnt = int(len(feat) * 0.7), int(len(feat) * .2)
     train_idx = np.arange(train_cnt)
     valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+    args.feature_dim = feat.shape[1]
+    args.label_dim = labels.shape[1]
     # test_idx = np.arange(valid_cnt + train_cnt, len(feat))
 
     param_setting = "lr-{}_lr-decay_{:.2f}_lr-times_{:.1f}_nll-{:.2f}_l2-{:.2f}_c-{:.2f}".format(args.learning_rate, args.lr_decay_ratio, args.lr_decay_times, args.nll_coeff, args.l2_coeff, args.c_coeff)
