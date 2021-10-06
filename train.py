@@ -23,7 +23,7 @@ def train(args):
 
     print('prepare npy...')
     np.random.seed(4) # set the random seed of numpy
-    feat, labels = load_data(args.dataset)
+    feat, labels = load_data(args.dataset, args.mode)
     train_cnt, valid_cnt = int(len(feat) * 0.7), int(len(feat) * .2)
     train_idx = np.arange(train_cnt)
     valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
