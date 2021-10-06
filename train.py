@@ -99,7 +99,7 @@ def train(args):
             optimizer.zero_grad()
             start = i*args.batch_size
             end = min(args.batch_size*(i+1), len(train_idx))
-            intput_feat = feat[train_idx[start:end]]
+            input_feat = feat[train_idx[start:end]]
             input_label = labels[train_idx[start:end]]
             # input_feat = get_feat(data, train_idx[start:end], args.meta_offset, args.label_dim, args.feature_dim) # get the NLCD features
             # input_label = get_label(data, train_idx[start:end], args.meta_offset, args.label_dim) # get the prediction labels
@@ -231,7 +231,7 @@ def valid(feat, labels, vae, summary_writer, valid_idx, current_step, args):
     for i in range(int((len(valid_idx)-1)/real_batch_size)+1):
         start = real_batch_size*i
         end = min(real_batch_size*(i+1), len(valid_idx))
-        intput_feat = feat[valid_idx[start:end]]
+        input_feat = feat[valid_idx[start:end]]
         input_label = labels[valid_idx[start:end]]
         # input_feat = get_feat(data,valid_idx[start:end], args.meta_offset, args.label_dim, args.feature_dim)
         # input_label = get_label(data,valid_idx[start:end], args.meta_offset, args.label_dim)
