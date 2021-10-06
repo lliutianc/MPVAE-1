@@ -4,7 +4,7 @@ from test import test
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-dataset', "--dataset", default='mirflickr', type=str, help='dataset name')
+parser.add_argument('-dataset', "--dataset", type=str, help='dataset name')
 parser.add_argument('-cp', "--checkpoint_path", default='./model/model_mirflickr/lr-0.00075_lr-decay_0.50_lr-times_4.0_nll-0.50_l2-1.00_c-10.00/vae-14014', type=str, help='The path to a checkpoint from which to fine-tune.')
 
 parser.add_argument('-dd', "--data_dir", default='./data/mirflickr/mirflickr_data.npy', type=str, help='The path of input observation data')
