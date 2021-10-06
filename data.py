@@ -26,6 +26,7 @@ def load_adult(subset):
     label_cols = ['income_level', 'occupation', 'workclass']
     labels = df[label_cols]
     feat = df.drop(label_cols, axis=1)
+    feat['fnlwgt'] = feat['fnlwgt'] / feat['fnlwgt'].sum()
     sensitive = ['race', 'sex']
     return feat, labels, sensitive
 
