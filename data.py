@@ -1,8 +1,11 @@
+import os
+
 import numpy as np
 import pandas as pd
 
+from utils import allexists
 
-DATASETPATH = '../dataset/'
+DATASETPATH = 'dataset/'
 
 
 def load_adult(subset):
@@ -119,7 +122,7 @@ def load_donor(subset):
     feat, sensitive = _load_donor_projects(subset)
     resource_cost = _load_donor_resource_cost(subset)
     feat = pd.merge(feat, resource_cost, how='inner', on='projectid')
-    
+    feat = feat.drop('projectid', axis=1)
     return feat, labels, sensitive
 
 
@@ -142,3 +145,27 @@ def cast_to_numpy(df, to_onehot=True):
 def onehot(col):
     unique_val = np.array(list(set(col)))
     return np.equal(unique_val[np.newaxis, :], col[:, np.newaxis]).astype(np.int32)
+
+
+def load_data(dataset, mode):
+    if dataset not in ['adult', 'donor']:
+        raise NotImplementedError()
+
+    datapath = DATASETPATH + dataset
+    featfile = os.path.join(datapath, 'feat_oh.npy')
+    labelfile = os.path.join(datapath, 'label_oh.npy')
+
+    if not allexists(featfile, labelfile):
+        if dataset == 'adult':
+            feat, labels, _ = load_adult(mode)
+        elif dataset == 'donor':
+            feat, labels, sensitive = load_donor(mode)
+
+        feat = cast_to_numpy(feat)
+        labels = cast_to_numpy(feat)
+        np.save(open(featfile, 'wb'), feat)
+        np.save(open(labelfile, 'wb'), labels)
+
+    else:
+        feat = np.load(open(featfile, 'rb'))
+        labels = np.load(open(labelfile, 'rb'))

@@ -1,15 +1,16 @@
 import torch
-import torch.nn.functional as F
-from torch import nn, optim
+from torch import optim
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 import sys
 import os
 import datetime
-from copy import copy, deepcopy
+from copy import deepcopy
+
 import evals
 from utils import build_path, get_label, get_feat
 from model import VAE, compute_loss
+from data import load_data
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 sys.path.append('./')
@@ -17,19 +18,17 @@ THRESHOLDS = [0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10,0.15,0.20,0.25,0
 
 METRICS = ['ACC', 'HA', 'ebF1', 'miF1', 'maF1', 'meanAUC', 'medianAUC', 'meanAUPR', 'medianAUPR', 'meanFDR', 'medianFDR', 'p_at_1', 'p_at_3', 'p_at_5']
 
+
 def train(args):
-    print('reading npy...')
+
+    print('prepare npy...')
     np.random.seed(4) # set the random seed of numpy
-    data = np.load(args.data_dir) #load data from the data_dir
-    train_idx = np.load(args.train_idx) #load the indices of the training set
-    valid_idx = np.load(args.valid_idx) #load the indices of the validation set
-    test_idx = np.load(args.test_idx)
-    labels = get_label(data, train_idx, args.meta_offset, args.label_dim) #load the labels of the training set
+    feat, labels = load_data(args.dataset)
+    train_cnt, valid_cnt = int(len(feat) * 0.7), int(len(feat) * .2)
+    train_idx = np.arange(train_cnt)
+    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+    # test_idx = np.arange(valid_cnt + train_cnt, len(feat))
 
-    print("min:", np.amin(labels))
-    print("max:", np.amax(labels))
-
-    print("positive label rate:", np.mean(labels)) #print the rate of the positive labels in the training set
     param_setting = "lr-{}_lr-decay_{:.2f}_lr-times_{:.1f}_nll-{:.2f}_l2-{:.2f}_c-{:.2f}".format(args.learning_rate, args.lr_decay_ratio, args.lr_decay_times, args.nll_coeff, args.l2_coeff, args.c_coeff)
     build_path('summary/{}/{}'.format(args.dataset, param_setting))
     build_path('model/model_{}/{}'.format(args.dataset, param_setting))
@@ -98,8 +97,10 @@ def train(args):
             optimizer.zero_grad()
             start = i*args.batch_size
             end = min(args.batch_size*(i+1), len(train_idx))
-            input_feat = get_feat(data,train_idx[start:end], args.meta_offset, args.label_dim, args.feature_dim) # get the NLCD features 
-            input_label = get_label(data,train_idx[start:end], args.meta_offset, args.label_dim) # get the prediction labels 
+            intput_feat = feat[train_idx[start:end]]
+            input_label = labels[train_idx[start:end]]
+            # input_feat = get_feat(data, train_idx[start:end], args.meta_offset, args.label_dim, args.feature_dim) # get the NLCD features
+            # input_label = get_label(data, train_idx[start:end], args.meta_offset, args.label_dim) # get the prediction labels
             input_feat, input_label = torch.from_numpy(input_feat).to(device), torch.from_numpy(input_label)
             input_label = deepcopy(input_label).float().to(device)
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = vae(input_label, input_feat) 
@@ -170,7 +171,7 @@ def train(args):
             if current_step % int(one_epoch_iter*args.save_epoch)==0: #exam the model on validation set
                 print("--------------------------------")
                 # exam the model on validation set
-                current_loss, val_metrics = valid(data, vae, writer, valid_idx, current_step, args)
+                current_loss, val_metrics = valid(feat, labels, vae, writer, valid_idx, current_step, args)
                 macro_f1, micro_f1 = val_metrics['maF1'], val_metrics['miF1']
 
                 # select the best checkpoint based on some metric on the validation set
@@ -211,7 +212,8 @@ def train(args):
                 
                 print("--------------------------------")
 
-def valid(data, vae, summary_writer, valid_idx, current_step, args):
+
+def valid(feat, labels, vae, summary_writer, valid_idx, current_step, args):
     vae.eval()
     print("performing validation...")
 
@@ -227,13 +229,15 @@ def valid(data, vae, summary_writer, valid_idx, current_step, args):
     for i in range(int((len(valid_idx)-1)/real_batch_size)+1):
         start = real_batch_size*i
         end = min(real_batch_size*(i+1), len(valid_idx))
-
-        input_feat = get_feat(data,valid_idx[start:end], args.meta_offset, args.label_dim, args.feature_dim)
-        input_label = get_label(data,valid_idx[start:end], args.meta_offset, args.label_dim)
+        intput_feat = feat[valid_idx[start:end]]
+        input_label = labels[valid_idx[start:end]]
+        # input_feat = get_feat(data,valid_idx[start:end], args.meta_offset, args.label_dim, args.feature_dim)
+        # input_label = get_label(data,valid_idx[start:end], args.meta_offset, args.label_dim)
         input_feat, input_label = torch.from_numpy(input_feat).to(device), torch.from_numpy(input_label)
         input_label = deepcopy(input_label).float().to(device)
 
         with torch.no_grad():
+            vae.eval()
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = vae(input_label, input_feat) 
             total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar, vae.r_sqrt_sigma, args)
     
