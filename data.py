@@ -27,6 +27,11 @@ def load_adult(subset):
     labels = df[label_cols]
     feat = df.drop(label_cols, axis=1)
     feat['fnlwgt'] = feat['fnlwgt'] / feat['fnlwgt'].sum()
+    feat['capital_gain'] = (feat['capital_gain'] - feat['capital_gain'].min()) / \
+                           (feat['capital_gain'].max() - feat['capital_gain'].min())
+    feat['capital_loss'] = (feat['capital_loss'] - feat['capital_loss'].min()) / \
+                           (feat['capital_loss'].max() - feat['capital_loss'].min())
+
     sensitive = ['race', 'sex']
     return feat, labels, sensitive
 
