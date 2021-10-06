@@ -131,6 +131,8 @@ def load_donor(subset):
 
     feat = feat.drop('projectid', axis=1)
     labels = labels.drop('projectid', axis=1)
+    feat = feat.fillna(0)
+    labels = labels.fillna(0)
 
     return feat, labels, sensitive
 
