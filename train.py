@@ -1,7 +1,10 @@
 import torch
+import torch.nn as nn
 from torch import optim
 from torch.utils.tensorboard import SummaryWriter
+
 import numpy as np
+
 import sys
 import os
 import datetime
@@ -107,10 +110,11 @@ def train(args):
             input_label = deepcopy(input_label).float().to(device)
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = vae(input_label, input_feat)
 
-            print('label_out: ', label_out.min(), label_out.max())
-            print('feat_out: ', feat_out.min(), feat_out.max())
             print('input_feat: ', input_feat.min(), input_feat.max())
             print('input_label: ', input_label.min(), input_label.max())
+            print('label_out: ', label_out.min(), label_out.max())
+            print('feat_out: ', feat_out.min(), feat_out.max())
+
 
             #train the model for one step and log the training loss
             if args.residue_sigma == "random":
@@ -119,7 +123,10 @@ def train(args):
             else:
                 total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar, vae.r_sqrt_sigma, args)
             total_loss.backward()
+            grad_norm = nn.utils.clip_grad_norm_(vae.parameters(), 100)
+
             optimizer.step()
+
             scheduler.step()
 
             train_metrics = evals.compute_metrics(indiv_prob.cpu().data.numpy(), input_label.cpu().data.numpy(), 0.5, all_metrics=False)
