@@ -128,7 +128,10 @@ def load_donor(subset):
     feat, sensitive = _load_donor_projects(subset)
     resource_cost = _load_donor_resource_cost(subset)
     feat = pd.merge(feat, resource_cost, how='inner', on='projectid')
+
     feat = feat.drop('projectid', axis=1)
+    labels = labels.drop('projectid', axis=1)
+
     return feat, labels, sensitive
 
 
