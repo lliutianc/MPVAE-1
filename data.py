@@ -124,7 +124,9 @@ def _load_donor_projects(subset=None):
         'school_kipp',
         'school_charter_ready_promise',
         'teacher_teach_for_america',
-        'teacher_ny_teaching_fellow'
+        'teacher_ny_teaching_fellow',
+        'eligible_double_your_impact_match',
+        'eligible_almost_home_match',
         ]:
         feat[binary_feat] = (feat[binary_feat] == 't')
 
