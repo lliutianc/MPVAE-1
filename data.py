@@ -156,6 +156,7 @@ def load_data(dataset, mode):
     labelfile = os.path.join(datapath, 'label_oh.npy')
 
     if not allexists(featfile, labelfile):
+        print('prepare dataset...')
         if dataset == 'adult':
             feat, labels, _ = load_adult(mode)
         elif dataset == 'donor':
@@ -167,5 +168,6 @@ def load_data(dataset, mode):
         np.save(open(labelfile, 'wb'), labels)
 
     else:
+        print('load existing datasets...')
         feat = np.load(open(featfile, 'rb'))
         labels = np.load(open(labelfile, 'rb'))
