@@ -107,9 +107,6 @@ def train(args):
             input_label = deepcopy(input_label).float().to(device)
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = vae(input_label, input_feat)
 
-            print(input_label.min(), input_label.max())
-            print(input_feat.min(), input_feat.max())
-            print(label_out)
             #train the model for one step and log the training loss
             if args.residue_sigma == "random":
                 r_sqrt_sigma = torch.from_numpy(np.random.uniform(-np.sqrt(6.0/(args.label_dim+args.z_dim)), np.sqrt(6.0/(args.label_dim+args.z_dim)), (args.label_dim, args.z_dim))).to(device)
