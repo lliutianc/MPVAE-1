@@ -25,7 +25,7 @@ def load_adult(subset):
     
     label_cols = ['income_level', 'occupation', 'workclass']
     labels = df[label_cols]
-    feat= df.drop(label_cols, axis=1)
+    feat = df.drop(label_cols, axis=1)
     sensitive = ['race', 'sex']
     return feat, labels, sensitive
 
@@ -171,3 +171,5 @@ def load_data(dataset, mode):
         print('load existing datasets...')
         feat = np.load(open(featfile, 'rb'))
         labels = np.load(open(labelfile, 'rb'))
+
+    return feat, labels
