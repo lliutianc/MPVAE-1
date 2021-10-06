@@ -139,7 +139,7 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
     covariance = sigma + torch.eye(args.label_dim).to(device)
         
     # epsilon
-    eps1=torch.tensor([1e-6]).float().to(device)
+    eps1 = torch.tensor([1e-6]).float().to(device)
 
     n_sample = args.n_train_sample if args.mode == "train" else args.n_test_sample
     n_batch = fe_out.shape[0]
@@ -149,14 +149,16 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
     
     # see equation (3) in the paper for this block
     B = r_sqrt_sigma.T.float().to(device)
-    sample_r = torch.tensordot(noise, B, dims=1)+fe_out #tensor: n_sample*n_batch*label_dim
-    sample_r_x = torch.tensordot(noise, B, dims=1)+fx_out #tensor: n_sample*n_batch*label_dim
-    norm=torch.distributions.normal.Normal(torch.tensor([0.0]).to(device), torch.tensor([1.0]).to(device))
+    sample_r = torch.tensordot(noise, B, dims=1) + fe_out #tensor: n_sample*n_batch*label_dim
+    sample_r_x = torch.tensordot(noise, B, dims=1) + fx_out #tensor: n_sample*n_batch*label_dim
+    norm = torch.distributions.normal.Normal(
+        torch.tensor([0.0]).to(device), torch.tensor([1.0]).to(device))
     
     # the probabilities w.r.t. every label in each sample from the batch
     # size: n_sample * n_batch * label_dim
     # eps1: to ensure the probability is non-zero
-    E = norm.cdf(sample_r)*(1-eps1)+eps1*0.5
+    print(sample_r)
+    E = norm.cdf(sample_r) * (1-eps1)+eps1*0.5
     # similar for the feature branch
     E_x = norm.cdf(sample_r_x)*(1-eps1)+eps1*0.5
 
