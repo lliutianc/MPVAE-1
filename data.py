@@ -162,7 +162,7 @@ def load_data(dataset, mode):
             feat, labels, sensitive = load_donor(mode)
 
         feat = cast_to_numpy(feat)
-        labels = cast_to_numpy(feat)
+        labels = cast_to_numpy(labels)
         np.save(open(featfile, 'wb'), feat)
         np.save(open(labelfile, 'wb'), labels)
 
