@@ -130,8 +130,8 @@ def train(args):
             smooth_macro_f1 += macro_f1
             smooth_micro_f1 += micro_f1
             
-            temp_label.append(input_label) #log the labels
-            temp_indiv_prob.append(indiv_prob) #log the individual prediction of the probability on each label
+            temp_label.append(input_label.cpu().data.numpy()) #log the labels
+            temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy()) #log the individual prediction of the probability on each label
 
             current_step += 1
             lr = optimizer.param_groups[0]['lr']
