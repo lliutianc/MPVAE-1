@@ -106,8 +106,9 @@ def train(args):
             input_feat, input_label = torch.from_numpy(input_feat).to(device), torch.from_numpy(input_label)
             input_label = deepcopy(input_label).float().to(device)
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = vae(input_label, input_feat)
-            print(input_label)
-            print(input_feat)
+
+            print(input_label.min(), input_label.max())
+            print(input_feat.min(), input_feat.max())
             print(label_out)
             #train the model for one step and log the training loss
             if args.residue_sigma == "random":
