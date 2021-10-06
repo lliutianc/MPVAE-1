@@ -26,6 +26,7 @@ def load_adult(subset):
     label_cols = ['income_level', 'occupation', 'workclass']
     labels = df[label_cols]
     feat = df.drop(label_cols, axis=1)
+
     feat['fnlwgt'] = feat['fnlwgt'] / feat['fnlwgt'].sum()
     feat['capital_gain'] = (feat['capital_gain'] - feat['capital_gain'].min()) / \
                            (feat['capital_gain'].max() - feat['capital_gain'].min())
@@ -74,6 +75,7 @@ def _load_donor_resource_cost(subset=None):
     resource = pd.read_csv(DATASETPATH + 'donor/resources.csv')
     if subset:
         resource = pd.merge(resource, subset, how='inner', on='projectid')
+    resource = resource[0 <= resource['item_unit_price'] <= 1e-5]
     resource['item_cost'] = resource['item_unit_price'] * resource['item_quantity']
     resource = resource.groupby('projectid').agg({'item_cost': np.sum}).reset_index()
     resource = resource.rename(columns={'item_cost': 'resource_cost'})
@@ -138,13 +140,21 @@ def load_donor(subset):
     
     labels = _load_donor_label(subset)
     feat, sensitive = _load_donor_projects(subset)
-    resource_cost = _load_donor_resource_cost(subset)
-    feat = pd.merge(feat, resource_cost, how='inner', on='projectid')
+    # resource_cost  = _load_donor_resource_cost(subset)
+    # feat = pd.merge(feat, resource_cost, how='inner', on='projectid')
 
     feat = feat.drop('projectid', axis=1)
     labels = labels.drop('projectid', axis=1)
     feat = feat.fillna(0)
     labels = labels.fillna(0)
+
+    for normalize in [
+        'total_price_excluding_optional_support',
+        'total_price_including_optional_support',
+        'students_reached'
+        ]:
+        feat[normalize] = (feat[normalize] - feat[normalize].min()) / \
+                          (feat[normalize].max() - feat[normalize].min())
 
     return feat, labels, sensitive
 
