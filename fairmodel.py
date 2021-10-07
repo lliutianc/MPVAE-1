@@ -113,7 +113,7 @@ def compute_fair_loss(faircritic, fe_out, fx_out, r_sqrt_sigma, sensitive_feat, 
     # print(B.shape, noise.shape, fx_out.shape)
 
     joint = faircritic(score, sensitive_feat)
-    independent = faircritic(score[:, idx, :], sensitive_feat[:, idx, :])
+    independent = faircritic(score, sensitive_feat[:, idx, :])
 
     loss = - activation_f(joint).mean() + conjugate_f(activation_f(independent)).mean()
     return loss
