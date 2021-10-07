@@ -98,6 +98,9 @@ def fairtrain(args):
 
     best_test_metrics = None
 
+    n_sample = args.n_test_sample if args.mode == "test" else args.n_train_sample
+
+
     # training the model
     for one_epoch in range(args.max_epoch):
         print('epoch '+str(one_epoch+1)+' starts!')
@@ -107,11 +110,15 @@ def fairtrain(args):
             optimizer.zero_grad()
             start = i*args.batch_size
             end = min(args.batch_size*(i+1), len(train_idx))
+
             input_feat = nonsensitive_feat[train_idx[start:end]]
-            sensi_feat = sensitive_feat[train_idx[start:end]]
-            input_label = labels[train_idx[start:end]]
             input_feat = torch.from_numpy(input_feat).to(device)
+
+            sensi_feat = sensitive_feat[train_idx[start:end]]
             sensi_feat = torch.from_numpy(sensi_feat).to(device)
+            sensi_feat = sensi_feat.unsqueeze(0).expand(*((n_sample, ) + sensi_feat.shape))
+
+            input_label = labels[train_idx[start:end]]
             input_label = torch.from_numpy(input_label)
             input_label = deepcopy(input_label).float().to(device)
 
