@@ -132,6 +132,7 @@ if __name__ == '__main__':
         n_batch = b.shape[0]
         shuffle_idx = np.random.shuffle(np.arange(n_batch))
         joint = critic(a, b)
+        print(a.shape, b.shape)
         independent = critic(a[shuffle_idx, :], b[shuffle_idx, :])
         loss = - activation_f(joint).mean() + conjugate_f(activation_f(independent))
         loss.backward()
