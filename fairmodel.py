@@ -110,7 +110,7 @@ def compute_fair_loss(faircritic, fe_out, fx_out, r_sqrt_sigma, sensitive_feat, 
     B = r_sqrt_sigma.T.float().to(device)
     noise = torch.normal(0, 1, size=(n_sample, n_batch, args.z_dim)).to(device)
     score = torch.tensordot(noise, B, dims=1) + fx_out
-    print(B.shape, noise.shape, fx_out.shape)
+    # print(B.shape, noise.shape, fx_out.shape)
 
     joint = faircritic(score, sensitive_feat)
     independent = faircritic(score[:, idx, :], sensitive_feat[:, idx, :])
