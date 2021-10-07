@@ -125,8 +125,8 @@ if __name__ == '__main__':
 
     opt = torch.optim.Adam(critic.parameters(), lr=1e-3, weight_decay=1e-5)
     for i in range(1000):
-        a = torch.normal(0, 1, size=(32, )).to(device)
-        b = torch.normal(10, 1, size=(32,)).to(device)
+        a = torch.normal(0, 1, size=(32, 1)).to(device)
+        b = torch.normal(10, 1, size=(32, 1)).to(device)
         n_batch = b.shape[0]
         shuffle_idx = np.random.shuffle(np.arange(n_batch))
         joint = critic(a, b)
