@@ -126,8 +126,8 @@ if __name__ == '__main__':
     activation_f = Activation_f(divergence)
     conjugate_f = Conjugate_f(divergence)
 
-    opt = torch.optim.Adam(critic.parameters(), lr=0.005, weight_decay=1e-5)
-    for i in range(3000):
+    opt = torch.optim.Adam(critic.parameters(), lr=1e-3, weight_decay=1e-5)
+    for i in range(10000):
         a = torch.normal(0, 1, size=(64, 1)).to(device)
         b = torch.normal(10, 1, size=(64, 1)).to(device)
         n_batch = b.shape[0]
@@ -141,6 +141,6 @@ if __name__ == '__main__':
         loss.backward()
         opt.step()
 
-        if i % 100 == 0 and i:
+        if i % 500 == 0 and i:
             print(loss)
 
