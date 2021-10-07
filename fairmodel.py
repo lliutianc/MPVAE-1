@@ -102,7 +102,8 @@ def compute_fair_loss(faircritic, fe_out, fx_out, r_sqrt_sigma, sensitive_feat, 
     activation_f = Activation_f(divergence)
     conjugate_f = Conjugate_f(divergence)
 
-    n_sample = args.n_test_sample if args.mode == "test" else args.n_train_sample
+    # n_sample = args.n_test_sample if args.mode == "test" else args.n_train_sample
+    n_sample = 1
     n_batch = fe_out.shape[0]
     idx = np.arange(n_batch)
     np.random.shuffle(idx)

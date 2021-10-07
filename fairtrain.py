@@ -98,8 +98,8 @@ def fairtrain(args):
 
     best_test_metrics = None
 
-    n_sample = args.n_test_sample if args.mode == "test" else args.n_train_sample
-
+    # n_sample = args.n_test_sample if args.mode == "test" else args.n_train_sample
+    n_sample = 1
 
     # training the model
     for one_epoch in range(args.max_epoch):
