@@ -182,29 +182,42 @@ def onehot(col):
     return np.equal(unique_val[np.newaxis, :], col[:, np.newaxis]).astype(np.int32)
 
 
-def load_data(dataset, mode):
+def load_data(dataset, mode, separate_sensitive=False):
     if dataset not in ['adult', 'donor']:
         raise NotImplementedError()
 
     datapath = DATASETPATH + dataset
-    featfile = os.path.join(datapath, 'feat_oh.npy')
+    sensitive_featfile = os.path.join(datapath, 'sensitive_oh.npy')
+    nonsensitive_featfile = os.path.join(datapath, 'nonsensitive_oh.npy')
     labelfile = os.path.join(datapath, 'label_oh.npy')
 
-    if not allexists(featfile, labelfile):
+    if not allexists(sensitive_featfile, nonsensitive_featfile, labelfile):
         print('prepare dataset...')
         if dataset == 'adult':
-            feat, labels, _ = load_adult(mode)
+            feat, labels, sensitive = load_adult(mode)
         elif dataset == 'donor':
             feat, labels, sensitive = load_donor(mode)
+        else:
+            raise ValueError()
 
-        feat = cast_to_numpy(feat)
+        sensitive_feat = feat[sensitive]
+        nonsensitive_feat = feat.drop(sensitive, axis=1)
+
+        nonsensitive_feat = cast_to_numpy(nonsensitive_feat)
+        sensitive_feat = cast_to_numpy(sensitive_feat)
         labels = cast_to_numpy(labels)
-        np.save(open(featfile, 'wb'), feat)
-        np.save(open(labelfile, 'wb'), labels)
 
+        np.save(open(sensitive_featfile, 'wb'), sensitive_feat)
+        np.save(open(nonsensitive_featfile, 'wb'), nonsensitive_feat)
+        np.save(open(labelfile, 'wb'), labels)
     else:
         print('load existing datasets...')
-        feat = np.load(open(featfile, 'rb'))
+
+        sensitive_feat = np.load(open(sensitive_featfile, 'rb'))
+        nonsensitive_feat = np.load(open(nonsensitive_featfile, 'rb'))
         labels = np.load(open(labelfile, 'rb'))
 
-    return feat, labels
+    if separate_sensitive:
+        return nonsensitive_feat, sensitive_feat, labels
+    else:
+        return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels
