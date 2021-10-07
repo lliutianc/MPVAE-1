@@ -34,7 +34,7 @@ def load_adult(subset):
                            (feat['capital_loss'].max() - feat['capital_loss'].min())
 
     labels['occupation'] = labels['occupation'].apply(lambda x: x in [' Handlers-cleaners',' Craft-repair', ' Transport-moving', ' Farming-fishing']).astype(int)
-    labels['workclass'] = labels['occupation'].apply(lambda x: x in [' State-gov', ' Federal-gov', ' Local-gov']).astype(int)
+    labels['workclass'] = labels['workclass'].apply(lambda x: x in [' State-gov', ' Federal-gov', ' Local-gov']).astype(int)
 
     sensitive = ['race', 'sex']
     return feat, labels, sensitive
