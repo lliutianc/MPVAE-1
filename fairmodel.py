@@ -104,13 +104,14 @@ def compute_fair_loss(faircritic, fe_out, fx_out, r_sqrt_sigma, sensitive_feat, 
 
     n_sample = args.n_train_sample if args.mode == "train" else args.n_test_sample
     n_batch = fe_out.shape[0]
-    shuffle_idx = np.random.shuffle(np.arange(n_batch))
+    idx = np.arange(n_batch)
+    np.random.shuffle(idx)
     B = r_sqrt_sigma.T.float().to(device)
     noise = torch.normal(0, 1, size=(n_sample, n_batch, args.z_dim)).to(device)
     score = torch.tensordot(noise, B, dims=1) + fx_out
 
     joint = faircritic(score, sensitive_feat)
-    independent = faircritic(score[:, shuffle_idx, :], sensitive_feat[:, shuffle_idx, :])
+    independent = faircritic(score[:, idx, :], sensitive_feat[:, idx, :])
 
     loss = - activation_f(joint).mean() + conjugate_f(activation_f(independent))
     return loss
@@ -130,10 +131,12 @@ if __name__ == '__main__':
         a = torch.normal(0, 1, size=(32, 1)).to(device)
         b = torch.normal(10, 1, size=(32, 1)).to(device)
         n_batch = b.shape[0]
-        shuffle_idx = np.random.shuffle(np.arange(n_batch))
+        shuffle_idx = np.arange(n_batch)
+        np.random.shuffle(shuffle_idx)
         joint = critic(a, b)
         print(a.shape, b.shape)
-        independent = critic(a[shuffle_idx, :], b[shuffle_idx, :])
+        print(shuffle_idx)
+        independent = critic(a[idx, :], b[idx, :])
         loss = - activation_f(joint).mean() + conjugate_f(activation_f(independent))
         loss.backward()
         opt.step()
