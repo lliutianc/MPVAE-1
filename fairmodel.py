@@ -102,7 +102,7 @@ def compute_fair_loss(faircritic, fe_out, fx_out, r_sqrt_sigma, sensitive_feat, 
     activation_f = Activation_f(divergence)
     conjugate_f = Conjugate_f(divergence)
 
-    n_sample = args.n_train_sample if args.mode == "train" else args.n_test_sample
+    n_sample = args.n_test_sample if args.mode == "test" else args.n_train_sample
     n_batch = fe_out.shape[0]
     idx = np.arange(n_batch)
     np.random.shuffle(idx)
@@ -110,7 +110,7 @@ def compute_fair_loss(faircritic, fe_out, fx_out, r_sqrt_sigma, sensitive_feat, 
     noise = torch.normal(0, 1, size=(n_sample, n_batch, args.z_dim)).to(device)
     score = torch.tensordot(noise, B, dims=1) + fx_out
     print(B.shape, noise.shape, fx_out.shape)
-    
+
     joint = faircritic(score, sensitive_feat)
     independent = faircritic(score[:, idx, :], sensitive_feat[:, idx, :])
 
