@@ -57,7 +57,8 @@ def fairtrain(args):
     vae = VAE(args).to(device)
     vae.train()
 
-    faircritic = FairCritic(args.label_dim + sensitive_feat.shape[1], 256, 2).to(device)
+    print(args.label_dim + sensitive_feat.shape[-1])
+    faircritic = FairCritic(args.label_dim + sensitive_feat.shape[-1], 256, 1).to(device)
     faircritic.train()
 
     #log the learning rate 
@@ -132,23 +133,30 @@ def fairtrain(args):
 
             #train the model for one step and log the training loss
             if args.residue_sigma == "random":
-                r_sqrt_sigma = torch.from_numpy(np.random.uniform(-np.sqrt(6.0/(args.label_dim+args.z_dim)), np.sqrt(6.0/(args.label_dim+args.z_dim)), (args.label_dim, args.z_dim))).to(device)
-                # total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar, r_sqrt_sigma, args)
+                r_sqrt_sigma = torch.from_numpy(
+                    np.random.uniform(
+                        -np.sqrt(6.0 / (args.label_dim + args.z_dim)),
+                        np.sqrt(6.0 / (args.label_dim + args.z_dim)),
+                        (args.label_dim, args.z_dim))).to(device)
+                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+                    input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
+                    r_sqrt_sigma, args)
             else:
-                r_sqrt_sigma = vae.r_sqrt_sigma
-            total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar, r_sqrt_sigma, args)
+                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+                    input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
+                    vae.r_sqrt_sigma, args)
 
             # train critic to estimate D(p(y, a) || p(y)p(a))
             for _ in range(3):
                 opt_critic.zero_grad()
 
                 fairloss = compute_fair_loss(
-                    faircritic, label_out.detach(), feat_out.detach(), r_sqrt_sigma, sensi_feat, args)
+                    faircritic, label_out.detach(), feat_out.detach(), vae.r_sqrt_sigma, sensi_feat, args)
                 fairloss.backward()
                 opt_critic.step()
                 schd_critic.step()
 
-            fairloss = compute_fair_loss(faircritic, label_out, feat_out, r_sqrt_sigma, sensi_feat, args)
+            fairloss = compute_fair_loss(faircritic, label_out, feat_out, vae.r_sqrt_sigma, sensi_feat, args)
             total_loss += fairloss
             total_loss.backward()
 
