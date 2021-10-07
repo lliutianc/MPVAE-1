@@ -31,8 +31,8 @@ class FairCritic(nn.Module):
             [nn.Linear(hidden_dim, 1),])
 
     def forward(self, score, a):
-        print(score.shape, a.shape)
-        score_a = torch.cat((score, a), 1)
+        # print(score.shape, a.shape)
+        score_a = torch.cat((score, a), -1)
         return self.model(score_a)
 
 
