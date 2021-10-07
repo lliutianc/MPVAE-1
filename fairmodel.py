@@ -163,6 +163,7 @@ def KLdivergence(x, y):
 
     # There is a mistake in the paper. In Eq. 14, the right side misses a negative sign
     # on the first term of the right hand side.
+    print(s, n-1)
     return -np.log(r/s).sum() * d / n + np.log(m / (n - 1))
 
 
