@@ -129,7 +129,7 @@ if __name__ == '__main__':
     opt = torch.optim.Adam(critic.parameters(), lr=1e-3, weight_decay=1e-5)
     for i in range(10000):
         a = torch.normal(0, 1, size=(64, 1)).to(device)
-        b = torch.normal(a, 1, size=(64, 1)).to(device)
+        b = torch.normal(0, 1, size=(64, 1)).to(device) + a
         n_batch = b.shape[0]
         idx = np.arange(n_batch)
         np.random.shuffle(idx)
