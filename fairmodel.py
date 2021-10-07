@@ -119,6 +119,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     critic = FairCritic(2, 256, 1)
+    critic = critic.to(device)
     divergence = 'KLD'
     activation_f = Activation_f(divergence)
     conjugate_f = Conjugate_f(divergence)
