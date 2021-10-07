@@ -23,7 +23,7 @@ THRESHOLDS = [0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10,0.15,0.20,0.25,0
 METRICS = ['ACC', 'HA', 'ebF1', 'miF1', 'maF1', 'meanAUC', 'medianAUC', 'meanAUPR', 'medianAUPR', 'meanFDR', 'medianFDR', 'p_at_1', 'p_at_3', 'p_at_5']
 
 
-def train(args):
+def fairtrain(args):
 
     print('prepare npy...')
     np.random.seed(4) # set the random seed of numpy

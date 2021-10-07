@@ -1,7 +1,7 @@
 import argparse
 from train import train
 from test import test
-
+from fairtrain import fairtrain
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-dataset', "--dataset", type=str, help='dataset name')
@@ -47,6 +47,8 @@ args = parser.parse_args()
 if __name__ == "__main__":
     if args.mode == 'train':
         train(args)
+    if args.mode == 'fairtrain':
+        fairtrain(args)
     elif args.mode == 'test':
         test(args)
     else:
