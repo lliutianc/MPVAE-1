@@ -179,8 +179,8 @@ if __name__ == '__main__':
     opt = torch.optim.Adam(critic.parameters(), lr=1e-3, weight_decay=1e-5)
     est_kl, real_kl = [], []
     for i in range(10000):
-        a = torch.normal(1, 1, size=(64, 1)).to(device)
-        b = torch.normal(1, 1, size=(64, 1)).to(device) + a * .5
+        a = torch.normal(1, 1, size=(256, 1)).to(device)
+        b = torch.normal(1, 1, size=(256, 1)).to(device) + a * .5
         n_batch = b.shape[0]
         idx = np.arange(n_batch)
         np.random.shuffle(idx)
