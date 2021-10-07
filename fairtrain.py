@@ -138,7 +138,7 @@ def train(args):
                 fairloss.backward()
                 opt_critic.step()
                 schd_critic.step()
-            
+
             fairloss = compute_fair_loss(faircritic, label_out, feat_out, sensi_feat, args)
             total_loss += fairloss
             total_loss.backward()
@@ -199,7 +199,7 @@ def train(args):
             if current_step % int(one_epoch_iter*args.save_epoch)==0: #exam the model on validation set
                 print("--------------------------------")
                 # exam the model on validation set
-                current_loss, val_metrics = valid(feat, labels, vae, writer, valid_idx, current_step, args)
+                current_loss, val_metrics = valid(nonsensitive_feat, labels, vae, writer, valid_idx, current_step, args)
                 macro_f1, micro_f1 = val_metrics['maF1'], val_metrics['miF1']
 
                 # select the best checkpoint based on some metric on the validation set
