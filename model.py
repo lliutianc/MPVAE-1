@@ -94,6 +94,7 @@ class VAE(nn.Module):
         feat_out, feat_mu, feat_logvar = self.feat_forward(feature)
         return label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar
 
+
 def build_multi_classification_loss(predictions, labels):
     shape = tuple(labels.shape)
     labels = labels.float()
@@ -114,10 +115,12 @@ def build_multi_classification_loss(predictions, labels):
     loss = torch.mean(loss)
     return loss
 
+
 def pairwise_and(a, b):
     column = torch.unsqueeze(a, 2)
     row = torch.unsqueeze(b, 1)
     return torch.logical_and(column, row)
+
 
 def pairwise_sub(a, b):
     column = torch.unsqueeze(a, 3)
@@ -164,12 +167,12 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
     def compute_BCE_and_RL_loss(E):
         #compute negative log likelihood (BCE loss) for each sample point
         sample_nll = -(torch.log(E)*input_label+torch.log(1-E)*(1-input_label))
-        logprob=-torch.sum(sample_nll, dim=2)
+        logprob = -torch.sum(sample_nll, dim=2)
 
         #the following computation is designed to avoid the float overflow (log_sum_exp trick)
-        maxlogprob=torch.max(logprob, dim=0)[0]
-        Eprob=torch.mean(torch.exp(logprob-maxlogprob), axis=0)
-        nll_loss=torch.mean(-torch.log(Eprob)-maxlogprob)
+        maxlogprob = torch.max(logprob, dim=0)[0]
+        Eprob = torch.mean(torch.exp(logprob-maxlogprob), axis=0)
+        nll_loss = torch.mean(-torch.log(Eprob)-maxlogprob)
 
         # compute the ranking loss (RL loss) 
         c_loss = build_multi_classification_loss(E, input_label)
