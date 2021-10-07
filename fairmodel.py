@@ -113,7 +113,7 @@ def compute_fair_loss(faircritic, fe_out, fx_out, r_sqrt_sigma, sensitive_feat, 
     joint = faircritic(score, sensitive_feat)
     independent = faircritic(score[:, idx, :], sensitive_feat[:, idx, :])
 
-    loss = - activation_f(joint).mean() + conjugate_f(activation_f(independent))
+    loss = - activation_f(joint).mean() + conjugate_f(activation_f(independent)).mean()
     return loss
 
 
@@ -134,10 +134,10 @@ if __name__ == '__main__':
         idx = np.arange(n_batch)
         np.random.shuffle(idx)
         joint = critic(a, b)
-        print(a.shape, b.shape)
-        print(idx)
+        # print(a.shape, b.shape)
+        # print(idx)
         independent = critic(a[idx, :], b[idx, :])
-        loss = - activation_f(joint).mean() + conjugate_f(activation_f(independent))
+        loss = - activation_f(joint).mean() + conjugate_f(activation_f(independent)).mean()
         loss.backward()
         opt.step()
 
