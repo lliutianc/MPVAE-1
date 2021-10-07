@@ -48,6 +48,7 @@ if __name__ == "__main__":
     if args.mode == 'train':
         train(args)
     if args.mode == 'fairtrain':
+        args.mode = 'train'
         fairtrain(args)
     elif args.mode == 'test':
         test(args)
