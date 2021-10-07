@@ -163,7 +163,7 @@ def KLdivergence(x, y):
 
     # There is a mistake in the paper. In Eq. 14, the right side misses a negative sign
     # on the first term of the right hand side.
-    print(s, n-1)
+    # print(s, n-1)
     return -np.log(r/s).sum() * d / n + np.log(m / (n - 1))
 
 
@@ -179,8 +179,8 @@ if __name__ == '__main__':
     opt = torch.optim.Adam(critic.parameters(), lr=1e-3, weight_decay=1e-5)
     est_kl, real_kl = [], []
     for i in range(10000):
-        a = torch.normal(0, 1, size=(64, 2)).to(device)
-        b = torch.normal(0, 1, size=(64, 2)).to(device) + a
+        a = torch.normal(1, 1, size=(64, 1)).to(device)
+        b = torch.normal(1, 1, size=(64, 1)).to(device) + a * .5
         n_batch = b.shape[0]
         idx = np.arange(n_batch)
         np.random.shuffle(idx)
@@ -192,6 +192,7 @@ if __name__ == '__main__':
 
         joint_var = torch.cat((a, b), 1)
         ind_var = torch.cat((a[idx, :], b[idx, :]), 1)
+        print(joint_var.shape, ind_var.shape)
         real_kl.append(KLdivergence(joint_var.cpu(), ind_var.cpu()))
         est_kl.append(loss.item())
         if i % 500 == 0 and i:
