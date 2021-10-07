@@ -123,7 +123,7 @@ if __name__ == '__main__':
     activation_f = Activation_f(divergence)
     conjugate_f = Conjugate_f(divergence)
 
-    opt = torch.optim.Adam(critic.parameters(), lr=1e-3e, weight_decay=1e-5)
+    opt = torch.optim.Adam(critic.parameters(), lr=1e-3, weight_decay=1e-5)
     for i in range(1000):
         a = torch.normal(size=(32, )).to(device)
         b = torch.normal(size=(32,)).to(device)
