@@ -8,7 +8,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class FairCritic(nn.Module):
     def __init(self, input_dim, hidden_dim, hidden_layers, activation_fn='relu'):
-        super(FairCritic, self).__init()
+        super(FairCritic, self).__init__()
 
         if activation_fn == 'relu':
             act = nn.ReLU(inplace=True)
