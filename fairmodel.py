@@ -184,14 +184,14 @@ if __name__ == '__main__':
         idx = np.arange(n_batch)
         np.random.shuffle(idx)
         joint = critic(a, b)
-        # print(a.shape, b.shape)
-        # print(idx)
         independent = critic(a[idx, :], b[idx, :])
         loss = - activation_f(joint).mean() + conjugate_f(activation_f(independent)).mean()
         loss.backward()
         opt.step()
 
-        real_kl.append(KLdivergence(a.cpu(), b.cpu()))
+        joint_var = torch.cat((a, b), 1)
+        ind_var = torch.cat((a[idx, :], b[idx, :]), 1)
+        real_kl.append(KLdivergence(joint_var.cpu(), ind_var.cpu()))
         est_kl.append(loss.item())
         if i % 500 == 0 and i:
             print(np.mean(est_kl), np.mean(real_kl))
