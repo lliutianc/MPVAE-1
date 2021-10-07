@@ -15,7 +15,7 @@ def load_adult(subset):
         'capital_gain', 'capital_loss', 'hours_per_week', 'native_country', 
         'income_level'
     ]
-    if subset == 'train':
+    if subset != 'test':
         dfpath = DATASETPATH + 'adult/adult.data'
     else:
         dfpath = DATASETPATH + 'adult/adult.test'
