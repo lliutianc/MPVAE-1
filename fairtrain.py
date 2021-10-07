@@ -148,7 +148,7 @@ def fairtrain(args):
                 opt_critic.step()
                 schd_critic.step()
 
-            fairloss = compute_fair_loss(faircritic, label_out, r_sqrt_sigma, sensi_feat, args)
+            fairloss = compute_fair_loss(faircritic, label_out, feat_out, r_sqrt_sigma, sensi_feat, args)
             total_loss += fairloss
             total_loss.backward()
 
