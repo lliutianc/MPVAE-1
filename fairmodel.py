@@ -169,7 +169,7 @@ def KLdivergence(x, y):
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    critic = FairCritic(2, 256, 1)
+    critic = FairCritic(4, 256, 1)
     critic = critic.to(device)
     divergence = 'KLD'
     activation_f = Activation_f(divergence)
@@ -178,8 +178,8 @@ if __name__ == '__main__':
     opt = torch.optim.Adam(critic.parameters(), lr=1e-3, weight_decay=1e-5)
     est_kl, real_kl = [], []
     for i in range(10000):
-        a = torch.normal(0, 1, size=(64, 1)).to(device)
-        b = torch.normal(0, 1, size=(64, 1)).to(device) + a
+        a = torch.normal(0, 1, size=(64, 2)).to(device)
+        b = torch.normal(0, 1, size=(64, 2)).to(device) + a
         n_batch = b.shape[0]
         idx = np.arange(n_batch)
         np.random.shuffle(idx)
