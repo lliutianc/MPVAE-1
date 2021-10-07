@@ -176,7 +176,7 @@ if __name__ == '__main__':
     conjugate_f = Conjugate_f(divergence)
 
     opt = torch.optim.Adam(critic.parameters(), lr=1e-3, weight_decay=1e-5)
-    real_kl = []
+    est_kl, real_kl = [], []
     for i in range(10000):
         a = torch.normal(0, 1, size=(64, 1)).to(device)
         b = torch.normal(0, 1, size=(64, 1)).to(device) + a
@@ -192,7 +192,7 @@ if __name__ == '__main__':
         opt.step()
 
         real_kl.append(KLdivergence(a.cpu(), b.cpu()))
-
+        est_kl.append(loss.item())
         if i % 500 == 0 and i:
-            print(loss.item(), np.mean(real_kl))
+            print(np.mean(est_kl), np.mean(real_kl))
 
