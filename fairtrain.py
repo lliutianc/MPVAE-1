@@ -117,11 +117,11 @@ def fairtrain(args):
 
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = vae(
                 input_label, input_feat)
-
-            print('input_feat: ', input_feat.min(0), input_feat.max(0))
-            print('input_label: ', input_label.min(0), input_label.max(0))
-            print('label_out: ', label_out.min(0), label_out.max(0))
-            print('feat_out: ', feat_out.min(0), feat_out.max(0))
+            #
+            # print('input_feat: ', input_feat.min(0), input_feat.max(0))
+            # print('input_label: ', input_label.min(0), input_label.max(0))
+            # print('label_out: ', label_out.min(0), label_out.max(0))
+            # print('feat_out: ', feat_out.min(0), feat_out.max(0))
 
             #train the model for one step and log the training loss
             if args.residue_sigma == "random":
@@ -134,7 +134,7 @@ def fairtrain(args):
             for _ in range(3):
                 opt_critic.zero_grad()
                 fairloss = compute_fair_loss(
-                    faircritic, label_out.detach(), feat_out.detach(), sensi_feat, args)
+                    faircritic, label_out.detach(), feat_out.detach(), r_sqrt_sigma, sensi_feat, args)
                 fairloss.backward()
                 opt_critic.step()
                 schd_critic.step()
