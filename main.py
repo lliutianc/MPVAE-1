@@ -1,7 +1,7 @@
 import argparse
 from train import train
 from test import test
-from fairtrain import fairtrain
+from fairadv import fairtrain
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-dataset', "--dataset", type=str, help='dataset name')
