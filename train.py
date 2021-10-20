@@ -124,7 +124,6 @@ def train(args):
             grad_norm = nn.utils.clip_grad_norm_(vae.parameters(), 100)
 
             optimizer.step()
-
             scheduler.step()
 
             train_metrics = evals.compute_metrics(indiv_prob.cpu().data.numpy(), input_label.cpu().data.numpy(), 0.5, all_metrics=False)

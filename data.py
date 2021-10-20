@@ -224,3 +224,5 @@ def load_data(dataset, mode, separate_sensitive=False):
         return nonsensitive_feat, sensitive_feat, labels
     else:
         return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels
+
+
