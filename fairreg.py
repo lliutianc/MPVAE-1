@@ -92,15 +92,15 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_on
                 all_metrics=False)
             macro_f1, micro_f1 = train_metrics['maF1'], train_metrics['miF1']
 
-            smooth_nll_loss += nll_loss
-            smooth_nll_loss_x += nll_loss_x
+            smooth_nll_loss += nll_loss.item()
+            smooth_nll_loss_x += nll_loss_x.item()
             # smooth_l2_loss += l2_loss
-            smooth_c_loss += c_loss
-            smooth_c_loss_x += c_loss_x
-            smooth_kl_loss += kl_loss
-            smooth_total_loss += total_loss
-            smooth_macro_f1 += macro_f1
-            smooth_micro_f1 += micro_f1
+            smooth_c_loss += c_loss.item()
+            smooth_c_loss_x += c_loss_x.item()
+            smooth_kl_loss += kl_loss.item()
+            smooth_total_loss += total_loss.item()
+            smooth_macro_f1 += macro_f1.item()
+            smooth_micro_f1 += micro_f1.item()
 
             # log the labels
             temp_label.append(input_label.cpu().data.numpy())
