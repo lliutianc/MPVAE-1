@@ -243,6 +243,8 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
                 if len(cluster_labels_z_sensitive):
                     labels_z_unfair += torch.pow(
                         cluster_labels_z_sensitive.mean() - cluster_labels_z.mean(), 2)
+                    print(torch.pow(
+                        cluster_labels_z_sensitive.mean() - cluster_labels_z.mean(), 2))
 
         cluster_feats_z = feats_z[clusters == centroid]
         if len(cluster_feats_z):
