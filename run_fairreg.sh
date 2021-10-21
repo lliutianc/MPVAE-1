@@ -9,11 +9,6 @@
 #SBATCH -A partner
 #SBATCH -J run_fairreg
 
-
-module load anaconda
-conda activate fairmlc
-
-module purge
 module load cuda
 module load cudnn
 module load ml-toolkit-gpu/pytorch/1.7.1
@@ -23,9 +18,4 @@ module list
 
 echo $CUDA_VISIBLE_DEVICES
 
-python fairreg.py -dataset adult
-
-
-#cd /home/liu3351/NC/
-
-#python -X faulthandler mbert_fed_kmeans_all_layer.py
+python -X faulthandler fairreg.py -dataset adult
