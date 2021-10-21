@@ -128,8 +128,8 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_on
 
         time_str = datetime.datetime.now().isoformat()
         print(
-            "%s\nmacro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tnll_loss_x=%.6f\nc_loss=%.6f\tc_loss_x=%.6f\tkl_loss=%.6f\ntotal_loss=%.6f\n" % (
-            time_str, macro_f1, micro_f1, nll_loss * args.nll_coeff,
+            "macro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tnll_loss_x=%.6f\nc_loss=%.6f\tc_loss_x=%.6f\tkl_loss=%.6f\ntotal_loss=%.6f\n" % (
+            macro_f1, micro_f1, nll_loss * args.nll_coeff,
             nll_loss_x * args.nll_coeff, c_loss * args.c_coeff, c_loss_x * args.c_coeff, kl_loss,
             total_loss))
 
@@ -218,9 +218,9 @@ def regularzie_mpvae_unfair(data, model, optimizer, use_valid=True):
 
         label_z = model.label_reparameterize(label_mu, label_logvar)
         feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
-
-        labels_z.append(labels_z)
+        labels_z.append(label_z)
         feats_z.append(feat_z)
+        
     labels_z = torch.cat(labels_z)
     feats_z = torch.cat(feats_z)
 
@@ -390,6 +390,7 @@ def train_fair_through_regularize(args):
     # for _ in range(args.max_epoch // 5):
     for _ in range(1):
         train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
+    print('cluster labels...')
     label_clusters = hard_cluster(prior_vae, data, args, use_valid=True)
 
     # retrain a new mpvae + fair regularization
