@@ -146,7 +146,6 @@ def hard_cluster(model, data, args):
     with torch.no_grad():
         model.eval()
         idxs = np.arange(int(len(data.input_feat) * .9))
-        print(idxs)
         labels_mu, labels_logvar = [], []
         for i in range(int(len(idxs) / float(data.batch_size)) + 1):
             start = i * data.batch_size
@@ -242,15 +241,14 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
     idx = np.arange(clusters.shape[0])
     print(idx)
     for centroid in label_centroids:
-        cluster_labels_z = labels_z[idx[clusters == centroid]]
-        print(clusters == centroid)
-        print(idx[clusters == centroid], idx[clusters == centroid].shape)
+        cluster_labels_z = labels_z[idx[torch.equal(clusters, centroid)]]
+        print(idx[torch.equal(clusters, centroid)], idx[torch.equal(clusters, centroid)].shape)
         print(centroid, len(cluster_labels_z))
         if len(cluster_labels_z):
             for sensitive in sensitive_centroids:
                 sensitive_centroid = torch.all([
                     torch.all(torch.equal(sensitive_centroids, sensitive), axis=1),  # sensitive level
-                    clusters == centroid], axis=1)
+                    torch.equal(clusters, centroid)], axis=1)
                 cluster_labels_z_sensitive = labels_z[idx[sensitive_centroid]]
                 print(len(cluster_labels_z_sensitive))
                 if len(cluster_labels_z_sensitive):
