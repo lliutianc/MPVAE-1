@@ -17,6 +17,13 @@ from model import VAE, compute_loss
 from fairmodel import FairCritic, compute_fair_loss
 from data import load_data
 
+from main import parser
+
+
+parser.add_argument('-labels_cluster_distance_threshold', type=float, default=.1)
+parser.add_argument('-labels_cluster_min_size', type=int, default=4)
+parser.add_argument('-cuda', type=int, default=0)
+
 
 sys.path.append('./')
 THRESHOLDS = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.15, 0.20, 0.25, 0.30,
@@ -402,11 +409,6 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
 
 
 if __name__ == '__main__':
-    from main import parser
-
-    parser.add_argument('-labels_cluster_distance_threshold', type=float, default=.1)
-    parser.add_argument('-labels_cluster_min_size', type=int, default=4)
-    parser.add_argument('-cuda', type=int, default=0)
 
     args = parser.parse_args()
 
