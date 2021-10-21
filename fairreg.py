@@ -174,8 +174,7 @@ def hard_cluster(model, data, args):
         succ_cluster = False
         for cluster_try in range(10):
             cluster = AgglomerativeClustering(
-                n_clusters=None, distance_threshold=args.labels_cluster_distance_threshold).fit(
-                labels_mu)
+                n_clusters=None, distance_threshold=distance_threshold).fit(labels_mu)
             labels_cluster = cluster.labels_
             _, counts = np.unique(labels_cluster, return_counts=True)
             if counts.min() < args.labels_cluster_min_size:
