@@ -259,8 +259,11 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
                         cluster_feats_z_sensitive.mean() - cluster_feats_z.mean(), 2)
 
     fairloss = args.label_z_fair_coeff * labels_z_unfair + args.feat_z_fair_coeff * feats_z_unfair
-    fairloss.backward()
-    optimizer.step()
+    if isinstance(fairloss, float):
+        raise UserWarning('Fail to construct fairness regualizers')
+    else:
+        fairloss.backward()
+        optimizer.step()
 
 
 def validate_mpvae(model, feat, labels, valid_idx, args):
@@ -420,7 +423,7 @@ def train_fair_through_regularize(args):
 
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):
-        # train_mpvae_one_epoch(data, fair_vae, optimizer, scheduler, args)
+        train_mpvae_one_epoch(data, fair_vae, optimizer, scheduler, args)
         regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, args, use_valid=True)
 
 
