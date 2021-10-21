@@ -244,7 +244,8 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
     idx = np.arange(clusters.shape[0])
     for centroid in label_centroids:
         cluster_labels_z = labels_z[idx[clusters == centroid]]
-        print(clusters)
+        print(clusters == centroid)
+        print(idx[clusters == centroid], idx[clusters == centroid].shape)
         print(centroid, len(cluster_labels_z))
         if len(cluster_labels_z):
             for sensitive in sensitive_centroids:
@@ -273,6 +274,8 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
     fairloss = args.label_z_fair_coeff * labels_z_unfair + args.feat_z_fair_coeff * feats_z_unfair
     fairloss.backward()
     optimizer.step()
+
+    exit(1)
 
 
 def validate_mpvae(model, feat, labels, valid_idx, args):
