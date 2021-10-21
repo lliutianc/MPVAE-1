@@ -146,7 +146,7 @@ def hard_cluster(model, data, args):
     with torch.no_grad():
         model.eval()
         idxs = np.arange(int(len(data.input_feat) * .9))
-
+        print(idxs)
         labels_mu, labels_logvar = [], []
         for i in range(int(len(idxs) / float(data.batch_size)) + 1):
             start = i * data.batch_size
@@ -160,6 +160,8 @@ def hard_cluster(model, data, args):
                 input_label, input_feat)
             labels_mu.append(label_mu.cpu().data.numpy())
             labels_logvar.append(label_logvar.cpu().data.numpy())
+            if i < 5:
+                print(input_feat)
 
         labels_mu = np.concatenate(labels_mu)
         labels_logvar = np.concatenate(labels_logvar)
