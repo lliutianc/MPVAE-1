@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/zsh -l
 
 # FILENAME: run_fairreg.sh
 
