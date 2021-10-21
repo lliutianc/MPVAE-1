@@ -50,7 +50,7 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_on
     temp_label = []
     temp_indiv_prob = []
 
-    with tqdm(range(1, int(len(data.train_idx) / float(data.batch_size)) + 2), desc='VAE') as t:
+    with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='VAE') as t:
         for i in t:
             optimizer.zero_grad()
             start = i * data.batch_size
@@ -384,7 +384,8 @@ def train_fair_through_regularize(args):
     #     current_step = 0
 
     print('start training prior mpvae...')
-    for _ in range(args.max_epoch // 5):
+    # for _ in range(args.max_epoch // 5):
+    for _ in range(1):
         train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
     label_clusters = hard_cluster(prior_vae, data)
 
