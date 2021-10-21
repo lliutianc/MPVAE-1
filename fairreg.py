@@ -271,31 +271,32 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
         all_label = []
 
         real_batch_size = min(args.batch_size, len(valid_idx))
-        for i in range(int((len(valid_idx) - 1) / real_batch_size) + 1):
-            start = real_batch_size * i
-            end = min(real_batch_size * (i + 1), len(valid_idx))
-            input_feat = feat[valid_idx[start:end]]
-            input_label = labels[valid_idx[start:end]]
-            input_feat, input_label = torch.from_numpy(input_feat).to(device), torch.from_numpy(
-                input_label)
-            input_label = deepcopy(input_label).float().to(device)
+        with tqdm(range(int((len(valid_idx) - 1) / real_batch_size) + 1), desc='VAE') as t:
+            for i in t:
+                start = real_batch_size * i
+                end = min(real_batch_size * (i + 1), len(valid_idx))
+                input_feat = feat[valid_idx[start:end]]
+                input_label = labels[valid_idx[start:end]]
+                input_feat, input_label = torch.from_numpy(input_feat).to(device), torch.from_numpy(
+                    input_label)
+                input_label = deepcopy(input_label).float().to(device)
 
-            label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
-                input_label, input_feat)
-            total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
-                input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
-                model.r_sqrt_sigma, args)
+                label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
+                    input_label, input_feat)
+                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+                    input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
+                    model.r_sqrt_sigma, args)
 
-            all_nll_loss += nll_loss * (end - start)
-            # all_l2_loss += l2_loss*(end-start)
-            all_c_loss += c_loss * (end - start)
-            all_total_loss += total_loss * (end - start)
+                all_nll_loss += nll_loss * (end - start)
+                # all_l2_loss += l2_loss*(end-start)
+                all_c_loss += c_loss * (end - start)
+                all_total_loss += total_loss * (end - start)
 
-            for j in deepcopy(indiv_prob).cpu().data.numpy():
-                all_indiv_prob.append(j)
-            for j in deepcopy(input_label).cpu().data.numpy():
-                all_label.append(j)
-
+                for j in deepcopy(indiv_prob).cpu().data.numpy():
+                    all_indiv_prob.append(j)
+                for j in deepcopy(input_label).cpu().data.numpy():
+                    all_label.append(j)
+            
         # collect all predictions and ground-truths
         all_indiv_prob = np.array(all_indiv_prob)
         all_label = np.array(all_label)
