@@ -429,6 +429,6 @@ if __name__ == '__main__':
     parser.add_argument('-labels_cluster_distance_threshold', type=float, default=.1)
     parser.add_argument('-labels_cluster_min_size', type=float, default=4)
 
-    args = parser()
+    args = parser.parse_args()
 
     train_fair_through_regularize(args)
