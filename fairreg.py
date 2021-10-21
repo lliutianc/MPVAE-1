@@ -40,12 +40,12 @@ METRICS = ['ACC', 'HA', 'ebF1', 'miF1', 'maF1', 'meanAUC', 'medianAUC', 'meanAUP
 def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_one_epoch=True):
     np.random.shuffle(data.train_idx)
 
-    smooth_nll_loss=0.0 # label encoder decoder cross entropy loss
-    smooth_nll_loss_x=0.0 # feature encoder decoder cross entropy loss
+    smooth_nll_loss = 0.0 # label encoder decoder cross entropy loss
+    smooth_nll_loss_x = 0.0 # feature encoder decoder cross entropy loss
     smooth_c_loss = 0.0 # label encoder decoder ranking loss
-    smooth_c_loss_x=0.0 # feature encoder decoder ranking loss
+    smooth_c_loss_x = 0.0 # feature encoder decoder ranking loss
     smooth_kl_loss = 0.0 # kl divergence
-    smooth_total_loss=0.0 # total loss
+    smooth_total_loss = 0.0 # total loss
     smooth_macro_f1 = 0.0 # macro_f1 score
     smooth_micro_f1 = 0.0 # micro_f1 score
     #smooth_l2_loss = 0.0
