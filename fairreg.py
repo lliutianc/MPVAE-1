@@ -430,7 +430,7 @@ def train_fair_through_regularize(args):
 
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):
-        train_mpvae_one_epoch(data, fair_vae, optimizer, scheduler, args)
+        # train_mpvae_one_epoch(data, fair_vae, optimizer, scheduler, args)
         regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, args, use_valid=True)
 
 
