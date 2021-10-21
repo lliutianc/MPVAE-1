@@ -154,7 +154,6 @@ def hard_cluster(model, data, args):
 
             input_feat = data.input_feat[idxs[start:end]]
             input_feat = torch.from_numpy(input_feat).to(device)
-
             input_label = data.labels[idxs[start:end]]
             input_label = torch.from_numpy(input_label).to(device)
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
@@ -165,8 +164,7 @@ def hard_cluster(model, data, args):
         labels_mu = np.concatenate(labels_mu)
         labels_logvar = np.concatenate(labels_logvar)
         print(labels_mu.shape)
-        print(labels_mu.min(1))
-        print(labels_mu.max(1))
+        print(labels_mu[:5])
         # todo: how to properly cluster labels based on JSD or KL average distance?
         #  Take KL for instance, afer merging two points, the new cluster is a Gaussian mixture,
         #  do we still have closed form formula to update new distance?
