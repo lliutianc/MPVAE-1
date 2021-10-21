@@ -161,7 +161,7 @@ def hard_cluster(model, data, args):
             labels_mu.append(label_mu.cpu().data.numpy())
             labels_logvar.append(label_logvar.cpu().data.numpy())
             if i < 5:
-                print(input_feat)
+                print(input_label)
 
         labels_mu = np.concatenate(labels_mu)
         labels_logvar = np.concatenate(labels_logvar)
@@ -227,7 +227,7 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
 
     labels_z = torch.cat(labels_z)
     feats_z = torch.cat(feats_z)
-
+    print(labels_z.shape, feats_z.shape)
     clusters = data.label_clusters[idxs]
     sensitive_feat = data.sensitive_feat[idxs]
 
@@ -235,12 +235,15 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
     feats_z_unfair = 0.
     label_centroids = np.unique(clusters)
     sensitive_centroids = np.unique(sensitive_feat, axis=0)
+
     print(sensitive_centroids)
+
     label_centroids = torch.from_numpy(label_centroids).to(device)
     sensitive_centroids = torch.from_numpy(sensitive_centroids).to(device)
     for centroid in label_centroids:
         cluster_labels_z = labels_z[clusters == centroid]
-        print(len(cluster_labels_z))
+        print(clusters)
+        print(centroid, len(cluster_labels_z))
         if len(cluster_labels_z):
             for sensitive in sensitive_centroids:
                 sensitive_centroid = torch.all([
