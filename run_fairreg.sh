@@ -13,6 +13,11 @@
 #SBATCH --error=/home/liu3351/joboutput/run_fairreg_error.out
 
 
+module purge
+
+module load anaconda
+
+conda activate fairmlc
 module load cuda
 module load cudnn
 module load ml-toolkit-gpu/pytorch/1.7.1
