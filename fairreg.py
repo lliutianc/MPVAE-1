@@ -168,6 +168,7 @@ def hard_cluster(model, data, args):
         # todo: how to properly cluster labels based on JSD or KL average distance?
         #  Take KL for instance, afer merging two points, the new cluster is a Gaussian mixture,
         #  do we still have closed form formula to update new distance?
+
         from sklearn.cluster import AgglomerativeClustering
         distance_threshold = args.labels_cluster_distance_threshold
         succ_cluster = False
@@ -189,6 +190,8 @@ def hard_cluster(model, data, args):
         assert labels_cluster.shape[0] == labels_mu.shape[0], \
             f'{labels_mu.shape}, {labels_cluster.shape}'
 
+        _, counts = np.unique(labels_cluster, return_counts=True)
+        print(counts.max(), counts.min())
         return labels_cluster
 
 
@@ -230,16 +233,19 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
     feats_z_unfair = 0.
     label_centroids = np.unique(clusters)
     sensitive_centroids = np.unique(sensitive_feat, axis=0)
+    print(sensitive_centroids)
     label_centroids = torch.from_numpy(label_centroids).to(device)
     sensitive_centroids = torch.from_numpy(sensitive_centroids).to(device)
     for centroid in label_centroids:
         cluster_labels_z = labels_z[clusters == centroid]
+        print(len(cluster_labels_z))
         if len(cluster_labels_z):
             for sensitive in sensitive_centroids:
                 sensitive_centroid = torch.all([
                     torch.all(torch.equal(sensitive_centroids, sensitive), axis=1),  # sensitive level
                     clusters == centroid], axis=1)
                 cluster_labels_z_sensitive = labels_z[sensitive_centroid]
+                print(len(cluster_labels_z_sensitive))
                 if len(cluster_labels_z_sensitive):
                     labels_z_unfair += torch.pow(
                         cluster_labels_z_sensitive.mean() - cluster_labels_z.mean(), 2)
