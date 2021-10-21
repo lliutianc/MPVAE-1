@@ -123,9 +123,9 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_on
         macro_f1 = smooth_macro_f1 / float(i+1)
         micro_f1 = smooth_micro_f1 / float(i+1)
 
-        temp_indiv_prob = np.reshape(np.array(temp_indiv_prob), (-1))
-        temp_label = np.reshape(np.array(temp_label), (-1))
-
+        temp_indiv_prob = np.array(temp_indiv_prob).reshape(-1)
+        temp_label = np.array(temp_label).reshape(-1)
+        
         time_str = datetime.datetime.now().isoformat()
         print(
             "macro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tnll_loss_x=%.6f\nc_loss=%.6f\tc_loss_x=%.6f\tkl_loss=%.6f\ntotal_loss=%.6f\n" % (
@@ -220,7 +220,7 @@ def regularzie_mpvae_unfair(data, model, optimizer, use_valid=True):
         feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
         labels_z.append(label_z)
         feats_z.append(feat_z)
-        
+
     labels_z = torch.cat(labels_z)
     feats_z = torch.cat(feats_z)
 
