@@ -10,6 +10,7 @@ import os
 import datetime
 from copy import deepcopy
 import types
+from tqdm import tqdm
 
 import evals
 from utils import build_path, get_label, get_feat
@@ -36,56 +37,55 @@ METRICS = ['ACC', 'HA', 'ebF1', 'miF1', 'maF1', 'meanAUC', 'medianAUC', 'meanAUP
 def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_one_epoch=True):
     np.random.shuffle(data.train_idx)
 
-    if eval_after_one_epoch:
-        smooth_nll_loss=0.0 # label encoder decoder cross entropy loss
-        smooth_nll_loss_x=0.0 # feature encoder decoder cross entropy loss
-        smooth_c_loss = 0.0 # label encoder decoder ranking loss
-        smooth_c_loss_x=0.0 # feature encoder decoder ranking loss
-        smooth_kl_loss = 0.0 # kl divergence
-        smooth_total_loss=0.0 # total loss
-        smooth_macro_f1 = 0.0 # macro_f1 score
-        smooth_micro_f1 = 0.0 # micro_f1 score
-        #smooth_l2_loss = 0.0
+    smooth_nll_loss=0.0 # label encoder decoder cross entropy loss
+    smooth_nll_loss_x=0.0 # feature encoder decoder cross entropy loss
+    smooth_c_loss = 0.0 # label encoder decoder ranking loss
+    smooth_c_loss_x=0.0 # feature encoder decoder ranking loss
+    smooth_kl_loss = 0.0 # kl divergence
+    smooth_total_loss=0.0 # total loss
+    smooth_macro_f1 = 0.0 # macro_f1 score
+    smooth_micro_f1 = 0.0 # micro_f1 score
+    #smooth_l2_loss = 0.0
 
-        temp_label = []
-        temp_indiv_prob = []
+    temp_label = []
+    temp_indiv_prob = []
 
-    for i in range(int(len(data.train_idx) / float(data.batch_size)) + 1):
-        optimizer.zero_grad()
-        start = i * data.batch_size
-        end = min(data.batch_size * (i + 1), len(data.train_idx))
+    with tqdm(range(1, int(len(data.train_idx) / float(data.batch_size)) + 2), desc='VAE') as t:
+        for i in enumerate(t):
+            optimizer.zero_grad()
+            start = i * data.batch_size
+            end = min(data.batch_size * (i + 1), len(data.train_idx))
 
-        input_feat = data.input_feat[data.train_idx[start:end]]
-        input_feat = torch.from_numpy(input_feat).to(device)
+            input_feat = data.input_feat[data.train_idx[start:end]]
+            input_feat = torch.from_numpy(input_feat).to(device)
 
-        input_label = data.labels[data.train_idx[start:end]]
-        input_label = torch.from_numpy(input_label)
-        input_label = deepcopy(input_label).float().to(device)
+            input_label = data.labels[data.train_idx[start:end]]
+            input_label = torch.from_numpy(input_label)
+            input_label = deepcopy(input_label).float().to(device)
 
-        label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
-            input_label, input_feat)
+            label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
+                input_label, input_feat)
 
-        if args.residue_sigma == "random":
-            r_sqrt_sigma = torch.from_numpy(
-                np.random.uniform(
-                    -np.sqrt(6.0 / (args.label_dim + args.z_dim)),
-                    np.sqrt(6.0 / (args.label_dim + args.z_dim)), (args.label_dim, args.z_dim))).to(
-                device)
-            total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
-                input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
-                r_sqrt_sigma, args)
-        else:
-            total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
-                input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
-                model.r_sqrt_sigma, args)
+            if args.residue_sigma == "random":
+                r_sqrt_sigma = torch.from_numpy(
+                    np.random.uniform(
+                        -np.sqrt(6.0 / (args.label_dim + args.z_dim)),
+                        np.sqrt(6.0 / (args.label_dim + args.z_dim)), (args.label_dim, args.z_dim))).to(
+                    device)
+                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+                    input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
+                    r_sqrt_sigma, args)
+            else:
+                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+                    input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
+                    model.r_sqrt_sigma, args)
 
-        total_loss.backward()
-        grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 100)
-        optimizer.step()
-        if scheduler:
-            scheduler.step()
+            total_loss.backward()
+            grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 100)
+            optimizer.step()
+            if scheduler:
+                scheduler.step()
 
-        if eval_after_one_epoch:
             # evaluation
             train_metrics = evals.compute_metrics(
                 indiv_prob.cpu().data.numpy(), input_label.cpu().data.numpy(), 0.5,
@@ -102,9 +102,14 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_on
             smooth_macro_f1 += macro_f1
             smooth_micro_f1 += micro_f1
 
-            temp_label.append(input_label.cpu().data.numpy())  # log the labels
-            temp_indiv_prob.append(
-                indiv_prob.detach().data.cpu().numpy())  # log the individual prediction of the probability on each label
+            # log the labels
+            temp_label.append(input_label.cpu().data.numpy())
+            # log the individual prediction of the probability on each label
+            temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy())
+            
+            t.set_postfix({'total_loss': smooth_total_loss / float(i),
+                           'nll_loss': smooth_nll_loss / float(i)
+                           })
 
     if eval_after_one_epoch:
 
