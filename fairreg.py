@@ -107,21 +107,21 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_on
             # log the individual prediction of the probability on each label
             temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy())
             
-            t.set_postfix({'total_loss': smooth_total_loss / float(i),
-                           'nll_loss_label': smooth_nll_loss / float(i),
-                           'nll_loss_feat': smooth_nll_loss_x / float(i),
+            t.set_postfix({'total_loss': smooth_total_loss / float(i+1),
+                           'nll_loss_label': smooth_nll_loss / float(i+1),
+                           'nll_loss_feat': smooth_nll_loss_x / float(i+1),
                            })
 
     if eval_after_one_epoch:
 
-        nll_loss = smooth_nll_loss / float(i)
-        nll_loss_x = smooth_nll_loss_x / float(i)
-        c_loss = smooth_c_loss / float(i)
-        c_loss_x = smooth_c_loss_x / float(i)
-        kl_loss = smooth_kl_loss / float(i)
-        total_loss = smooth_total_loss / float(i)
-        macro_f1 = smooth_macro_f1 / float(i)
-        micro_f1 = smooth_micro_f1 / float(i)
+        nll_loss = smooth_nll_loss / float(i+1)
+        nll_loss_x = smooth_nll_loss_x / float(i+1)
+        c_loss = smooth_c_loss / float(i+1)
+        c_loss_x = smooth_c_loss_x / float(i+1)
+        kl_loss = smooth_kl_loss / float(i+1)
+        total_loss = smooth_total_loss / float(i+1)
+        macro_f1 = smooth_macro_f1 / float(i+1)
+        micro_f1 = smooth_micro_f1 / float(i+1)
 
         temp_indiv_prob = np.reshape(np.array(temp_indiv_prob), (-1))
         temp_label = np.reshape(np.array(temp_label), (-1))
