@@ -187,7 +187,7 @@ def hard_cluster(model, data, args, use_valid=True):
         if succ_cluster is False:
             raise UserWarning('Labels clustering not converged')
 
-        assert labels_cluster.shape.shape[1] == labels_mu.shape[1]
+        assert labels_cluster.shape[1] == labels_mu.shape[1]
         return labels_cluster
 
 
@@ -296,7 +296,7 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
                     all_indiv_prob.append(j)
                 for j in deepcopy(input_label).cpu().data.numpy():
                     all_label.append(j)
-            
+
         # collect all predictions and ground-truths
         all_indiv_prob = np.array(all_indiv_prob)
         all_label = np.array(all_label)
