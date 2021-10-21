@@ -108,7 +108,8 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_on
             temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy())
             
             t.set_postfix({'total_loss': smooth_total_loss / float(i),
-                           'nll_loss': smooth_nll_loss / float(i)
+                           'nll_loss_label': smooth_nll_loss / float(i),
+                           'nll_loss_feat': smooth_nll_loss_x / float(i),
                            })
 
     if eval_after_one_epoch:
@@ -256,82 +257,6 @@ def regularzie_mpvae_unfair(data, model, optimizer, use_valid=True):
     optimizer.step()
 
 
-def train_fair_through_regularize(args):
-    param_setting = "lr-{}_lr-decay_{:.2f}_lr-times_{:.1f}_nll-{:.2f}_l2-{:.2f}_c-{:.2f}".format(
-        args.learning_rate, args.lr_decay_ratio, args.lr_decay_times, args.nll_coeff, args.l2_coeff,
-        args.c_coeff)
-
-    build_path('fairreg/summary/{}/{}'.format(args.dataset, param_setting))
-    build_path('fairreg/model/model_{}/{}'.format(args.dataset, param_setting))
-    summary_dir = 'fairreg/summary/{}/{}'.format(args.dataset, param_setting)
-    model_dir = 'fairreg/model/model_{}/{}'.format(args.dataset, param_setting)
-    writer = SummaryWriter(log_dir=summary_dir)
-
-    # train a prior mpvae
-    np.random.seed(4)
-    input_feat, labels = load_data(args.dataset, args.mode)
-    train_cnt, valid_cnt = int(len(input_feat) * 0.7), int(len(input_feat) * .2)
-    train_idx = np.arange(train_cnt)
-    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
-
-    one_epoch_iter = np.ceil(len(train_idx) / args.batch_size)
-    n_iter = one_epoch_iter * args.max_epoch
-
-    data = types.SimpleNamespace(
-        input_feat=input_feat, labels=labels,
-        train_idx=train_idx, valid_idx=valid_idx,
-        batch_size=args.batch_size)
-    args.feature_dim = input_feat.shape[1]
-    args.label_dim = labels.shape[1]
-
-    prior_vae = VAE(args).to(device)
-    prior_vae.train()
-
-    optimizer = optim.Adam(prior_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
-    scheduler = torch.optim.lr_scheduler.StepLR(
-        optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
-
-    if args.resume and os.path.exists(args.checkpoint_path):
-        # todo: load from pretrained
-        pass
-    #     prior_vae.load_state_dict(torch.load(args.checkpoint_path))
-    #     current_step = int(args.checkpoint_path.split('/')[-1].split('-')[-1])
-    #     print("loaded model: %s" % args.label_checkpoint_path)
-    # else:
-    #     current_step = 0
-
-    print('start training prior mpvae...')
-    for _ in range(args.max_epoch // 5):
-        train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
-    label_clusters = hard_cluster(prior_vae, data)
-
-    # retrain a new mpvae + fair regularization
-    np.random.seed(4)
-    nonsensitive_feat, sensitive_feat, labels = load_data(args.dataset, args.mode, True)
-    train_cnt, valid_cnt = int(len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
-    train_idx = np.arange(train_cnt)
-    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
-
-    data = types.SimpleNamespace(
-        input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx, valid_idx=valid_idx,
-        batch_size=args.batch_size, label_clusters=label_clusters, sensitive_feat=sensitive_feat)
-    args.feature_dim = nonsensitive_feat.shape[1]
-    args.label_dim = labels.shape[1]
-
-    fair_vae = VAE(args).to(device)
-    fair_vae.train()
-
-    optimizer = optim.Adam(fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
-    optimizer_fair = optim.Adam(fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
-    scheduler = torch.optim.lr_scheduler.StepLR(
-        optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
-
-    print('start training fair mpvae...')
-    for _ in range(args.max_epoch):
-        train_mpvae_one_epoch(data, fair_vae, optimizer, scheduler, args)
-        regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, use_valid=True)
-
-
 def validate_mpvae(model, feat, labels, valid_idx, args):
     with torch.no_grad():
         model.eval()
@@ -411,6 +336,83 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
     model.train()
 
     return nll_loss, best_val_metrics
+
+
+def train_fair_through_regularize(args):
+    param_setting = "lr-{}_lr-decay_{:.2f}_lr-times_{:.1f}_nll-{:.2f}_l2-{:.2f}_c-{:.2f}".format(
+        args.learning_rate, args.lr_decay_ratio, args.lr_decay_times, args.nll_coeff, args.l2_coeff,
+        args.c_coeff)
+
+    build_path('fairreg/summary/{}/{}'.format(args.dataset, param_setting))
+    build_path('fairreg/model/model_{}/{}'.format(args.dataset, param_setting))
+    summary_dir = 'fairreg/summary/{}/{}'.format(args.dataset, param_setting)
+    model_dir = 'fairreg/model/model_{}/{}'.format(args.dataset, param_setting)
+    writer = SummaryWriter(log_dir=summary_dir)
+
+    # train a prior mpvae
+    np.random.seed(4)
+    input_feat, labels = load_data(args.dataset, args.mode)
+    train_cnt, valid_cnt = int(len(input_feat) * 0.7), int(len(input_feat) * .2)
+    train_idx = np.arange(train_cnt)
+    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+
+    one_epoch_iter = np.ceil(len(train_idx) / args.batch_size)
+    n_iter = one_epoch_iter * args.max_epoch
+
+    data = types.SimpleNamespace(
+        input_feat=input_feat, labels=labels,
+        train_idx=train_idx, valid_idx=valid_idx,
+        batch_size=args.batch_size)
+    args.feature_dim = input_feat.shape[1]
+    args.label_dim = labels.shape[1]
+    print(args.feature_dim, args.label_dim)
+
+    prior_vae = VAE(args).to(device)
+    prior_vae.train()
+
+    optimizer = optim.Adam(prior_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
+
+    if args.resume and os.path.exists(args.checkpoint_path):
+        # todo: load from pretrained
+        pass
+    #     prior_vae.load_state_dict(torch.load(args.checkpoint_path))
+    #     current_step = int(args.checkpoint_path.split('/')[-1].split('-')[-1])
+    #     print("loaded model: %s" % args.label_checkpoint_path)
+    # else:
+    #     current_step = 0
+
+    print('start training prior mpvae...')
+    for _ in range(args.max_epoch // 5):
+        train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
+    label_clusters = hard_cluster(prior_vae, data)
+
+    # retrain a new mpvae + fair regularization
+    np.random.seed(4)
+    nonsensitive_feat, sensitive_feat, labels = load_data(args.dataset, args.mode, True)
+    train_cnt, valid_cnt = int(len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
+    train_idx = np.arange(train_cnt)
+    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+
+    data = types.SimpleNamespace(
+        input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx, valid_idx=valid_idx,
+        batch_size=args.batch_size, label_clusters=label_clusters, sensitive_feat=sensitive_feat)
+    args.feature_dim = nonsensitive_feat.shape[1]
+    args.label_dim = labels.shape[1]
+
+    fair_vae = VAE(args).to(device)
+    fair_vae.train()
+
+    optimizer = optim.Adam(fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
+    optimizer_fair = optim.Adam(fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
+
+    print('start training fair mpvae...')
+    for _ in range(args.max_epoch):
+        train_mpvae_one_epoch(data, fair_vae, optimizer, scheduler, args)
+        regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, use_valid=True)
 
 
 if __name__ == '__main__':
