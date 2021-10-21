@@ -192,7 +192,7 @@ def hard_cluster(model, data, args):
         return labels_cluster
 
 
-def regularzie_mpvae_unfair(data, model, optimizer, use_valid=True):
+def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
     if use_valid:
         idxs = data.valid_idx
     else:
@@ -255,7 +255,7 @@ def regularzie_mpvae_unfair(data, model, optimizer, use_valid=True):
                     feats_z_unfair += torch.pow(
                         cluster_feats_z_sensitive.mean() - cluster_feats_z.mean(), 2)
 
-    fairloss = labels_z_unfair + feats_z_unfair
+    fairloss = args.label_z_fair_coeff * labels_z_unfair + args.feat_z_fair_coeff * feats_z_unfair
     fairloss.backward()
     optimizer.step()
 
