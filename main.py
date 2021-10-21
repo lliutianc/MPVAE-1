@@ -42,9 +42,10 @@ parser.add_argument('-write_to_test_sh', "--write_to_test_sh", action='store_tru
 parser.add_argument('-mode', "--mode", type=str, help='training/test mode')
 parser.add_argument('-r_sigma', "--residue_sigma", default='', type=str, help='what sigma r to use')
 
-args = parser.parse_args()
 
 if __name__ == "__main__":
+    args = parser.parse_args()
+
     if args.mode == 'train':
         train(args)
     if args.mode == 'fairtrain':
