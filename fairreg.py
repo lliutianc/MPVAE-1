@@ -23,6 +23,9 @@ from main import parser
 
 parser.add_argument('-labels_cluster_distance_threshold', type=float, default=.1)
 parser.add_argument('-labels_cluster_min_size', type=int, default=4)
+parser.add_argument('-label_z_fair_coeff', type=float, default=1.0)
+parser.add_argument('-feat_z_fair_coeff', type=float, default=1.0)
+
 parser.add_argument('-cuda', type=int, default=0)
 
 
@@ -242,13 +245,13 @@ def regularzie_mpvae_unfair(data, model, optimizer, use_valid=True):
                         cluster_labels_z_sensitive.mean() - cluster_labels_z.mean(), 2)
 
         cluster_feats_z = feats_z[clusters == centroid]
-        if cluster_feats_z:
+        if len(cluster_feats_z):
             for sensitive in sensitive_centroids:
                 sensitive_centroid = torch.all([
                     torch.all(torch.equal(sensitive_centroids, sensitive), axis=1),  # sensitive level
                     clusters == centroid], axis=1)
                 cluster_feats_z_sensitive = feats_z[sensitive_centroid]
-                if cluster_feats_z_sensitive:
+                if len(cluster_feats_z_sensitive):
                     feats_z_unfair += torch.pow(
                         cluster_feats_z_sensitive.mean() - cluster_feats_z.mean(), 2)
 
