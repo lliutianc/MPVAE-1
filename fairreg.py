@@ -17,8 +17,7 @@ from model import VAE, compute_loss
 from fairmodel import FairCritic, compute_fair_loss
 from data import load_data
 
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = torch.device('cpu')
+
 sys.path.append('./')
 THRESHOLDS = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.15, 0.20, 0.25, 0.30,
               0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.8, 0.85, 0.9, 0.95]
@@ -404,8 +403,11 @@ if __name__ == '__main__':
     from main import parser
 
     parser.add_argument('-labels_cluster_distance_threshold', type=float, default=.1)
-    parser.add_argument('-labels_cluster_min_size', type=float, default=4)
+    parser.add_argument('-labels_cluster_min_size', type=int, default=4)
+    parser.add_argument('-cuda', type=int, default=0)
 
     args = parser.parse_args()
 
+    device = torch.device(f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
+    # device = torch.device('cpu')
     train_fair_through_regularize(args)
