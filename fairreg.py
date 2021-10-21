@@ -191,7 +191,7 @@ def hard_cluster(model, data, args):
             f'{labels_mu.shape}, {labels_cluster.shape}'
 
         _, counts = np.unique(labels_cluster, return_counts=True)
-        print(counts.max(), counts.min())
+        print(counts.max(), counts.min(), counts.shape)
         return labels_cluster
 
 
