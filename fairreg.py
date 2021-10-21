@@ -235,12 +235,16 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
 
     idx = torch.arange(clusters.shape[0])
     for centroid in label_centroids:
-        cluster_labels_z = labels_z[idx[torch.eq(clusters, centroid)]]
+        target_centroid = torch.eq(clusters, centroid)
+        cluster_labels_z = labels_z[idx[target_centroid]]
         if len(cluster_labels_z):
             for sensitive in sensitive_centroids:
+                target_sensitive = torch.all(torch.eq(sensitive_centroids, sensitive), dim=1)
+                print(target_sensitive)
                 sensitive_centroid = torch.all(
                     torch.all(torch.eq(sensitive_centroids, sensitive), dim=1),  # sensitive level
                     torch.eq(clusters, centroid), dim=1)
+                print(sensitive_centroid)
                 cluster_labels_z_sensitive = labels_z[idx[sensitive_centroid]]
                 print(len(cluster_labels_z_sensitive))
                 if len(cluster_labels_z_sensitive):
