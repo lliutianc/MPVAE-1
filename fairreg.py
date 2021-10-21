@@ -51,7 +51,7 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_on
     temp_indiv_prob = []
 
     with tqdm(range(1, int(len(data.train_idx) / float(data.batch_size)) + 2), desc='VAE') as t:
-        for i in enumerate(t):
+        for i in t:
             optimizer.zero_grad()
             start = i * data.batch_size
             end = min(data.batch_size * (i + 1), len(data.train_idx))
