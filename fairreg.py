@@ -187,9 +187,9 @@ def hard_cluster(model, data, args, use_valid=True):
         if succ_cluster is False:
             raise UserWarning('Labels clustering not converged')
 
-        assert labels_cluster.shape[1] == labels_mu.shape[1], \
+        assert labels_cluster.shape[0] == labels_mu.shape[0], \
             f'{labels_mu.shape}, {labels_cluster.shape}'
-        
+
         return labels_cluster
 
 
