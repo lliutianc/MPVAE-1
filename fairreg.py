@@ -125,7 +125,7 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_on
 
         temp_indiv_prob = np.array(temp_indiv_prob).reshape(-1)
         temp_label = np.array(temp_label).reshape(-1)
-        
+
         time_str = datetime.datetime.now().isoformat()
         print(
             "macro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tnll_loss_x=%.6f\nc_loss=%.6f\tc_loss_x=%.6f\tkl_loss=%.6f\ntotal_loss=%.6f\n" % (
@@ -137,16 +137,12 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_on
             model, data.input_feat, data.labels, data.valid_idx, args)
 
 
-def hard_cluster(model, data, args, use_valid=True):
+def hard_cluster(model, data, args):
     # todo: do we have soft clustering algorithm? For example, can we use gumble softmax?
 
     with torch.no_grad():
         model.eval()
-        if use_valid:
-            idxs = data.valid_idx
-        else:
-            idxs = data.train_idx
-        idxs.sort()
+        idxs = np.arange(len(data.input_feat) * .9)
 
         labels_mu, labels_logvar = [], []
         for i in range(int(len(idxs) / float(data.batch_size)) + 1):
@@ -391,7 +387,7 @@ def train_fair_through_regularize(args):
     for _ in range(1):
         train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
     print('cluster labels...')
-    label_clusters = hard_cluster(prior_vae, data, args, use_valid=True)
+    label_clusters = hard_cluster(prior_vae, data, args)
 
     # retrain a new mpvae + fair regularization
     np.random.seed(4)
