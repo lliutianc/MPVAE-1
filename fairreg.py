@@ -288,6 +288,7 @@ def train_fair_through_regularize(args):
     # else:
     #     current_step = 0
 
+    print('start training prior mpvae...')
     for _ in range(args.max_epoch // 5):
         train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
     label_clusters = hard_cluster(prior_vae, data)
@@ -313,6 +314,7 @@ def train_fair_through_regularize(args):
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
+    print('start training fair mpvae...')
     for _ in range(args.max_epoch):
         train_mpvae_one_epoch(data, fair_vae, optimizer, scheduler, args)
         regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, use_valid=True)
