@@ -380,19 +380,17 @@ def train_fair_through_regularize(args):
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
-    if args.resume and os.path.exists(args.checkpoint_path):
+    prior_vae_checkpoint_path = os.path.join(model_dir, 'prior_vae')
+    if args.resume and os.path.exists(prior_vae_checkpoint_path):
         # todo: load from pretrained
-        pass
-    #     prior_vae.load_state_dict(torch.load(args.checkpoint_path))
-    #     current_step = int(args.checkpoint_path.split('/')[-1].split('-')[-1])
-    #     print("loaded model: %s" % args.label_checkpoint_path)
-    # else:
-    #     current_step = 0
+        print('load trained prior mpvae...')
+        prior_vae.load_state_dict(prior_vae_checkpoint_path)
+    else:
+        print('train a new prior mpvae...')
+        # for _ in range(args.max_epoch // 5):
+        for _ in range(1):
+            train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
 
-    print('start training prior mpvae...')
-    # for _ in range(args.max_epoch // 5):
-    for _ in range(1):
-        train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
     print('cluster labels...')
     label_clusters = hard_cluster(prior_vae, data, args)
 
