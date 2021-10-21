@@ -3,7 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device = torch.device('cpu')
+
 
 class VAE(nn.Module):
     def __init__(self, args):
@@ -96,6 +98,7 @@ class VAE(nn.Module):
 
 
 def build_multi_classification_loss(predictions, labels):
+    device = labels.device
     shape = tuple(labels.shape)
     labels = labels.float()
     y_i = torch.eq(labels, torch.ones(shape).to(device))
@@ -134,6 +137,7 @@ def cross_entropy_loss(logits, labels, n_sample):
     return ce_loss
 
 def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar, r_sqrt_sigma, args):
+    device = input_label.device
     kl_loss = torch.mean(0.5*torch.sum((fx_logvar-fe_logvar)-1+torch.exp(fe_logvar-fx_logvar)+torch.square(fx_mu-fe_mu)/(torch.exp(fx_logvar)+1e-6), dim=1)) 
     # construct a semi-positive definite matrix
     sigma = torch.mm(r_sqrt_sigma, r_sqrt_sigma.T)

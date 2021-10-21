@@ -288,28 +288,6 @@ def train_fair_through_regularize(args):
     #     print("loaded model: %s" % args.label_checkpoint_path)
     # else:
     #     current_step = 0
-    current_step = 0
-
-    smooth_nll_loss=0.0 # label encoder decoder cross entropy loss
-    smooth_nll_loss_x=0.0 # feature encoder decoder cross entropy loss
-    smooth_c_loss = 0.0 # label encoder decoder ranking loss
-    smooth_c_loss_x=0.0 # feature encoder decoder ranking loss
-    smooth_kl_loss = 0.0 # kl divergence
-    smooth_total_loss=0.0 # total loss
-    smooth_macro_f1 = 0.0 # macro_f1 score
-    smooth_micro_f1 = 0.0 # micro_f1 score
-    #smooth_l2_loss = 0.0
-
-    best_loss = 1e10
-    best_iter = 0
-    best_macro_f1 = 0.0 # best macro f1 for ckpt selection in validation
-    best_micro_f1 = 0.0 # best micro f1 for ckpt selection in validation
-    best_acc = 0.0 # best subset acc for ckpt selction in validation
-
-    temp_label=[]
-    temp_indiv_prob=[]
-
-    best_test_metrics = None
 
     for _ in range(args.max_epoch // 5):
         train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
@@ -422,9 +400,7 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
     return nll_loss, best_val_metrics
 
 
-
 if __name__ == '__main__':
-    import argparse
     from main import parser
 
     parser.add_argument('-labels_cluster_distance_threshold', type=float, default=.1)
