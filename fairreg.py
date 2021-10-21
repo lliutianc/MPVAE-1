@@ -26,8 +26,23 @@ METRICS = ['ACC', 'HA', 'ebF1', 'miF1', 'maF1', 'meanAUC', 'medianAUC', 'meanAUP
            'meanFDR', 'medianFDR', 'p_at_1', 'p_at_3', 'p_at_5']
 
 
-def train_mpvae_one_epoch(data, model, optimizer, scheduler, args):
+def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_one_epoch=True):
     np.random.shuffle(data.train_idx)
+
+    if eval_after_one_epoch:
+        smooth_nll_loss=0.0 # label encoder decoder cross entropy loss
+        smooth_nll_loss_x=0.0 # feature encoder decoder cross entropy loss
+        smooth_c_loss = 0.0 # label encoder decoder ranking loss
+        smooth_c_loss_x=0.0 # feature encoder decoder ranking loss
+        smooth_kl_loss = 0.0 # kl divergence
+        smooth_total_loss=0.0 # total loss
+        smooth_macro_f1 = 0.0 # macro_f1 score
+        smooth_micro_f1 = 0.0 # micro_f1 score
+        #smooth_l2_loss = 0.0
+
+        temp_label = []
+        temp_indiv_prob = []
+
     for i in range(int(len(data.train_idx) / float(data.batch_size)) + 1):
         optimizer.zero_grad()
         start = i * data.batch_size
@@ -59,10 +74,54 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args):
 
         total_loss.backward()
         grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 100)
-
         optimizer.step()
         if scheduler:
             scheduler.step()
+
+        if eval_after_one_epoch:
+            # evaluation
+            train_metrics = evals.compute_metrics(
+                indiv_prob.cpu().data.numpy(), input_label.cpu().data.numpy(), 0.5,
+                all_metrics=False)
+            macro_f1, micro_f1 = train_metrics['maF1'], train_metrics['miF1']
+
+            smooth_nll_loss += nll_loss
+            smooth_nll_loss_x += nll_loss_x
+            # smooth_l2_loss += l2_loss
+            smooth_c_loss += c_loss
+            smooth_c_loss_x += c_loss_x
+            smooth_kl_loss += kl_loss
+            smooth_total_loss += total_loss
+            smooth_macro_f1 += macro_f1
+            smooth_micro_f1 += micro_f1
+
+            temp_label.append(input_label.cpu().data.numpy())  # log the labels
+            temp_indiv_prob.append(
+                indiv_prob.detach().data.cpu().numpy())  # log the individual prediction of the probability on each label
+
+    if eval_after_one_epoch:
+
+        nll_loss = smooth_nll_loss / float(i)
+        nll_loss_x = smooth_nll_loss_x / float(i)
+        c_loss = smooth_c_loss / float(i)
+        c_loss_x = smooth_c_loss_x / float(i)
+        kl_loss = smooth_kl_loss / float(i)
+        total_loss = smooth_total_loss / float(i)
+        macro_f1 = smooth_macro_f1 / float(i)
+        micro_f1 = smooth_micro_f1 / float(i)
+
+        temp_indiv_prob = np.reshape(np.array(temp_indiv_prob), (-1))
+        temp_label = np.reshape(np.array(temp_label), (-1))
+
+        time_str = datetime.datetime.now().isoformat()
+        print(
+            "%s\nmacro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tnll_loss_x=%.6f\nc_loss=%.6f\tc_loss_x=%.6f\tkl_loss=%.6f\ntotal_loss=%.6f\n" % (
+            time_str, macro_f1, micro_f1, nll_loss * args.nll_coeff,
+            nll_loss_x * args.nll_coeff, c_loss * args.c_coeff, c_loss_x * args.c_coeff, kl_loss,
+            total_loss))
+
+        current_loss, val_metrics = validate_mpvae(
+            model, data.input_feat, data.labels, data.valid_idx, args)
 
 
 def hard_cluster(model, data, args, use_valid=True):
@@ -98,21 +157,36 @@ def hard_cluster(model, data, args, use_valid=True):
         #  Take KL for instance, afer merging two points, the new cluster is a Gaussian mixture,
         #  do we still have closed form formula to update new distance?
         from sklearn.cluster import AgglomerativeClustering
-        labels_cluster = AgglomerativeClustering(
-            n_clusters=None, distance_threshold=args.labels_cluster_distance_threshold).fit(
-            labels_mu)
+        distance_threshold = args.labels_cluster_distance_threshold
+        succ_cluster = False
+        for cluster_try in range(10):
+            cluster = AgglomerativeClustering(
+                n_clusters=None, distance_threshold=args.labels_cluster_distance_threshold).fit(
+                labels_mu)
+            labels_cluster = cluster.labels_
+            _, counts = np.unique(labels_cluster, return_counts=True)
+            if counts.min() < args.labels_cluster_min_size:
+                distance_threshold *= 2
+            else:
+                succ_cluster = True
+                break
+
+        if succ_cluster is False:
+            raise UserWarning('Labels clustering not converged')
 
         assert labels_cluster.shape.shape[1] == labels_mu.shape[1]
         return labels_cluster
 
 
-def regularzie_mpave_unfair(data, model, optimizer, use_valid=True):
+def regularzie_mpvae_unfair(data, model, optimizer, use_valid=True):
     if use_valid:
         idxs = data.valid_idx
     else:
         idxs = data.train_idx
 
     np.random.shuffle(idxs)
+
+    optimizer.zero_grad()
 
     labels_z, feats_z = [], []
     for i in range(int(len(idxs) / float(data.batch_size)) + 1):
@@ -134,9 +208,40 @@ def regularzie_mpave_unfair(data, model, optimizer, use_valid=True):
         feats_z.append(feat_z)
     labels_z = torch.cat(labels_z)
     feats_z = torch.cat(feats_z)
+
     clusters = data.label_clusters[idxs]
-        
-    for centroid in np.unique(clusters):
+    sensitive_feat = data.sensitive_feat[idxs]
+
+    labels_z_unfair = 0.
+    feats_z_unfair = 0.
+    label_centroids = np.unique(clusters)
+    sensitive_centroids = np.unique(sensitive_feat, axis=0)
+    for centroid in label_centroids:
+        cluster_labels_z = labels_z[clusters == centroid]
+        if cluster_labels_z:
+            for sensitive in sensitive_centroids:
+                sensitive_centroid = torch.all([
+                    torch.all(torch.equal(sensitive_centroids, sensitive), axis=1),  # sensitive level
+                    clusters == centroid], axis=1)
+                cluster_labels_z_sensitive = labels_z[sensitive_centroid]
+                if cluster_labels_z_sensitive:
+                    labels_z_unfair += torch.pow(
+                        cluster_labels_z_sensitive.mean() - cluster_labels_z.mean(), 2)
+
+        cluster_feats_z = feats_z[clusters == centroid]
+        if cluster_feats_z:
+            for sensitive in sensitive_centroids:
+                sensitive_centroid = torch.all([
+                    torch.all(torch.equal(sensitive_centroids, sensitive), axis=1),  # sensitive level
+                    clusters == centroid], axis=1)
+                cluster_feats_z_sensitive = feats_z[sensitive_centroid]
+                if cluster_feats_z_sensitive:
+                    feats_z_unfair += torch.pow(
+                        cluster_feats_z_sensitive.mean() - cluster_feats_z.mean(), 2)
+
+    fairloss = labels_z_unfair + feats_z_unfair
+    fairloss.backward()
+    optimizer.step()
 
 
 def train_fair_through_regularize(args):
@@ -182,6 +287,28 @@ def train_fair_through_regularize(args):
     #     print("loaded model: %s" % args.label_checkpoint_path)
     # else:
     #     current_step = 0
+    current_step = 0
+
+    smooth_nll_loss=0.0 # label encoder decoder cross entropy loss
+    smooth_nll_loss_x=0.0 # feature encoder decoder cross entropy loss
+    smooth_c_loss = 0.0 # label encoder decoder ranking loss
+    smooth_c_loss_x=0.0 # feature encoder decoder ranking loss
+    smooth_kl_loss = 0.0 # kl divergence
+    smooth_total_loss=0.0 # total loss
+    smooth_macro_f1 = 0.0 # macro_f1 score
+    smooth_micro_f1 = 0.0 # micro_f1 score
+    #smooth_l2_loss = 0.0
+
+    best_loss = 1e10
+    best_iter = 0
+    best_macro_f1 = 0.0 # best macro f1 for ckpt selection in validation
+    best_micro_f1 = 0.0 # best micro f1 for ckpt selection in validation
+    best_acc = 0.0 # best subset acc for ckpt selction in validation
+
+    temp_label=[]
+    temp_indiv_prob=[]
+
+    best_test_metrics = None
 
     for _ in range(args.max_epoch // 5):
         train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
@@ -196,7 +323,7 @@ def train_fair_through_regularize(args):
 
     data = types.SimpleNamespace(
         input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx, valid_idx=valid_idx,
-        batch_size=args.batch_size, label_clusters=label_clusters)
+        batch_size=args.batch_size, label_clusters=label_clusters, sensitive_feat=sensitive_feat)
     args.feature_dim = nonsensitive_feat.shape[1]
     args.label_dim = labels.shape[1]
 
@@ -210,96 +337,85 @@ def train_fair_through_regularize(args):
 
     for _ in range(args.max_epoch):
         train_mpvae_one_epoch(data, fair_vae, optimizer, scheduler, args)
-        regularzie_mpave_unfair(data, fair_vae, optimizer_fair, use_valid=True)
+        regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, use_valid=True)
 
 
-def valid(feat, labels, vae, summary_writer, valid_idx, current_step, args):
-    vae.eval()
-    print("performing validation...")
+def validate_mpvae(model, feat, labels, valid_idx, args):
+    with torch.no_grad():
+        model.eval()
+        print("performing validation...")
 
-    all_nll_loss = 0
-    all_l2_loss = 0
-    all_c_loss = 0
-    all_total_loss = 0
+        all_nll_loss = 0
+        all_l2_loss = 0
+        all_c_loss = 0
+        all_total_loss = 0
 
-    all_indiv_prob = []
-    all_label = []
+        all_indiv_prob = []
+        all_label = []
 
-    real_batch_size = min(args.batch_size, len(valid_idx))
-    for i in range(int((len(valid_idx) - 1) / real_batch_size) + 1):
-        start = real_batch_size * i
-        end = min(real_batch_size * (i + 1), len(valid_idx))
-        input_feat = feat[valid_idx[start:end]]
-        input_label = labels[valid_idx[start:end]]
-        input_feat, input_label = torch.from_numpy(input_feat).to(device), torch.from_numpy(
-            input_label)
-        input_label = deepcopy(input_label).float().to(device)
+        real_batch_size = min(args.batch_size, len(valid_idx))
+        for i in range(int((len(valid_idx) - 1) / real_batch_size) + 1):
+            start = real_batch_size * i
+            end = min(real_batch_size * (i + 1), len(valid_idx))
+            input_feat = feat[valid_idx[start:end]]
+            input_label = labels[valid_idx[start:end]]
+            input_feat, input_label = torch.from_numpy(input_feat).to(device), torch.from_numpy(
+                input_label)
+            input_label = deepcopy(input_label).float().to(device)
 
-        with torch.no_grad():
-            vae.eval()
-            label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = vae(
+            label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                 input_label, input_feat)
             total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
                 input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
-                vae.r_sqrt_sigma, args)
+                model.r_sqrt_sigma, args)
 
-        all_nll_loss += nll_loss * (end - start)
-        # all_l2_loss += l2_loss*(end-start)
-        all_c_loss += c_loss * (end - start)
-        all_total_loss += total_loss * (end - start)
+            all_nll_loss += nll_loss * (end - start)
+            # all_l2_loss += l2_loss*(end-start)
+            all_c_loss += c_loss * (end - start)
+            all_total_loss += total_loss * (end - start)
 
-        for j in deepcopy(indiv_prob).cpu().data.numpy():
-            all_indiv_prob.append(j)
-        for j in deepcopy(input_label).cpu().data.numpy():
-            all_label.append(j)
+            for j in deepcopy(indiv_prob).cpu().data.numpy():
+                all_indiv_prob.append(j)
+            for j in deepcopy(input_label).cpu().data.numpy():
+                all_label.append(j)
 
-    # collect all predictions and ground-truths
-    all_indiv_prob = np.array(all_indiv_prob)
-    all_label = np.array(all_label)
+        # collect all predictions and ground-truths
+        all_indiv_prob = np.array(all_indiv_prob)
+        all_label = np.array(all_label)
 
-    nll_loss = all_nll_loss / len(valid_idx)
-    l2_loss = all_l2_loss / len(valid_idx)
-    c_loss = all_c_loss / len(valid_idx)
-    total_loss = all_total_loss / len(valid_idx)
+        nll_loss = all_nll_loss / len(valid_idx)
+        l2_loss = all_l2_loss / len(valid_idx)
+        c_loss = all_c_loss / len(valid_idx)
+        total_loss = all_total_loss / len(valid_idx)
 
-    best_val_metrics = None
-    for threshold in THRESHOLDS:
-        val_metrics = evals.compute_metrics(all_indiv_prob, all_label, threshold, all_metrics=True)
+        best_val_metrics = None
+        for threshold in THRESHOLDS:
+            val_metrics = evals.compute_metrics(all_indiv_prob, all_label, threshold, all_metrics=True)
 
-        if best_val_metrics == None:
-            best_val_metrics = {}
-            for metric in METRICS:
-                best_val_metrics[metric] = val_metrics[metric]
-        else:
-            for metric in METRICS:
-                if 'FDR' in metric:
-                    best_val_metrics[metric] = min(best_val_metrics[metric], val_metrics[metric])
-                else:
-                    best_val_metrics[metric] = max(best_val_metrics[metric], val_metrics[metric])
+            if best_val_metrics == None:
+                best_val_metrics = {}
+                for metric in METRICS:
+                    best_val_metrics[metric] = val_metrics[metric]
+            else:
+                for metric in METRICS:
+                    if 'FDR' in metric:
+                        best_val_metrics[metric] = min(best_val_metrics[metric], val_metrics[metric])
+                    else:
+                        best_val_metrics[metric] = max(best_val_metrics[metric], val_metrics[metric])
 
-    time_str = datetime.datetime.now().isoformat()
-    acc, ha, ebf1, maf1, mif1 = best_val_metrics['ACC'], best_val_metrics['HA'], best_val_metrics[
-        'ebF1'], best_val_metrics['maF1'], best_val_metrics['miF1']
+        time_str = datetime.datetime.now().isoformat()
+        acc, ha, ebf1, maf1, mif1 = best_val_metrics['ACC'], best_val_metrics['HA'], best_val_metrics[
+            'ebF1'], best_val_metrics['maF1'], best_val_metrics['miF1']
 
-    # nll_coeff: BCE coeff, lambda_1
-    # c_coeff: Ranking loss coeff, lambda_2
-    print("**********************************************")
-    print(
-        "valid results: %s\nacc=%.6f\tha=%.6f\texam_f1=%.6f, macro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tc_loss=%.6f\ttotal_loss=%.6f" % (
-            time_str, acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff, c_loss * args.c_coeff,
-            total_loss))
-    print("**********************************************")
+        # nll_coeff: BCE coeff, lambda_1
+        # c_coeff: Ranking loss coeff, lambda_2
+        print("**********************************************")
+        print(
+            "valid results: %s\nacc=%.6f\tha=%.6f\texam_f1=%.6f, macro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tc_loss=%.6f\ttotal_loss=%.6f" % (
+                time_str, acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff, c_loss * args.c_coeff,
+                total_loss))
+        print("**********************************************")
 
-    summary_writer.add_scalar('valid/nll_loss', nll_loss, current_step)
-    summary_writer.add_scalar('valid/l2_loss', l2_loss, current_step)
-    summary_writer.add_scalar('valid/c_loss', c_loss, current_step)
-    summary_writer.add_scalar('valid/total_loss', total_loss, current_step)
-    summary_writer.add_scalar('valid/macro_f1', maf1, current_step)
-    summary_writer.add_scalar('valid/micro_f1', mif1, current_step)
-    summary_writer.add_scalar('valid/exam_f1', ebf1, current_step)
-    summary_writer.add_scalar('valid/acc', acc, current_step)
-    summary_writer.add_scalar('valid/ha', ha, current_step)
-
-    vae.train()
+    model.train()
 
     return nll_loss, best_val_metrics
