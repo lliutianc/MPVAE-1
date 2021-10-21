@@ -419,3 +419,16 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
     model.train()
 
     return nll_loss, best_val_metrics
+
+
+
+if __name__ == '__main__':
+    import argparse
+    from main import parser
+
+    parser.add_argument('-labels_cluster_distance_threshold', type=float, default=.1)
+    parser.add_argument('-labels_cluster_min_size', type=float, default=4)
+
+    args = parser()
+
+    train_fair_through_regularize(args)
