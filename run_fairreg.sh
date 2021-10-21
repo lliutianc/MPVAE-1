@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 
 # FILENAME: run_fairreg.sh
 
@@ -8,6 +8,10 @@
 #SBATCH --time=01:00:00
 #SBATCH -A partner
 #SBATCH -J run_fairreg
+
+#SBATCH --output=/home/liu3351/joboutput/run_fairreg.out
+#SBATCH --error=/home/liu3351/joboutput/run_fairreg_error.out
+
 
 module load cuda
 module load cudnn
