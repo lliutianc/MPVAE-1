@@ -160,13 +160,11 @@ def hard_cluster(model, data, args):
                 input_label, input_feat)
             labels_mu.append(label_mu.cpu().data.numpy())
             labels_logvar.append(label_logvar.cpu().data.numpy())
-            if i < 5:
-                print(input_label)
+
 
         labels_mu = np.concatenate(labels_mu)
         labels_logvar = np.concatenate(labels_logvar)
-        print(labels_mu.shape)
-        print(labels_mu[:5])
+
         # todo: how to properly cluster labels based on JSD or KL average distance?
         #  Take KL for instance, afer merging two points, the new cluster is a Gaussian mixture,
         #  do we still have closed form formula to update new distance?
@@ -242,6 +240,7 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
     sensitive_centroids = torch.from_numpy(sensitive_centroids).to(device)
 
     idx = np.arange(clusters.shape[0])
+    print(idx)
     for centroid in label_centroids:
         cluster_labels_z = labels_z[idx[clusters == centroid]]
         print(clusters == centroid)
