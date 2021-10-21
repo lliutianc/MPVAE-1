@@ -390,14 +390,15 @@ def train_fair_through_regularize(args):
     if args.resume and os.path.exists(prior_vae_checkpoint_path):
         # todo: load from pretrained
         print('load trained prior mpvae...')
-        prior_vae.load_state_dict(prior_vae_checkpoint_path)
+        prior_vae.load_state_dict(torch.load(prior_vae_checkpoint_path))
     else:
         print('train a new prior mpvae...')
         # for _ in range(args.max_epoch // 5):
         for _ in range(1):
             train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
         torch.save(prior_vae.cpu().state_dict(), prior_vae_checkpoint_path)
-        prior_vae = prior_vae.to(device)
+
+    prior_vae = prior_vae.to(device)
     print('cluster labels...')
     label_clusters = hard_cluster(prior_vae, data, args)
 
