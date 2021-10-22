@@ -2,7 +2,7 @@
 
 #SBATCH --job-name=fairmlc-regularized
 #SBATCH --gres=gpu:v100:1
-#SBATCH --mem-per-cpu=8G
+#SBATCH --mem-per-cpu=16G
 #SBATCH --mail-type=END
 
 #SBATCH --time=5:00:00
