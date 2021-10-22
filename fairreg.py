@@ -20,9 +20,10 @@ from data import load_data
 
 from main import parser
 
-
+# cluster parameters
 parser.add_argument('-labels_cluster_distance_threshold', type=float, default=.1)
 parser.add_argument('-labels_cluster_min_size', type=int, default=4)
+# fair regularizer
 parser.add_argument('-label_z_fair_coeff', type=float, default=1.0)
 parser.add_argument('-feat_z_fair_coeff', type=float, default=1.0)
 
@@ -37,107 +38,107 @@ METRICS = ['ACC', 'HA', 'ebF1', 'miF1', 'maF1', 'meanAUC', 'medianAUC', 'meanAUP
            'meanFDR', 'medianFDR', 'p_at_1', 'p_at_3', 'p_at_5']
 
 
-def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_one_epoch=True):
-    np.random.shuffle(data.train_idx)
-
-    smooth_nll_loss = 0.0 # label encoder decoder cross entropy loss
-    smooth_nll_loss_x = 0.0 # feature encoder decoder cross entropy loss
-    smooth_c_loss = 0.0 # label encoder decoder ranking loss
-    smooth_c_loss_x = 0.0 # feature encoder decoder ranking loss
-    smooth_kl_loss = 0.0 # kl divergence
-    smooth_total_loss = 0.0 # total loss
-    smooth_macro_f1 = 0.0 # macro_f1 score
-    smooth_micro_f1 = 0.0 # micro_f1 score
-    #smooth_l2_loss = 0.0
-
-    temp_label = []
-    temp_indiv_prob = []
-
-    with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='VAE') as t:
-        for i in t:
-            optimizer.zero_grad()
-            start = i * data.batch_size
-            end = min(data.batch_size * (i + 1), len(data.train_idx))
-
-            input_feat = data.input_feat[data.train_idx[start:end]]
-            input_feat = torch.from_numpy(input_feat).to(device)
-
-            input_label = data.labels[data.train_idx[start:end]]
-            input_label = torch.from_numpy(input_label)
-            input_label = deepcopy(input_label).float().to(device)
-
-            label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
-                input_label, input_feat)
-
-            if args.residue_sigma == "random":
-                r_sqrt_sigma = torch.from_numpy(
-                    np.random.uniform(
-                        -np.sqrt(6.0 / (args.label_dim + args.z_dim)),
-                        np.sqrt(6.0 / (args.label_dim + args.z_dim)), (args.label_dim, args.z_dim))).to(
-                    device)
-                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
-                    input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
-                    r_sqrt_sigma, args)
-            else:
-                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
-                    input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
-                    model.r_sqrt_sigma, args)
-
-            total_loss.backward()
-            grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 100)
-            optimizer.step()
-            if scheduler:
-                scheduler.step()
-
-            # evaluation
-            train_metrics = evals.compute_metrics(
-                indiv_prob.cpu().data.numpy(), input_label.cpu().data.numpy(), 0.5,
-                all_metrics=False)
-            macro_f1, micro_f1 = train_metrics['maF1'], train_metrics['miF1']
-
-            smooth_nll_loss += nll_loss.item()
-            smooth_nll_loss_x += nll_loss_x.item()
-            # smooth_l2_loss += l2_loss
-            smooth_c_loss += c_loss.item()
-            smooth_c_loss_x += c_loss_x.item()
-            smooth_kl_loss += kl_loss.item()
-            smooth_total_loss += total_loss.item()
-            smooth_macro_f1 += macro_f1.item()
-            smooth_micro_f1 += micro_f1.item()
-
-            # log the labels
-            temp_label.append(input_label.cpu().data.numpy())
-            # log the individual prediction of the probability on each label
-            temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy())
-            
-            t.set_postfix({'total_loss': smooth_total_loss / float(i+1),
-                           'nll_loss_label': smooth_nll_loss / float(i+1),
-                           'nll_loss_feat': smooth_nll_loss_x / float(i+1),
-                           })
-
-    if eval_after_one_epoch:
-
-        nll_loss = smooth_nll_loss / float(i+1)
-        nll_loss_x = smooth_nll_loss_x / float(i+1)
-        c_loss = smooth_c_loss / float(i+1)
-        c_loss_x = smooth_c_loss_x / float(i+1)
-        kl_loss = smooth_kl_loss / float(i+1)
-        total_loss = smooth_total_loss / float(i+1)
-        macro_f1 = smooth_macro_f1 / float(i+1)
-        micro_f1 = smooth_micro_f1 / float(i+1)
-
-        temp_indiv_prob = np.array(temp_indiv_prob).reshape(-1)
-        temp_label = np.array(temp_label).reshape(-1)
-
-        time_str = datetime.datetime.now().isoformat()
-        print(
-            "macro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tnll_loss_x=%.6f\nc_loss=%.6f\tc_loss_x=%.6f\tkl_loss=%.6f\ntotal_loss=%.6f\n" % (
-            macro_f1, micro_f1, nll_loss * args.nll_coeff,
-            nll_loss_x * args.nll_coeff, c_loss * args.c_coeff, c_loss_x * args.c_coeff, kl_loss,
-            total_loss))
-
-        current_loss, val_metrics = validate_mpvae(
-            model, data.input_feat, data.labels, data.valid_idx, args)
+# def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_one_epoch=True):
+#     np.random.shuffle(data.train_idx)
+#
+#     smooth_nll_loss = 0.0 # label encoder decoder cross entropy loss
+#     smooth_nll_loss_x = 0.0 # feature encoder decoder cross entropy loss
+#     smooth_c_loss = 0.0 # label encoder decoder ranking loss
+#     smooth_c_loss_x = 0.0 # feature encoder decoder ranking loss
+#     smooth_kl_loss = 0.0 # kl divergence
+#     smooth_total_loss = 0.0 # total loss
+#     smooth_macro_f1 = 0.0 # macro_f1 score
+#     smooth_micro_f1 = 0.0 # micro_f1 score
+#     #smooth_l2_loss = 0.0
+#
+#     temp_label = []
+#     temp_indiv_prob = []
+#
+#     with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='VAE') as t:
+#         for i in t:
+#             optimizer.zero_grad()
+#             start = i * data.batch_size
+#             end = min(data.batch_size * (i + 1), len(data.train_idx))
+#
+#             input_feat = data.input_feat[data.train_idx[start:end]]
+#             input_feat = torch.from_numpy(input_feat).to(device)
+#
+#             input_label = data.labels[data.train_idx[start:end]]
+#             input_label = torch.from_numpy(input_label)
+#             input_label = deepcopy(input_label).float().to(device)
+#
+#             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
+#                 input_label, input_feat)
+#
+#             if args.residue_sigma == "random":
+#                 r_sqrt_sigma = torch.from_numpy(
+#                     np.random.uniform(
+#                         -np.sqrt(6.0 / (args.label_dim + args.z_dim)),
+#                         np.sqrt(6.0 / (args.label_dim + args.z_dim)), (args.label_dim, args.z_dim))).to(
+#                     device)
+#                 total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+#                     input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
+#                     r_sqrt_sigma, args)
+#             else:
+#                 total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+#                     input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
+#                     model.r_sqrt_sigma, args)
+#
+#             total_loss.backward()
+#             grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 100)
+#             optimizer.step()
+#             if scheduler:
+#                 scheduler.step()
+#
+#             # evaluation
+#             train_metrics = evals.compute_metrics(
+#                 indiv_prob.cpu().data.numpy(), input_label.cpu().data.numpy(), 0.5,
+#                 all_metrics=False)
+#             macro_f1, micro_f1 = train_metrics['maF1'], train_metrics['miF1']
+#
+#             smooth_nll_loss += nll_loss.item()
+#             smooth_nll_loss_x += nll_loss_x.item()
+#             # smooth_l2_loss += l2_loss
+#             smooth_c_loss += c_loss.item()
+#             smooth_c_loss_x += c_loss_x.item()
+#             smooth_kl_loss += kl_loss.item()
+#             smooth_total_loss += total_loss.item()
+#             smooth_macro_f1 += macro_f1.item()
+#             smooth_micro_f1 += micro_f1.item()
+#
+#             # log the labels
+#             temp_label.append(input_label.cpu().data.numpy())
+#             # log the individual prediction of the probability on each label
+#             temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy())
+#
+#             t.set_postfix({'total_loss': smooth_total_loss / float(i+1),
+#                            'nll_loss_label': smooth_nll_loss / float(i+1),
+#                            'nll_loss_feat': smooth_nll_loss_x / float(i+1),
+#                            })
+#
+#     if eval_after_one_epoch:
+#
+#         nll_loss = smooth_nll_loss / float(i+1)
+#         nll_loss_x = smooth_nll_loss_x / float(i+1)
+#         c_loss = smooth_c_loss / float(i+1)
+#         c_loss_x = smooth_c_loss_x / float(i+1)
+#         kl_loss = smooth_kl_loss / float(i+1)
+#         total_loss = smooth_total_loss / float(i+1)
+#         macro_f1 = smooth_macro_f1 / float(i+1)
+#         micro_f1 = smooth_micro_f1 / float(i+1)
+#
+#         temp_indiv_prob = np.array(temp_indiv_prob).reshape(-1)
+#         temp_label = np.array(temp_label).reshape(-1)
+#
+#         time_str = datetime.datetime.now().isoformat()
+#         print(
+#             "macro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tnll_loss_x=%.6f\nc_loss=%.6f\tc_loss_x=%.6f\tkl_loss=%.6f\ntotal_loss=%.6f\n" % (
+#             macro_f1, micro_f1, nll_loss * args.nll_coeff,
+#             nll_loss_x * args.nll_coeff, c_loss * args.c_coeff, c_loss_x * args.c_coeff, kl_loss,
+#             total_loss))
+#
+#         current_loss, val_metrics = validate_mpvae(
+#             model, data.input_feat, data.labels, data.valid_idx, args)
 
 
 def hard_cluster(model, data, args):
@@ -224,7 +225,6 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
 
     labels_z = torch.cat(labels_z)
     feats_z = torch.cat(feats_z)
-    # print(labels_z.shape, feats_z.shape)
     clusters = torch.from_numpy(data.label_clusters[idxs]).to(device)
     sensitive_feat = torch.from_numpy(data.sensitive_feat[idxs]).to(device)
 
@@ -264,6 +264,157 @@ def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
     else:
         fairloss.backward()
         optimizer.step()
+
+
+def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, penalize_unfair, eval_after_one_epoch=True):
+    np.random.shuffle(data.train_idx)
+
+    smooth_nll_loss = 0.0  # label encoder decoder cross entropy loss
+    smooth_nll_loss_x = 0.0  # feature encoder decoder cross entropy loss
+    smooth_c_loss = 0.0  # label encoder decoder ranking loss
+    smooth_c_loss_x = 0.0  # feature encoder decoder ranking loss
+    smooth_kl_loss = 0.0  # kl divergence
+    smooth_total_loss = 0.0  # total loss
+    smooth_macro_f1 = 0.0  # macro_f1 score
+    smooth_micro_f1 = 0.0  # micro_f1 score
+    smooth_reg_fair = 0.
+    # smooth_l2_loss = 0.0
+
+    temp_label = []
+    temp_indiv_prob = []
+
+    with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='VAE') as t:
+        for i in t:
+            optimizer.zero_grad()
+            start = i * data.batch_size
+            end = min(data.batch_size * (i + 1), len(data.train_idx))
+            idx = data.train_idx[start:end]
+
+            input_feat = torch.from_numpy(data.input_feat[idx]).to(device)
+
+            input_label = torch.from_numpy(data.labels[idx])
+            input_label = deepcopy(input_label).float().to(device)
+
+            label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
+                input_label, input_feat)
+
+            if args.residue_sigma == "random":
+                r_sqrt_sigma = torch.from_numpy(
+                    np.random.uniform(
+                        -np.sqrt(6.0 / (args.label_dim + args.z_dim)),
+                        np.sqrt(6.0 / (args.label_dim + args.z_dim)),
+                        (args.label_dim, args.z_dim))).to(
+                    device)
+                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+                    input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
+                    r_sqrt_sigma, args)
+            else:
+                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+                    input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
+                    model.r_sqrt_sigma, args)
+
+            if penalize_unfair:
+                label_z = model.label_reparameterize(label_mu, label_logvar)
+                feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
+
+                clusters = torch.from_numpy(data.label_clusters[idx]).to(device)
+                sensitive_feat = torch.from_numpy(data.sensitive_feat[idx]).to(device)
+
+                reg_labels_z_unfair = 0.
+                reg_feats_z_unfair = 0.
+                label_centroids = torch.unique(clusters)
+                sensitive_centroids = torch.unique(sensitive_feat, dim=0)
+
+                for label_centroid in torch.unique(clusters):
+                    target_centroid = torch.eq(clusters, label_centroid)
+                    # z_y penalty: E(z_y | cluster, a) = E( z_y | cluster)
+                    cluster_label_z = label_z[idx[target_centroid]]
+                    if len(cluster_label_z):
+                        for sensitive in sensitive_centroids:
+                            target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
+                            sensitive_centroid = torch.all(
+                                torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
+                            cluster_labels_z_sensitive = label_z[idx[sensitive_centroid]]
+                            if len(cluster_labels_z_sensitive):
+                                reg_labels_z_unfair += torch.pow(
+                                    cluster_labels_z_sensitive.mean() - cluster_label_z.mean(), 2)
+
+                    # z_x penalty: E(z_x | cluster, a) = E( z_x | cluster)
+                    cluster_feat_z = feat_z[idx[target_centroid]]
+                    if len(cluster_feat_z):
+                        for sensitive in sensitive_centroids:
+                            target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
+                            sensitive_centroid = torch.all(
+                                torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
+                            cluster_feats_z_sensitive = feat_z[idx[sensitive_centroid]]
+                            if len(cluster_feats_z_sensitive):
+                                reg_feats_z_unfair += torch.pow(
+                                    cluster_feats_z_sensitive.mean() - cluster_feat_z.mean(), 2)
+
+                fairloss = args.label_z_fair_coeff * reg_labels_z_unfair + \
+                           args.feat_z_fair_coeff * reg_feats_z_unfair
+                if isinstance(fairloss, float):
+                    raise UserWarning('Fail to construct fairness regualizers')
+                else:
+                    total_loss += fairloss
+                    smooth_reg_fair += fairloss.item()
+
+            total_loss.backward()
+            grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 100)
+            optimizer.step()
+            if scheduler:
+                scheduler.step()
+
+            # evaluation
+            train_metrics = evals.compute_metrics(
+                indiv_prob.cpu().data.numpy(), input_label.cpu().data.numpy(), 0.5,
+                all_metrics=False)
+            macro_f1, micro_f1 = train_metrics['maF1'], train_metrics['miF1']
+
+            smooth_nll_loss += nll_loss.item()
+            smooth_nll_loss_x += nll_loss_x.item()
+            # smooth_l2_loss += l2_loss
+            smooth_c_loss += c_loss.item()
+            smooth_c_loss_x += c_loss_x.item()
+            smooth_kl_loss += kl_loss.item()
+            smooth_total_loss += total_loss.item()
+            smooth_macro_f1 += macro_f1.item()
+            smooth_micro_f1 += micro_f1.item()
+
+            # log the labels
+            temp_label.append(input_label.cpu().data.numpy())
+            # log the individual prediction of the probability on each label
+            temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy())
+
+            running_postfix = {'total_loss': smooth_total_loss / float(i + 1),
+                     'nll_loss_label': smooth_nll_loss / float(i + 1),
+                     'nll_loss_feat': smooth_nll_loss_x / float(i + 1),
+                     }
+            if penalize_unfair:
+                running_postfix['fair_loss'] = smooth_reg_fair / float(i + 1)
+            t.set_postfix(running_postfix)
+
+    if eval_after_one_epoch:
+        nll_loss = smooth_nll_loss / float(i + 1)
+        nll_loss_x = smooth_nll_loss_x / float(i + 1)
+        c_loss = smooth_c_loss / float(i + 1)
+        c_loss_x = smooth_c_loss_x / float(i + 1)
+        kl_loss = smooth_kl_loss / float(i + 1)
+        total_loss = smooth_total_loss / float(i + 1)
+        macro_f1 = smooth_macro_f1 / float(i + 1)
+        micro_f1 = smooth_micro_f1 / float(i + 1)
+
+        temp_indiv_prob = np.array(temp_indiv_prob).reshape(-1)
+        temp_label = np.array(temp_label).reshape(-1)
+
+        time_str = datetime.datetime.now().isoformat()
+        print(
+            "macro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tnll_loss_x=%.6f\nc_loss=%.6f\tc_loss_x=%.6f\tkl_loss=%.6f\ntotal_loss=%.6f\n" % (
+                macro_f1, micro_f1, nll_loss * args.nll_coeff, nll_loss_x * args.nll_coeff,
+                c_loss * args.c_coeff, c_loss_x * args.c_coeff, kl_loss, total_loss))
+
+        current_loss, val_metrics = validate_mpvae(
+            model, data.input_feat, data.labels, data.valid_idx, args)
 
 
 def validate_mpvae(model, feat, labels, valid_idx, args):
@@ -319,7 +470,7 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
         for threshold in THRESHOLDS:
             val_metrics = evals.compute_metrics(all_indiv_prob, all_label, threshold, all_metrics=True)
 
-            if best_val_metrics == None:
+            if best_val_metrics is None:
                 best_val_metrics = {}
                 for metric in METRICS:
                     best_val_metrics[metric] = val_metrics[metric]
@@ -392,8 +543,8 @@ def train_fair_through_regularize(args):
     else:
         print('train a new prior mpvae...')
         for _ in range(args.max_epoch // 3):
-        # for _ in range(1):
-            train_mpvae_one_epoch(data, prior_vae, optimizer, scheduler, args)
+            train_mpvae_one_epoch(
+                data, prior_vae, optimizer, scheduler, args, penalize_unfair=False)
         torch.save(prior_vae.cpu().state_dict(), prior_vae_checkpoint_path)
 
     prior_vae = prior_vae.to(device)
@@ -423,14 +574,14 @@ def train_fair_through_regularize(args):
 
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):
-        train_mpvae_one_epoch(data, fair_vae, optimizer, scheduler, args)
-        regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, args, use_valid=True)
+        train_mpvae_one_epoch(
+            data, fair_vae, optimizer, scheduler, args, penalize_unfair=True)
+        # regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, args, use_valid=True)
 
 
 if __name__ == '__main__':
-
     args = parser.parse_args()
-
     device = torch.device(f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
     # device = torch.device('cpu')
+
     train_fair_through_regularize(args)
