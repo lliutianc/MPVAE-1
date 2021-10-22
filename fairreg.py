@@ -195,75 +195,75 @@ def hard_cluster(model, data, args):
         return labels_cluster
 
 
-def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
-    if use_valid:
-        idxs = data.valid_idx
-    else:
-        idxs = data.train_idx
-
-    np.random.shuffle(idxs)
-
-    optimizer.zero_grad()
-
-    labels_z, feats_z = [], []
-    for i in range(int(len(idxs) / float(data.batch_size)) + 1):
-        start = i * data.batch_size
-        end = min(data.batch_size * (i + 1), len(idxs))
-
-        input_feat = data.input_feat[idxs[start:end]]
-        input_feat = torch.from_numpy(input_feat).to(device)
-
-        input_label = data.labels[idxs[start:end]]
-        input_label = torch.from_numpy(input_label).to(device)
-        label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
-            input_label, input_feat)
-
-        label_z = model.label_reparameterize(label_mu, label_logvar)
-        feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
-        labels_z.append(label_z)
-        feats_z.append(feat_z)
-
-    labels_z = torch.cat(labels_z)
-    feats_z = torch.cat(feats_z)
-    clusters = torch.from_numpy(data.label_clusters[idxs]).to(device)
-    sensitive_feat = torch.from_numpy(data.sensitive_feat[idxs]).to(device)
-
-    labels_z_unfair = 0.
-    feats_z_unfair = 0.
-    label_centroids = torch.unique(clusters)
-    sensitive_centroids = torch.unique(sensitive_feat, dim=0)
-
-    idx = torch.arange(clusters.shape[0])
-    for centroid in label_centroids:
-        target_centroid = torch.eq(clusters, centroid)
-        cluster_labels_z = labels_z[idx[target_centroid]]
-        if len(cluster_labels_z):
-            for sensitive in sensitive_centroids:
-                target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
-                sensitive_centroid = torch.all(
-                    torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
-                cluster_labels_z_sensitive = labels_z[idx[sensitive_centroid]]
-                if len(cluster_labels_z_sensitive):
-                    labels_z_unfair += torch.pow(
-                        cluster_labels_z_sensitive.mean() - cluster_labels_z.mean(), 2)
-
-        cluster_feats_z = feats_z[idx[target_centroid]]
-        if len(cluster_feats_z):
-            for sensitive in sensitive_centroids:
-                target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
-                sensitive_centroid = torch.all(
-                    torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
-                cluster_feats_z_sensitive = feats_z[idx[sensitive_centroid]]
-                if len(cluster_feats_z_sensitive):
-                    feats_z_unfair += torch.pow(
-                        cluster_feats_z_sensitive.mean() - cluster_feats_z.mean(), 2)
-
-    fairloss = args.label_z_fair_coeff * labels_z_unfair + args.feat_z_fair_coeff * feats_z_unfair
-    if isinstance(fairloss, float):
-        raise UserWarning('Fail to construct fairness regualizers')
-    else:
-        fairloss.backward()
-        optimizer.step()
+# def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
+#     if use_valid:
+#         idxs = data.valid_idx
+#     else:
+#         idxs = data.train_idx
+#
+#     np.random.shuffle(idxs)
+#
+#     optimizer.zero_grad()
+#
+#     labels_z, feats_z = [], []
+#     for i in range(int(len(idxs) / float(data.batch_size)) + 1):
+#         start = i * data.batch_size
+#         end = min(data.batch_size * (i + 1), len(idxs))
+#
+#         input_feat = data.input_feat[idxs[start:end]]
+#         input_feat = torch.from_numpy(input_feat).to(device)
+#
+#         input_label = data.labels[idxs[start:end]]
+#         input_label = torch.from_numpy(input_label).to(device)
+#         label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
+#             input_label, input_feat)
+#
+#         label_z = model.label_reparameterize(label_mu, label_logvar)
+#         feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
+#         labels_z.append(label_z)
+#         feats_z.append(feat_z)
+#
+#     labels_z = torch.cat(labels_z)
+#     feats_z = torch.cat(feats_z)
+#     clusters = torch.from_numpy(data.label_clusters[idxs]).to(device)
+#     sensitive_feat = torch.from_numpy(data.sensitive_feat[idxs]).to(device)
+#
+#     labels_z_unfair = 0.
+#     feats_z_unfair = 0.
+#     label_centroids = torch.unique(clusters)
+#     sensitive_centroids = torch.unique(sensitive_feat, dim=0)
+#
+#     idx = torch.arange(clusters.shape[0])
+#     for centroid in label_centroids:
+#         target_centroid = torch.eq(clusters, centroid)
+#         cluster_labels_z = labels_z[idx[target_centroid]]
+#         if len(cluster_labels_z):
+#             for sensitive in sensitive_centroids:
+#                 target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
+#                 sensitive_centroid = torch.all(
+#                     torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
+#                 cluster_labels_z_sensitive = labels_z[idx[sensitive_centroid]]
+#                 if len(cluster_labels_z_sensitive):
+#                     labels_z_unfair += torch.pow(
+#                         cluster_labels_z_sensitive.mean() - cluster_labels_z.mean(), 2)
+#
+#         cluster_feats_z = feats_z[idx[target_centroid]]
+#         if len(cluster_feats_z):
+#             for sensitive in sensitive_centroids:
+#                 target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
+#                 sensitive_centroid = torch.all(
+#                     torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
+#                 cluster_feats_z_sensitive = feats_z[idx[sensitive_centroid]]
+#                 if len(cluster_feats_z_sensitive):
+#                     feats_z_unfair += torch.pow(
+#                         cluster_feats_z_sensitive.mean() - cluster_feats_z.mean(), 2)
+#
+#     fairloss = args.label_z_fair_coeff * labels_z_unfair + args.feat_z_fair_coeff * feats_z_unfair
+#     if isinstance(fairloss, float):
+#         raise UserWarning('Fail to construct fairness regualizers')
+#     else:
+#         fairloss.backward()
+#         optimizer.step()
 
 
 def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, penalize_unfair, eval_after_one_epoch=True):
@@ -324,29 +324,30 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, penalize_unfa
                 reg_feats_z_unfair = 0.
                 label_centroids = torch.unique(clusters)
                 sensitive_centroids = torch.unique(sensitive_feat, dim=0)
+                idx_tensor = torch.from_numpy(idx).to(device)
 
                 for label_centroid in torch.unique(clusters):
                     target_centroid = torch.eq(clusters, label_centroid)
                     # z_y penalty: E(z_y | cluster, a) = E( z_y | cluster)
-                    cluster_label_z = label_z[idx[target_centroid]]
+                    cluster_label_z = label_z[idx_tensor[target_centroid]]
                     if len(cluster_label_z):
                         for sensitive in sensitive_centroids:
                             target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
                             sensitive_centroid = torch.all(
                                 torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
-                            cluster_labels_z_sensitive = label_z[idx[sensitive_centroid]]
+                            cluster_labels_z_sensitive = label_z[idx_tensor[sensitive_centroid]]
                             if len(cluster_labels_z_sensitive):
                                 reg_labels_z_unfair += torch.pow(
                                     cluster_labels_z_sensitive.mean() - cluster_label_z.mean(), 2)
 
                     # z_x penalty: E(z_x | cluster, a) = E( z_x | cluster)
-                    cluster_feat_z = feat_z[idx[target_centroid]]
+                    cluster_feat_z = feat_z[idx_tensor[target_centroid]]
                     if len(cluster_feat_z):
                         for sensitive in sensitive_centroids:
                             target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
                             sensitive_centroid = torch.all(
                                 torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
-                            cluster_feats_z_sensitive = feat_z[idx[sensitive_centroid]]
+                            cluster_feats_z_sensitive = feat_z[idx_tensor[sensitive_centroid]]
                             if len(cluster_feats_z_sensitive):
                                 reg_feats_z_unfair += torch.pow(
                                     cluster_feats_z_sensitive.mean() - cluster_feat_z.mean(), 2)
