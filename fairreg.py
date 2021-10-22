@@ -539,7 +539,6 @@ def train_fair_through_regularize(args):
 
     prior_vae_checkpoint_path = os.path.join(model_dir, 'prior_vae')
     if args.resume and os.path.exists(prior_vae_checkpoint_path):
-        # todo: load from pretrained
         print('load trained prior mpvae...')
         prior_vae.load_state_dict(torch.load(prior_vae_checkpoint_path))
     else:
@@ -569,6 +568,13 @@ def train_fair_through_regularize(args):
     fair_vae = VAE(args).to(device)
     fair_vae.train()
 
+    fair_vae_checkpoint_path = os.path.join(model_dir, 'fair_vae')
+    if args.resume and os.path.exists(fair_vae_checkpoint_path):
+        print('use a trained fair mpvae...')
+        fair_vae.load_state_dict(torch.load(fair_vae_checkpoint_path))
+    else:
+        print('train a new fair mpvae...')
+
     optimizer = optim.Adam(fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
     optimizer_fair = optim.Adam(fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
     scheduler = torch.optim.lr_scheduler.StepLR(
@@ -579,6 +585,8 @@ def train_fair_through_regularize(args):
         train_mpvae_one_epoch(
             data, fair_vae, optimizer, scheduler, args, penalize_unfair=True)
         # regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, args, use_valid=True)
+
+    torch.save(fair_vae.cpu().state_dict(), fair_vae_checkpoint_path)
 
 
 if __name__ == '__main__':
