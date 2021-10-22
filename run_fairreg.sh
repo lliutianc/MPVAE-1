@@ -7,10 +7,8 @@
 
 #SBATCH --time=5:00:00
 #SBATCH --output=sbatch-logs/%x-%j.SLURM
-#SBATCH --array=0
 
 module load Conda/3
 conda activate fairmlc
-
 
 python fairreg.py -dataset adult -cuda 3 -latent_dim 8 -resume -labels_cluster_distance_threshold 0.01 -epoch 50
