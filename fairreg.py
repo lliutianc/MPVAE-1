@@ -283,7 +283,7 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, penalize_unfa
     temp_label = []
     temp_indiv_prob = []
 
-    with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='VAE') as t:
+    with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='Train VAE') as t:
         for i in t:
             optimizer.zero_grad()
             start = i * data.batch_size
@@ -431,7 +431,7 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
         all_label = []
 
         real_batch_size = min(args.batch_size, len(valid_idx))
-        with tqdm(range(int((len(valid_idx) - 1) / real_batch_size) + 1), desc='VAE') as t:
+        with tqdm(range(int((len(valid_idx) - 1) / real_batch_size) + 1), desc='Validate VAE') as t:
             for i in t:
                 start = real_batch_size * i
                 end = min(real_batch_size * (i + 1), len(valid_idx))
