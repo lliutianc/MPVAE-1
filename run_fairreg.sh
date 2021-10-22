@@ -1,30 +1,16 @@
-#!/bin/zsh -l
+#!/bin/bash
 
-# FILENAME: run_fairreg.sh
+#SBATCH --job-name=fairmlc-regularized
+#SBATCH --gres=gpu:v100:1
+#SBATCH --mem-per-cpu=8G
+#SBATCH --mail-type=END
 
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:1
-#SBATCH --time=01:00:00
-#SBATCH -A partner
-#SBATCH -J run_fairreg
+#SBATCH --time=5:00:00
+#SBATCH --output=sbatch-logs/%x-%j.SLURM
+#SBATCH --array=0
 
-#SBATCH --output=/home/liu3351/joboutput/run_fairreg.out
-#SBATCH --error=/home/liu3351/joboutput/run_fairreg_error.out
-
-
-module purge
-
-module load anaconda
-
+module load Conda/3
 conda activate fairmlc
-module load cuda
-module load cudnn
-module load ml-toolkit-gpu/pytorch/1.7.1
-module load learning/conda-2020.11-py38-gpu
 
-module list
 
-echo $CUDA_VISIBLE_DEVICES
-
-python -X faulthandler fairreg.py -dataset adult
+python fairreg.py -dataset adult -cuda 3 -latent_dim 8 -resume -labels_cluster_distance_threshold 0.01 -epoch 50
