@@ -330,6 +330,8 @@ def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, penalize_unfa
                     target_centroid = torch.eq(clusters, label_centroid)
                     # z_y penalty: E(z_y | cluster, a) = E( z_y | cluster)
                     cluster_label_z = label_z[idx_tensor[target_centroid]]
+                    print(cluster_label_z)
+                    exit(1)
                     if len(cluster_label_z):
                         for sensitive in sensitive_centroids:
                             target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
