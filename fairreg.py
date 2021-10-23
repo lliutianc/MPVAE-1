@@ -106,16 +106,16 @@ def construct_labels_embed(data):
         else:
             print('train a new prior cbow...')
             for _ in range(args.max_epoch // 3):
+                smooth_loss = 0.
                 with tqdm(cbow_data, desc='Train CBOW') as t:
-                    for context, target in t:
-                        print(context.shape)
-                        print(target.shape)
-                        exit(1)
+                    for i, (context, target) in enumerate(t):
                         logprob = prior_cbow(context)
                         loss = criterion(logprob, target)
                         loss.backward()
                         grad_norm = nn.utils.clip_grad_norm_(prior_cbow.parameters(), 100)
                         scheduler.step()
+                        smooth_loss += loss.item()
+                        t.set_postfix({'running loss': smooth_loss / (i + 1)})
             torch.save(prior_cbow.cpu().state_dict(), prior_cbow_checkpoint_path)
 
         prior_cbow = prior_cbow.to(device)
