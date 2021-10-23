@@ -134,7 +134,7 @@ def construct_labels_embed(data):
                 input_label = torch.from_numpy(input_label).to(device)
 
                 idx = torch.arange(data.labels.shape[1],device=device)
-                label_embed = prior_cbow.get_emdeddings(idx[input_label == 1])
+                label_embed = prior_cbow.get_embedding(idx[input_label == 1])
                 labels_embed.append(label_embed.cpu().data.numpy())
 
             labels_embed = np.concatenate(label_embed)

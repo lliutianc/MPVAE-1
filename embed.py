@@ -66,7 +66,7 @@ class CBOW(torch.nn.Module):
 
         return out
 
-    def get_emdedding(self, inputs):
+    def get_embedding(self, inputs):
         return self.embeddings(inputs).sum(-2)
 
 
