@@ -91,7 +91,7 @@ def construct_labels_embed(data):
         print(len(cbow_data))
         print(cbow_data[0])
         # cbow_dataloader = DataLoader(cbow_data, batch_size=data.batch_size)
-        prior_cbow = CBOW(data.labels.shape[1], args.latent_dim).to(device)
+        prior_cbow = CBOW(data.labels.shape[1], args.latent_dim, 64).to(device)
         prior_cbow.train()
 
         criterion = nn.NLLLoss()
