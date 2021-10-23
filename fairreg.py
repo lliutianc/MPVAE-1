@@ -110,7 +110,7 @@ def construct_labels_embed(data):
                 with tqdm(cbow_data, desc='Train CBOW') as t:
                     for i, (context, target) in enumerate(t):
                         optimizer.zero_grad()
-                        logprob = prior_cbow(context).
+                        logprob = prior_cbow(context)
                         loss = criterion(logprob, target)
                         loss.backward()
                         grad_norm = nn.utils.clip_grad_norm_(prior_cbow.parameters(), 100)
