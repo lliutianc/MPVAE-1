@@ -130,12 +130,7 @@ def construct_labels_embed(data):
                 input_label = torch.from_numpy(input_label).to(device)
 
                 idx = torch.arange(data.labels.shape[1],device=device)
-                print(idx.shape)
-                print(torch.eq(input_label, 1).shape)
-                print(idx[torch.eq(input_label,1)].shape)
                 label_embed = prior_cbow.get_embedding(idx[input_label == 1])
-                print(label_embed.shape)
-                exit(1)
                 labels_embed.append(label_embed.cpu().data.numpy())
 
             labels_embed = np.concatenate(label_embed)
@@ -446,7 +441,7 @@ def train_fair_through_regularize():
     fair_vae = VAE(args).to(device)
     fair_vae.train()
 
-    fair_vae_checkpoint_path = os.path.join(model_dir, 'fair_vae')
+    fair_vae_checkpoint_path = os.path.join(model_dir, f'fair_vae_prior={args.labels_embed_method}')
     if args.resume and os.path.exists(fair_vae_checkpoint_path):
         print('use a trained fair mpvae...')
         fair_vae.load_state_dict(torch.load(fair_vae_checkpoint_path))
@@ -645,14 +640,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
     device = torch.device(f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
     # device = torch.device('cpu')
-    param_setting = "lr-{}_lr-decay_{:.2f}_lr-times_{:.1f}_nll-{:.2f}_l2-{:.2f}_c-{:.2f}".format(
-        args.learning_rate, args.lr_decay_ratio, args.lr_decay_times, args.nll_coeff, args.l2_coeff,
-        args.c_coeff)
+    param_setting = f"lr-{args.learning_rate}_" \
+                    f"lr-decay_{args.lr_decay_ratio}_" \
+                    f"lr-times_{args.lr_decay_times}_" \
+                    f"nll-{args.nll_coeff}_" \
+                    f"l2-{args.l2_coeff}_" \
+                    f"c-{args.c_coeff}"
 
-    build_path('fairreg/summary/{}/{}'.format(args.dataset, param_setting))
-    build_path('fairreg/model/model_{}/{}'.format(args.dataset, param_setting))
-    summary_dir = 'fairreg/summary/{}/{}'.format(args.dataset, param_setting)
-    model_dir = 'fairreg/model/model_{}/{}'.format(args.dataset, param_setting)
-    writer = SummaryWriter(log_dir=summary_dir)
+    model_dir = f'fairreg/model/model_{args.dataset}/{param_setting}'
+    summary_dir = f'fairreg/summary/{args.dataset}/{param_setting}'
+    build_path(model_dir, summary_dir)
 
     train_fair_through_regularize()
