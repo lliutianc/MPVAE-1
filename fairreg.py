@@ -109,13 +109,12 @@ def construct_labels_embed(data):
                 smooth_loss = 0.
                 with tqdm(cbow_data, desc='Train CBOW') as t:
                     for i, (context, target) in enumerate(t):
-                        logprob = prior_cbow(context)
-                        # print(logprob)
-                        # print(logprob.shape)
-                        # print(target)
+                        optimizer.zero_grad()
+                        logprob = prior_cbow(context).
                         loss = criterion(logprob, target)
                         loss.backward()
                         grad_norm = nn.utils.clip_grad_norm_(prior_cbow.parameters(), 100)
+                        optimizer.step()
                         scheduler.step()
                         smooth_loss += loss.item()
                         t.set_postfix({'running loss': smooth_loss / (i + 1)})
