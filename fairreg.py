@@ -90,7 +90,7 @@ def construct_labels_embed(data):
         cbow_data = CBOWData(data.labels, device)
         print(len(cbow_data))
         print(cbow_data[0])
-        cbow_dataloader = DataLoader(cbow_data, batch_size=data.batch_size)
+        # cbow_dataloader = DataLoader(cbow_data, batch_size=data.batch_size)
         prior_cbow = CBOW(data.labels.shape[1], args.latent_dim).to(device)
         prior_cbow.train()
 
@@ -106,8 +106,11 @@ def construct_labels_embed(data):
         else:
             print('train a new prior cbow...')
             for _ in range(args.max_epoch // 3):
-                with tqdm(cbow_dataloader, desc='Train CBOW') as t:
+                with tqdm(cbow_data, desc='Train CBOW') as t:
                     for context, target in t:
+                        print(context.shape)
+                        print(target.shape)
+                        exit(1)
                         logprob = prior_cbow(context)
                         loss = criterion(logprob, target)
                         loss.backward()
