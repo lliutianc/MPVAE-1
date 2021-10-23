@@ -41,10 +41,11 @@ from torch.utils.data import Dataset
 
 
 class CBOW(torch.nn.Module):
-    def __init__(self, vocab_size, embedding_dim, hidden_dim):
+    def __init__(self, vocab_size, embedding_dim, hidden_dim=None):
         super(CBOW, self).__init__()
 
         # out: 1 x emdedding_dim
+        hidden_dim = hidden_dim or int((vocab_size + embedding_dim) / 2)
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
         self.linear1 = nn.Linear(embedding_dim, 128)
         self.activation_function1 = nn.ReLU()
@@ -89,8 +90,8 @@ class CBOWData(Dataset):
     def __len__(self):
         return len(self.target)
 
-    def __getitem__(self, i):
-        return self.context[i].to(self.device), self.target[i].to(self.device)
+    def __getitem__(self, item):
+        return self.context[item].to(self.device), self.target[item].to(self.device)
 
 
 
