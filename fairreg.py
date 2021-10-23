@@ -136,7 +136,8 @@ def construct_labels_embed(data):
                 idx = torch.stack([
                     torch.arange(data.labels.shape[1],device=device) for _ in range(data.batch_size)
                     ])
-                print(input_label.shape)
+                print(idx.shape)
+                print(torch.eq(input_label, 1).shape)
                 print(idx[torch.eq(input_label,1)].shape)
                 label_embed = prior_cbow.get_embedding(idx[input_label == 1])
                 print(label_embed.shape)
