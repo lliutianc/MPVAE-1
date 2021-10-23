@@ -88,7 +88,9 @@ def construct_labels_embed(data):
 
     if args.labels_embed_method == 'cbow':
         cbow_data = CBOWData(data.labels, device)
-        cbow_dataloader = DataLoader(cbow_data, batch_size=args.bs)
+        print(len(cbow_data))
+        print(cbow_data[0])
+        cbow_dataloader = DataLoader(cbow_data, batch_size=data.batch_size)
         prior_cbow = CBOW(data.labels.shape[1], args.latent_dim).to(device)
         prior_cbow.train()
 
