@@ -55,11 +55,15 @@ class CBOW(torch.nn.Module):
         self.activation_function2 = nn.LogSoftmax(dim=-1)
 
     def forward(self, inputs):
-        embeds = sum(self.embeddings(inputs)).view(1,-1)
+        embeds = self.embeddings(inputs)
+        embeds = embeds.sum(-2)
+        if len(embeds.shape) == 1:
+            embeds = embeds.view(1, -1)
         out = self.linear1(embeds)
         out = self.activation_function1(out)
         out = self.linear2(out)
         out = self.activation_function2(out)
+
         return out
 
     def get_emdedding(self, inputs):
