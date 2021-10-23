@@ -123,19 +123,13 @@ def construct_labels_embed(data):
         prior_cbow = prior_cbow.to(device)
         with torch.no_grad():
             prior_cbow.eval()
-            idxs = np.arange(int(len(data.input_feat) * .9))
             labels_embed = []
 
-            for i in range(int(len(idxs) / float(data.batch_size)) + 1):
-                start = i * data.batch_size
-                end = min(data.batch_size * (i + 1), len(idxs))
-
-                input_label = data.labels[idxs[start:end]]
+            for idx in np.arange(int(len(data.input_feat) * .9)):
+                input_label = data.labels[[1]]
                 input_label = torch.from_numpy(input_label).to(device)
 
-                idx = torch.stack([
-                    torch.arange(data.labels.shape[1],device=device) for _ in range(data.batch_size)
-                    ])
+                idx = torch.arange(data.labels.shape[1],device=device)
                 print(idx.shape)
                 print(torch.eq(input_label, 1).shape)
                 print(idx[torch.eq(input_label,1)].shape)
