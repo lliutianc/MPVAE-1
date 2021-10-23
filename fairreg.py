@@ -126,7 +126,7 @@ def construct_labels_embed(data):
             labels_embed = []
 
             for idx in np.arange(int(len(data.input_feat) * .9)):
-                input_label = data.labels[[1]]
+                input_label = data.labels[1]
                 input_label = torch.from_numpy(input_label).to(device)
 
                 idx = torch.arange(data.labels.shape[1],device=device)
