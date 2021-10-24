@@ -5,13 +5,14 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 
 import numpy as np
+from tqdm import tqdm
 
 import sys
 import os
 import datetime
 from copy import deepcopy
 import types
-from tqdm import tqdm
+
 
 import evals
 from utils import build_path, get_label, get_feat
@@ -435,7 +436,7 @@ def train_fair_through_regularize():
     fair_vae = VAE(args).to(device)
     fair_vae.train()
 
-    fair_vae_checkpoint_path = os.path.join(model_dir, f'fair_vae_prior={args.labels_embed_method}')
+    fair_vae_checkpoint_path = os.path.join(model_dir, f'fair_vae_prior_{args.labels_embed_method}')
     if args.resume and os.path.exists(fair_vae_checkpoint_path):
         print('use a trained fair mpvae...')
         fair_vae.load_state_dict(torch.load(fair_vae_checkpoint_path))
@@ -641,7 +642,7 @@ if __name__ == '__main__':
                     f"l2-{args.l2_coeff}_" \
                     f"c-{args.c_coeff}"
 
-    model_dir = f'fairreg/model/model_{args.dataset}/{param_setting}'
+    model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
     summary_dir = f'fairreg/summary/{args.dataset}/{param_setting}'
     build_path(model_dir, summary_dir)
 
