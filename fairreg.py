@@ -20,7 +20,7 @@ from fairmodel import FairCritic, compute_fair_loss
 from data import load_data
 from embed import CBOW, CBOWData
 
-from main import parser
+from main import parser, THRESHOLDS, METRICS
 
 # cluster parameters
 parser.add_argument('-labels_embed_method', type=str, choices=['cbow', 'mpvae', 'mlp'])
@@ -32,13 +32,7 @@ parser.add_argument('-feat_z_fair_coeff', type=float, default=1.0)
 
 parser.add_argument('-cuda', type=int, default=0)
 
-
 sys.path.append('./')
-THRESHOLDS = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.15, 0.20, 0.25, 0.30,
-              0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.8, 0.85, 0.9, 0.95]
-
-METRICS = ['ACC', 'HA', 'ebF1', 'miF1', 'maF1', 'meanAUC', 'medianAUC', 'meanAUPR', 'medianAUPR',
-           'meanFDR', 'medianFDR', 'p_at_1', 'p_at_3', 'p_at_5']
 
 
 def construct_labels_embed(data):
@@ -242,8 +236,8 @@ def train_mpvae_one_epoch(
                                 torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
                             cluster_labels_z_sensitive = label_z[idx_tensor[sensitive_centroid]]
                             if len(cluster_labels_z_sensitive):
-                                reg_labels_z_unfair += torch.pow(
-                                    cluster_labels_z_sensitive.mean() - cluster_label_z.mean(), 2)
+                                reg_labels_z_unfair += torch.mean(torch.pow(
+                                    cluster_labels_z_sensitive.mean(0) - cluster_label_z.mean(0), 2))
 
                     # z_x penalty: E(z_x | cluster, a) = E( z_x | cluster)
                     cluster_feat_z = feat_z[idx_tensor[target_centroid]]
@@ -254,8 +248,8 @@ def train_mpvae_one_epoch(
                                 torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
                             cluster_feats_z_sensitive = feat_z[idx_tensor[sensitive_centroid]]
                             if len(cluster_feats_z_sensitive):
-                                reg_feats_z_unfair += torch.pow(
-                                    cluster_feats_z_sensitive.mean() - cluster_feat_z.mean(), 2)
+                                reg_feats_z_unfair += torch.mean(torch.pow(
+                                    cluster_feats_z_sensitive.mean(0) - cluster_feat_z.mean(0), 2))
 
                 fairloss = args.label_z_fair_coeff * reg_labels_z_unfair + \
                            args.feat_z_fair_coeff * reg_feats_z_unfair
