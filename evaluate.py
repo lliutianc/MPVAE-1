@@ -219,6 +219,7 @@ if __name__ == '__main__':
         else:
             model_file = 'baseline_vae'
         model_file = os.path.join(model_dir, model_file)
+        print(f'try loading model from: {model_file}')
         if os.path.exists(model_file):
             np.random.seed(4)
             nonsensitive_feat, sensitive_feat, labels = load_data(args.dataset, args.mode, True)
