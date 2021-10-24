@@ -55,7 +55,8 @@ def construct_labels_embed(data):
             print('train a new prior mpvae...')
             for _ in range(args.max_epoch // 3):
                 train_mpvae_one_epoch(
-                    data, prior_vae, optimizer, scheduler, penalize_unfair=False)
+                    data, prior_vae, optimizer, scheduler,
+                    penalize_unfair=False, eval_after_one_epoch=True, args=args)
             torch.save(prior_vae.cpu().state_dict(), prior_vae_checkpoint_path)
 
         prior_vae = prior_vae.to(device)
@@ -163,7 +164,7 @@ def hard_cluster(labels_embed):
 
 
 def train_mpvae_one_epoch(
-    data, model, optimizer, scheduler, penalize_unfair, eval_after_one_epoch=True):
+    data, model, optimizer, scheduler, penalize_unfair, eval_after_one_epoch, args):
 
     np.random.shuffle(data.train_idx)
     device = next(model.parameters()).device
@@ -451,7 +452,8 @@ def train_fair_through_regularize():
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):
         train_mpvae_one_epoch(
-            data, fair_vae, optimizer, scheduler, penalize_unfair=True)
+            data, fair_vae, optimizer, scheduler,
+            penalize_unfair=True, eval_after_one_epoch=True, args=args)
         # regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, args, use_valid=True)
 
     torch.save(fair_vae.cpu().state_dict(), fair_vae_checkpoint_path)
