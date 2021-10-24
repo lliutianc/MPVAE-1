@@ -66,7 +66,8 @@ def train_without_regularize():
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):
         train_mpvae_one_epoch(
-            data, base_vae, optimizer, scheduler, penalize_unfair=False)
+            data, base_vae, optimizer, scheduler,
+            penalize_unfair=False, eval_after_one_epoch=True, args=args)
 
     torch.save(base_vae.cpu().state_dict(), base_vae_checkpoint_path)
 
