@@ -259,8 +259,8 @@ if __name__ == '__main__':
             train, valid = evaluate_mpvae(model, data)
 
             if train:
-                pickle.dump(train, open(os.path.join(model_dir, 'train_metrics.pickle', 'wb')))
+                pickle.dump(train, open(os.path.join(model_dir, 'train_metrics.pickle'), 'wb'))
             if valid:
-                pickle.dump(valid, open(os.path.join(model_dir, 'valid_metrics.pickle', 'wb')))
+                pickle.dump(valid, open(os.path.join(model_dir, 'valid_metrics.pickle'), 'wb'))
 
 
