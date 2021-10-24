@@ -31,7 +31,6 @@ parser.add_argument('-labels_cluster_min_size', type=int, default=4)
 parser.add_argument('-label_z_fair_coeff', type=float, default=1.0)
 parser.add_argument('-feat_z_fair_coeff', type=float, default=1.0)
 
-parser.add_argument('-cuda', type=int, default=0)
 
 sys.path.append('./')
 
