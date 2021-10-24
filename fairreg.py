@@ -320,7 +320,7 @@ def train_mpvae_one_epoch(
 
 
 def validate_mpvae(model, feat, labels, valid_idx):
-    device = next(model.parameters().device)
+    device = next(model.parameters()).device
     with torch.no_grad():
         model.eval()
         print("performing validation...")
