@@ -107,7 +107,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     train_feat_z_mean = train_feat_z.mean(0)
                     mean_diffs = 0.
                     idxs = np.arange(len(data.train_idx))
-                    for sensitive in torch.unique(train_sensitive, dim=0):
+                    for sensitive in np.unique(train_sensitive, dim=0):
                         feats_z_sensitive = train_feat_z[idxs[train_sensitive == sensitive]]
                         mean_diffs += np.mean(
                             np.power(feats_z_sensitive.mean(0) - train_feat_z_mean, 2))
