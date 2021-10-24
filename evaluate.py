@@ -64,6 +64,13 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                         feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
                         train_feat_z.append(feat_z.cpu().data.numpy())
 
+                train_indiv_prob = np.array(train_indiv_prob)
+                train_label = np.array(train_label)
+
+                nll_loss = train_nll_loss / len(data.train_idx)
+                c_loss = train_c_loss / len(data.train_idx)
+                total_loss = train_total_loss / len(data.train_idx)
+
                 best_val_metrics = None
                 for threshold in THRESHOLDS:
                     val_metrics = evals.compute_metrics(
@@ -153,6 +160,13 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     if eval_fairness:
                         feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
                         valid_feat_z.append(feat_z.cpu().data.numpy())
+
+                valid_indiv_prob = np.array(valid_indiv_prob)
+                valid_label = np.array(valid_label)
+
+                nll_loss = valid_nll_loss / len(data.valid_idx)
+                c_loss = valid_c_loss / len(data.valid_idx)
+                total_loss = valid_total_loss / len(data.valid_idx)
 
                 best_val_metrics = None
                 for threshold in THRESHOLDS:
