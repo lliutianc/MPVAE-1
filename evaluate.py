@@ -96,8 +96,9 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                 # nll_coeff: BCE coeff, lambda_1
                 # c_coeff: Ranking loss coeff, lambda_2
                 print("********************train********************")
-                print(' & '.join([acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff,
-                        c_loss * args.c_coeff, total_loss]))
+                print(' & '.join([str(m) for m in [
+                        acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff,
+                        c_loss * args.c_coeff, total_loss]]))
 
                 if eval_fairness:
                     train_feat_z = np.concatenate(train_feat_z)
