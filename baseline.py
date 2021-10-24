@@ -1,8 +1,5 @@
 import torch
-import torch.nn as nn
 from torch import optim
-from torch.utils.tensorboard import SummaryWriter
-from torch.utils.data import DataLoader
 
 import numpy as np
 
@@ -13,17 +10,13 @@ from copy import deepcopy
 import types
 from tqdm import tqdm
 
-import evals
-from utils import build_path, get_label, get_feat
-from model import VAE, compute_loss
-from fairmodel import FairCritic, compute_fair_loss
+from utils import build_path
+from model import VAE
 from data import load_data
-from fairreg import train_mpvae_one_epoch, validate_mpvae
+from fairreg import train_mpvae_one_epoch
 
 from main import parser
 
-# cluster parameters
-# parser.add_argument('-cuda', type=int, default=0)
 
 sys.path.append('./')
 THRESHOLDS = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.15, 0.20, 0.25, 0.30,
