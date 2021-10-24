@@ -103,7 +103,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                 if eval_fairness:
                     train_feat_z = np.concatenate(train_feat_z)
                     assert train_feat_z.shape[0] == len(data.train_idx) and \
-                           train_feat_z.shape[1] == args.latent_d
+                           train_feat_z.shape[1] == args.latent_dim
                     train_feat_z_mean = train_feat_z.mean(0)
                     mean_diffs = 0.
                     idxs = np.arange(len(data.train_idx))
