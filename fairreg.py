@@ -316,10 +316,10 @@ def train_mpvae_one_epoch(
                 c_loss * args.c_coeff, c_loss_x * args.c_coeff, kl_loss, total_loss))
 
         current_loss, val_metrics = validate_mpvae(
-            model, data.input_feat, data.labels, data.valid_idx)
+            model, data.input_feat, data.labels, data.valid_idx, args)
 
 
-def validate_mpvae(model, feat, labels, valid_idx):
+def validate_mpvae(model, feat, labels, valid_idx, args):
     device = next(model.parameters()).device
     with torch.no_grad():
         model.eval()
