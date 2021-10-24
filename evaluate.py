@@ -108,7 +108,10 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     mean_diffs = 0.
                     idxs = np.arange(len(data.train_idx))
                     for sensitive in np.unique(train_sensitive, axis=0):
-                        target_sensitive = idx[np.all(np.equal(train_sensitive, sensitive), axis=1)]
+                        print(train_sensitive.shape, sensitive.shape)
+                        print(np.equal(train_sensitive, sensitive).shape)
+                        print(np.all(np.equal(train_sensitive, sensitive), axis=1).shape)
+                        target_sensitive = idxs[np.all(np.equal(train_sensitive, sensitive), axis=1)]
                         feats_z_sensitive = train_feat_z[target_sensitive]
                         mean_diffs += np.mean(
                             np.power(feats_z_sensitive.mean(0) - train_feat_z_mean, 2))
@@ -208,7 +211,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     mean_diffs = 0.
                     idxs = np.arange(len(data.valid_idx))
                     for sensitive in np.unique(valid_sensitive, axis=0):
-                        target_sensitive = idx[np.all(np.equal(valid_sensitive, sensitive), axis=1)]
+                        target_sensitive = idxs[np.all(np.equal(valid_sensitive, sensitive), axis=1)]
                         feats_z_sensitive = valid_feat_z[target_sensitive]
                         mean_diffs += np.mean(
                             np.power(feats_z_sensitive.mean(0) - valid_feat_z_mean, 2))
