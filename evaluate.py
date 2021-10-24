@@ -31,7 +31,9 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
             if eval_fairness:
                 train_feat_z = []
                 train_sensitive = data.sensitive_feat[data.train_idx]
-            with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='Train VAE') as t:
+            with tqdm(
+                    range(int(len(data.train_idx) / float(data.batch_size)) + 1),
+                    desc='Evaluate VAE') as t:
 
                 for i in t:
                     start = i * data.batch_size
