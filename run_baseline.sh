@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=fairmlc-regularized
+#SBATCH --job-name=fairmlc-baseline
 #SBATCH --gres=gpu:k80:1
 #SBATCH --mem-per-cpu=16G
 #SBATCH --mail-type=END
