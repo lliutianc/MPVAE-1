@@ -33,7 +33,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                 train_sensitive = data.sensitive_feat[data.train_idx]
             with tqdm(
                     range(int(len(data.train_idx) / float(data.batch_size)) + 1),
-                    desc='Evaluate VAE') as t:
+                    desc='Evaluate on training set') as t:
 
                 for i in t:
                     start = i * data.batch_size
@@ -132,7 +132,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                 valid_sensitive = data.sensitive_feat[data.valid_idx]
             with tqdm(
                     range(int(len(data.valid_idx) / float(data.batch_size)) + 1),
-                    desc='valid VAE') as t:
+                    desc='Evaluate on validation set') as t:
 
                 for i in t:
                     start = i * data.batch_size
