@@ -93,13 +93,6 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                                             best_val_metrics['ebF1'], best_val_metrics['maF1'], \
                                             best_val_metrics['miF1']
 
-                # nll_coeff: BCE coeff, lambda_1
-                # c_coeff: Ranking loss coeff, lambda_2
-                print("********************train********************")
-                print(' & '.join([str(round(m, 4)) for m in [
-                        acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff,
-                        c_loss * args.c_coeff, total_loss]]))
-
                 if eval_fairness:
                     train_feat_z = np.concatenate(train_feat_z)
                     assert train_feat_z.shape[0] == len(data.train_idx) and \
@@ -114,6 +107,21 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                             np.power(feats_z_sensitive.mean(0) - train_feat_z_mean, 2))
 
                     best_val_metrics['fair_dp'] = mean_diffs
+
+                    # nll_coeff: BCE coeff, lambda_1
+                    # c_coeff: Ranking loss coeff, lambda_2
+                    print("********************train********************")
+                    print(
+                        ' & '.join([
+                            str(round(m, 4)) for m in [
+                                acc, ha, ebf1, maf1, mif1, mean_diffs]]))
+                else:
+                    # nll_coeff: BCE coeff, lambda_1
+                    # c_coeff: Ranking loss coeff, lambda_2
+                    print("********************train********************")
+                    print(
+                        ' & '.join(
+                            [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
 
             train_best_metrics = best_val_metrics
         else:
@@ -194,11 +202,11 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
 
                 # nll_coeff: BCE coeff, lambda_1
                 # c_coeff: Ranking loss coeff, lambda_2
-                print("********************valid********************")
-                print(
-                    ' & '.join([str(round(m, 4)) for m in [
-                        acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff,
-                        c_loss * args.c_coeff, total_loss]]))
+                # print("********************valid********************")
+                # print(
+                #     ' & '.join([str(round(m, 4)) for m in [
+                #         acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff,
+                #         c_loss * args.c_coeff, total_loss]]))
 
                 if eval_fairness:
                     valid_feat_z = np.concatenate(valid_feat_z)
@@ -214,6 +222,20 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                             np.power(feats_z_sensitive.mean(0) - valid_feat_z_mean, 2))
 
                     best_val_metrics['fair_dp'] = mean_diffs
+                    # nll_coeff: BCE coeff, lambda_1
+                    # c_coeff: Ranking loss coeff, lambda_2
+                    print("********************valid********************")
+                    print(
+                        ' & '.join(
+                            [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1, mean_diffs]]))
+                else:
+                    # nll_coeff: BCE coeff, lambda_1
+                    # c_coeff: Ranking loss coeff, lambda_2
+                    print("********************valid********************")
+                    print(
+                        ' & '.join(
+                            [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
+
 
             valid_best_metrics = best_val_metrics
         else:
