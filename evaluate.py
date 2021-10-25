@@ -196,7 +196,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                 # c_coeff: Ranking loss coeff, lambda_2
                 print("********************valid********************")
                 print(
-                    ' & '.join([str(m) for m in [
+                    ' & '.join([str(round(m, 4)) for m in [
                         acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff,
                         c_loss * args.c_coeff, total_loss]]))
 
@@ -232,8 +232,7 @@ if __name__ == '__main__':
                     f"l2-{args.l2_coeff}_" \
                     f"c-{args.c_coeff}"
     model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
-    # for prior in ['cbow', 'mpvae', None]:
-    for prior in [None]:
+    for prior in ['cbow', 'mpvae', None]:
         if prior:
             model_file = f'fair_vae_prior_{prior}'
         else:
