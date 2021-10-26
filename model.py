@@ -170,6 +170,8 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
     # similar for the feature branch
     E_x = norm.cdf(sample_r_x) * (1-eps1) + eps1 * 0.5
     print(E.shape, E.min(), E.max())
+    print(E_x.shape, E_x.min(), E_x.max())
+
     def compute_BCE_and_RL_loss(E):
         #compute negative log likelihood (BCE loss) for each sample point
         sample_nll = -(torch.log(E)*input_label+torch.log(1-E)*(1-input_label))
@@ -194,5 +196,5 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
 
     # total loss: refer to equation (5)
     total_loss = (nll_loss + nll_loss_x) * args.nll_coeff + (c_loss + c_loss_x) * args.c_coeff + kl_loss * 1.1
-
+    print(total_loss.item())
     return total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob
