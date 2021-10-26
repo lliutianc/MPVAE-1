@@ -30,8 +30,8 @@ def train_without_regularize():
     np.random.seed(4)
 
     nonsensitive_feat, sensitive_feat, labels = load_data(args.dataset, args.mode, True)
-    print(nonsensitive_feat.max(0), nonsensitive_feat.min(0))
-    print(labels.max(0), labels.min(0))
+    # print(nonsensitive_feat.max(0), nonsensitive_feat.min(0))
+    # print(labels.max(0), labels.min(0))
     train_cnt, valid_cnt = int(len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
     train_idx = np.arange(train_cnt)
     valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
@@ -43,6 +43,7 @@ def train_without_regularize():
         batch_size=args.batch_size, label_clusters=None, sensitive_feat=sensitive_feat)
     args.feature_dim = nonsensitive_feat.shape[1]
     args.label_dim = labels.shape[1]
+    print(args.feature_dim, args.label_dim)
 
     base_vae = VAE(args).to(device)
     base_vae.train()
