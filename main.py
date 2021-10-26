@@ -39,7 +39,7 @@ parser.add_argument('-scale_coeff', "--scale_coeff", default=1.0, type=float, he
 parser.add_argument('-keep_prob', "--keep_prob", default=0.5, type=float, help='drop out rate')
 parser.add_argument('-resume', "--resume", action='store_true', help='whether to resume a ckpt')
 parser.add_argument('-write_to_test_sh', "--write_to_test_sh", action='store_true', help='whether to modify test.sh')
-parser.add_argument('-mode', "--mode", type=str, help='training/test mode')
+parser.add_argument('-mode', "--mode", type=str, help='training/test mode', default='train')
 parser.add_argument('-r_sigma', "--residue_sigma", default='', type=str, help='what sigma r to use')
 
 parser.add_argument('-cuda', type=int, default=0)
