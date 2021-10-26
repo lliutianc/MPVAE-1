@@ -30,6 +30,8 @@ def train_without_regularize():
     np.random.seed(4)
 
     nonsensitive_feat, sensitive_feat, labels = load_data(args.dataset, args.mode, True)
+    print(nonsensitive_feat.max(0), nonsensitive_feat.min(0))
+    print(labels.max(0), labels.min(0))
     train_cnt, valid_cnt = int(len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
     train_idx = np.arange(train_cnt)
     valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
