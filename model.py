@@ -153,9 +153,10 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
 
     # standard Gaussian samples
     noise = torch.normal(0, 1, size=(n_sample, n_batch, args.z_dim)).to(device)
-    print(noise.shape)
+    print(noise.shape, noise.min(), noise.max())
     # see equation (3) in the paper for this block
     B = r_sqrt_sigma.T.float().to(device)
+    print(B)
     sample_r = torch.tensordot(noise, B, dims=1) + fe_out #tensor: n_sample*n_batch*label_dim
     sample_r_x = torch.tensordot(noise, B, dims=1) + fx_out #tensor: n_sample*n_batch*label_dim
     norm = torch.distributions.normal.Normal(
