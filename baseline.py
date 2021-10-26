@@ -76,7 +76,7 @@ if __name__ == '__main__':
                     f"l2-{args.l2_coeff}_" \
                     f"c-{args.c_coeff}"
 
-    model_dir = f'fairreg/model/model_{args.dataset}/{param_setting}'
+    model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
     summary_dir = f'fairreg/summary/{args.dataset}/{param_setting}'
     build_path(model_dir, summary_dir)
 
