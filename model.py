@@ -161,7 +161,7 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
     norm = torch.distributions.normal.Normal(
         torch.tensor([0.0]).to(device), torch.tensor([1.0]).to(device))
 
-    # print(sample_r.shape, sample_r.min(),sample_r.max())
+    print(sample_r.shape, sample_r.min(),sample_r.max())
 
     # the probabilities w.r.t. every label in each sample from the batch
     # size: n_sample * n_batch * label_dim
