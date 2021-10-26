@@ -21,7 +21,7 @@ parser.add_argument('-lrdr', "--lr_decay_ratio", default=0.5, type=float, help='
 parser.add_argument('-lrdt', "--lr_decay_times", default=3.0, type=float, help='The number of times learning rate decays')
 parser.add_argument('-ntest', "--n_test_sample", default=10000, type=int, help='The sampling times for the testing')
 parser.add_argument('-ntrain', "--n_train_sample", default=100, type=int, help='The sampling times for the training')
-parser.add_argument('-z', "--z_dim", default=100, type=int, help='z dimention: the number of the independent normal random variables in DMS the rank of the residual covariance matrix')
+parser.add_argument('-z', "--z_dim", default=10, type=int, help='z dimention: the number of the independent normal random variables in DMS the rank of the residual covariance matrix')
 
 parser.add_argument('-label_dim', "--label_dim", default=100, type=int, help='the number of labels in current training')
 parser.add_argument('-latent_dim', "--latent_dim", default=50, type=int, help='the number of labels in current training')
