@@ -262,7 +262,7 @@ def train_mpvae_one_epoch(
                     smooth_reg_fair += fairloss.item()
 
             total_loss.backward()
-            grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 100)
+            nn.utils.clip_grad_norm_(model.parameters(), 10.)
             optimizer.step()
             if scheduler:
                 scheduler.step()
