@@ -12,5 +12,5 @@ module load Conda/3
 conda activate fairmlc
 
 
-python baseline.py -dataset adult -latent_dim 8 -resume -epoch 50 -bs 64
+python baseline.py -dataset adult -latent_dim 8 -epoch 20 -bs 64
 
