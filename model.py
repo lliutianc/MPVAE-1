@@ -153,17 +153,17 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
 
     # standard Gaussian samples
     noise = torch.normal(0, 1, size=(n_sample, n_batch, args.z_dim)).to(device)
-    print(noise.shape, noise.min(), noise.max())
+    # print(noise.shape, noise.min(), noise.max())
     # see equation (3) in the paper for this block
     B = r_sqrt_sigma.T.float().to(device)
-    print(B)
-    print('fe_out:', fe_out.min(), fe_out.max())
+    # print(B)
+    # print('fe_out:', fe_out.min(), fe_out.max())
     sample_r = torch.tensordot(noise, B, dims=1) + fe_out #tensor: n_sample*n_batch*label_dim
     sample_r_x = torch.tensordot(noise, B, dims=1) + fx_out #tensor: n_sample*n_batch*label_dim
     norm = torch.distributions.normal.Normal(
         torch.tensor([0.0]).to(device), torch.tensor([1.0]).to(device))
 
-    print(sample_r.shape, sample_r.min(), sample_r.max())
+    # print(sample_r.shape, sample_r.min(), sample_r.max())
 
     # the probabilities w.r.t. every label in each sample from the batch
     # size: n_sample * n_batch * label_dim
@@ -171,8 +171,8 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
     E = norm.cdf(sample_r) * (1-eps1) + eps1 * 0.5
     # similar for the feature branch
     E_x = norm.cdf(sample_r_x) * (1-eps1) + eps1 * 0.5
-    print(E.shape, E.min(), E.max())
-    print(E_x.shape, E_x.min(), E_x.max())
+    # print(E.shape, E.min(), E.max())
+    # print(E_x.shape, E_x.min(), E_x.max())
 
     def compute_BCE_and_RL_loss(E):
         #compute negative log likelihood (BCE loss) for each sample point
@@ -198,5 +198,5 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
 
     # total loss: refer to equation (5)
     total_loss = (nll_loss + nll_loss_x) * args.nll_coeff + (c_loss + c_loss_x) * args.c_coeff + kl_loss * 1.1
-    print(total_loss.item())
+    # print(total_loss.item())
     return total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob
