@@ -254,7 +254,7 @@ if __name__ == '__main__':
                     f"l2-{args.l2_coeff}_" \
                     f"c-{args.c_coeff}"
     model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
-    for prior in ['cbow', 'mpvae', None]:
+    for prior in ['cbow', 'mpvae', 'none', None]:
         if prior:
             model_file = f'fair_vae_prior_{prior}'
         else:
