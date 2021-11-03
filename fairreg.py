@@ -179,9 +179,13 @@ def hard_cluster(labels_embed, cluster_method='kmeans'):
             else:
                 succ_cluster = True
                 break
+        if succ_cluster is False:
+            raise UserWarning('Labels clustering not converged')
+
     else:
         raise NotImplementedError()
 
+    print(f'{len(counts)} clusters: sizes (descending):{np.sort(counts)[::-1]}')
     assert labels_cluster.shape[0] == labels_embed.shape[0], \
         f'{labels_embed.shape}, {labels_cluster.shape}'
 
