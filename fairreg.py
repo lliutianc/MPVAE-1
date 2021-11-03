@@ -24,8 +24,11 @@ from embed import CBOW, CBOWData
 from main import parser, THRESHOLDS, METRICS
 
 # cluster parameters
-parser.add_argument('-labels_embed_method', type=str, choices=['cbow', 'mpvae', 'mlp'])
-parser.add_argument('-labels_cluster_distance_threshold', type=float, default=.1)
+parser.add_argument('-labels_embed_method', type=str,
+                    choices=['cbow', 'mpvae', 'mlp'])
+parser.add_argument('-labels_cluster_method', type=str)
+parser.add_argument('-labels_cluster_distance_threshold',
+                    type=float, default=.1)
 parser.add_argument('-labels_cluster_min_size', type=int, default=4)
 # fair regularizer
 parser.add_argument('-label_z_fair_coeff', type=float, default=1.0)
@@ -43,7 +46,8 @@ def construct_labels_embed(data):
         prior_vae = VAE(args).to(device)
         prior_vae.train()
 
-        optimizer = optim.Adam(prior_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
+        optimizer = optim.Adam(prior_vae.parameters(),
+                               lr=args.learning_rate, weight_decay=1e-5)
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
@@ -81,7 +85,7 @@ def construct_labels_embed(data):
         labels_logvar = np.concatenate(labels_logvar)
         labels_embed = labels_mu
 
-    if args.labels_embed_method == 'cbow':
+    elif args.labels_embed_method == 'cbow':
         cbow_data = CBOWData(data.labels, device)
         print(len(cbow_data))
         print(cbow_data[0])
@@ -90,7 +94,8 @@ def construct_labels_embed(data):
         prior_cbow.train()
 
         criterion = nn.NLLLoss()
-        optimizer = optim.Adam(prior_cbow.parameters(), lr=args.learning_rate, weight_decay=1e-5)
+        optimizer = optim.Adam(prior_cbow.parameters(),
+                               lr=args.learning_rate, weight_decay=1e-5)
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
@@ -108,12 +113,14 @@ def construct_labels_embed(data):
                         logprob = prior_cbow(context)
                         loss = criterion(logprob, target)
                         loss.backward()
-                        grad_norm = nn.utils.clip_grad_norm_(prior_cbow.parameters(), 100)
+                        grad_norm = nn.utils.clip_grad_norm_(
+                            prior_cbow.parameters(), 100)
                         optimizer.step()
                         scheduler.step()
                         smooth_loss += loss.item()
                         t.set_postfix({'running loss': smooth_loss / (i + 1)})
-            torch.save(prior_cbow.cpu().state_dict(), prior_cbow_checkpoint_path)
+            torch.save(prior_cbow.cpu().state_dict(),
+                       prior_cbow_checkpoint_path)
 
         prior_cbow = prior_cbow.to(device)
         with torch.no_grad():
@@ -124,38 +131,56 @@ def construct_labels_embed(data):
                 input_label = data.labels[1]
                 input_label = torch.from_numpy(input_label).to(device)
 
-                idx = torch.arange(data.labels.shape[1],device=device)
+                idx = torch.arange(data.labels.shape[1], device=device)
                 label_embed = prior_cbow.get_embedding(idx[input_label == 1])
                 labels_embed.append(label_embed.cpu().data.numpy())
 
             labels_embed = np.vstack(labels_embed)
+    
+    else:
+        labels_embed = np.copy(data.labels)
 
     return labels_embed
 
 
-def hard_cluster(labels_embed):
-    # todo: do we have soft clustering algorithm? For example, can we use gumble softmax?
+def hard_cluster(labels_embed, cluster_method='kmeans'):
+    # TODO: do we have soft clustering algorithm? For example, can we use gumble softmax?
 
-    # todo: how to properly cluster labels based on JSD or KL average distance?
+    # TODO: how to properly cluster labels based on JSD or KL average distance?
     #  Take KL for instance, afer merging two points, the new cluster is a Gaussian mixture,
     #  do we still have closed form formula to update new distance?
 
-    from sklearn.cluster import AgglomerativeClustering
-    distance_threshold = args.labels_cluster_distance_threshold
-    succ_cluster = False
-    for cluster_try in range(10):
-        cluster = AgglomerativeClustering(
-            n_clusters=None, distance_threshold=distance_threshold).fit(labels_embed)
-        labels_cluster = cluster.labels_
-        _, counts = np.unique(labels_cluster, return_counts=True)
-        if counts.min() < args.labels_cluster_min_size:
-            distance_threshold *= 2
-        else:
-            succ_cluster = True
-            break
+    if cluster_method == 'hierarchical':
+        from sklearn.cluster import AgglomerativeClustering
+        distance_threshold = args.labels_cluster_distance_threshold
+        succ_cluster = False
+        for _ in range(10):
+            cluster = AgglomerativeClustering(
+                n_clusters=None, distance_threshold=distance_threshold).fit(labels_embed)
+            labels_cluster = cluster.labels_
+            _, counts = np.unique(labels_cluster, return_counts=True)
+            if counts.min() < args.labels_cluster_min_size:
+                distance_threshold *= 2
+            else:
+                succ_cluster = True
+                break
+        if succ_cluster is False:
+            raise UserWarning('Labels clustering not converged')
 
-    if succ_cluster is False:
-        raise UserWarning('Labels clustering not converged')
+    elif cluster_method == 'kmeans':
+        from sklearn.cluster import KMeans
+        n_cluster = 32
+        for _ in range(10):
+            cluster = KMeans(n_clusters=n_cluster).fit(labels_embed)
+            labels_cluster = cluster.labels_
+            _, counts = np.unique(labels_cluster, return_counts=True)
+            if counts.min() < args.labels_cluster_min_size:
+                n_cluster /= 2
+            else:
+                succ_cluster = True
+                break
+    else:
+        raise NotImplementedError()
 
     assert labels_cluster.shape[0] == labels_embed.shape[0], \
         f'{labels_embed.shape}, {labels_cluster.shape}'
@@ -164,7 +189,7 @@ def hard_cluster(labels_embed):
 
 
 def train_mpvae_one_epoch(
-    data, model, optimizer, scheduler, penalize_unfair, eval_after_one_epoch, args):
+        data, model, optimizer, scheduler, penalize_unfair, eval_after_one_epoch, args):
 
     np.random.shuffle(data.train_idx)
     device = next(model.parameters()).device
@@ -217,8 +242,10 @@ def train_mpvae_one_epoch(
                 label_z = model.label_reparameterize(label_mu, label_logvar)
                 feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
 
-                clusters = torch.from_numpy(data.label_clusters[idx]).to(device)
-                sensitive_feat = torch.from_numpy(data.sensitive_feat[idx]).to(device)
+                clusters = torch.from_numpy(
+                    data.label_clusters[idx]).to(device)
+                sensitive_feat = torch.from_numpy(
+                    data.sensitive_feat[idx]).to(device)
 
                 reg_labels_z_unfair = 0.
                 reg_feats_z_unfair = 0.
@@ -233,7 +260,8 @@ def train_mpvae_one_epoch(
                     cluster_label_z = label_z[idx_tensor[target_centroid]]
                     if len(cluster_label_z):
                         for sensitive in sensitive_centroids:
-                            target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
+                            target_sensitive = torch.all(
+                                torch.eq(sensitive_feat, sensitive), dim=1)
                             sensitive_centroid = torch.all(
                                 torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
                             cluster_labels_z_sensitive = label_z[idx_tensor[sensitive_centroid]]
@@ -245,7 +273,8 @@ def train_mpvae_one_epoch(
                     cluster_feat_z = feat_z[idx_tensor[target_centroid]]
                     if len(cluster_feat_z):
                         for sensitive in sensitive_centroids:
-                            target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
+                            target_sensitive = torch.all(
+                                torch.eq(sensitive_feat, sensitive), dim=1)
                             sensitive_centroid = torch.all(
                                 torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
                             cluster_feats_z_sensitive = feat_z[idx_tensor[sensitive_centroid]]
@@ -254,7 +283,7 @@ def train_mpvae_one_epoch(
                                     cluster_feats_z_sensitive.mean(0) - cluster_feat_z.mean(0), 2))
 
                 fairloss = args.label_z_fair_coeff * reg_labels_z_unfair + \
-                           args.feat_z_fair_coeff * reg_feats_z_unfair
+                    args.feat_z_fair_coeff * reg_feats_z_unfair
                 if isinstance(fairloss, float):
                     raise UserWarning('Fail to construct fairness regualizers')
                 else:
@@ -289,9 +318,9 @@ def train_mpvae_one_epoch(
             temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy())
 
             running_postfix = {'total_loss': smooth_total_loss / float(i + 1),
-                     'nll_loss_label': smooth_nll_loss / float(i + 1),
-                     'nll_loss_feat': smooth_nll_loss_x / float(i + 1),
-                     }
+                               'nll_loss_label': smooth_nll_loss / float(i + 1),
+                               'nll_loss_feat': smooth_nll_loss_x / float(i + 1),
+                               }
             if penalize_unfair:
                 running_postfix['fair_loss'] = smooth_reg_fair / float(i + 1)
             t.set_postfix(running_postfix)
@@ -371,7 +400,8 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
 
         best_val_metrics = None
         for threshold in THRESHOLDS:
-            val_metrics = evals.compute_metrics(all_indiv_prob, all_label, threshold, all_metrics=True)
+            val_metrics = evals.compute_metrics(
+                all_indiv_prob, all_label, threshold, all_metrics=True)
 
             if best_val_metrics is None:
                 best_val_metrics = {}
@@ -380,9 +410,11 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
             else:
                 for metric in METRICS:
                     if 'FDR' in metric:
-                        best_val_metrics[metric] = min(best_val_metrics[metric], val_metrics[metric])
+                        best_val_metrics[metric] = min(
+                            best_val_metrics[metric], val_metrics[metric])
                     else:
-                        best_val_metrics[metric] = max(best_val_metrics[metric], val_metrics[metric])
+                        best_val_metrics[metric] = max(
+                            best_val_metrics[metric], val_metrics[metric])
 
         time_str = datetime.datetime.now().isoformat()
         acc, ha, ebf1, maf1, mif1 = best_val_metrics['ACC'], best_val_metrics['HA'], best_val_metrics[
@@ -393,7 +425,8 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
         print("**********************************************")
         print(
             "valid results: %s\nacc=%.6f\tha=%.6f\texam_f1=%.6f, macro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tc_loss=%.6f\ttotal_loss=%.6f" % (
-                time_str, acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff, c_loss * args.c_coeff,
+                time_str, acc, ha, ebf1, maf1, mif1, nll_loss *
+                args.nll_coeff, c_loss * args.c_coeff,
                 total_loss))
         print("**********************************************")
 
@@ -406,7 +439,8 @@ def train_fair_through_regularize():
 
     np.random.seed(4)
     input_feat, labels = load_data(args.dataset, args.mode)
-    train_cnt, valid_cnt = int(len(input_feat) * 0.7), int(len(input_feat) * .2)
+    train_cnt, valid_cnt = int(
+        len(input_feat) * 0.7), int(len(input_feat) * .2)
     train_idx = np.arange(train_cnt)
     valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
 
@@ -421,11 +455,13 @@ def train_fair_through_regularize():
     n_iter = one_epoch_iter * args.max_epoch
 
     labels_embed = construct_labels_embed(data)
-    label_clusters = hard_cluster(labels_embed)
+    label_clusters = hard_cluster(labels_embed, args.labels_cluster_method)
     # retrain a new mpvae + fair regularization
     np.random.seed(4)
-    nonsensitive_feat, sensitive_feat, labels = load_data(args.dataset, args.mode, True)
-    train_cnt, valid_cnt = int(len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
+    nonsensitive_feat, sensitive_feat, labels = load_data(
+        args.dataset, args.mode, True)
+    train_cnt, valid_cnt = int(
+        len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
     train_idx = np.arange(train_cnt)
     valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
 
@@ -438,15 +474,18 @@ def train_fair_through_regularize():
     fair_vae = VAE(args).to(device)
     fair_vae.train()
 
-    fair_vae_checkpoint_path = os.path.join(model_dir, f'fair_vae_prior_{args.labels_embed_method}')
+    fair_vae_checkpoint_path = os.path.join(
+        model_dir, f'fair_vae_prior_{args.labels_embed_method}')
     if args.resume and os.path.exists(fair_vae_checkpoint_path):
         print('use a trained fair mpvae...')
         fair_vae.load_state_dict(torch.load(fair_vae_checkpoint_path))
     else:
         print('train a new fair mpvae...')
 
-    optimizer = optim.Adam(fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
-    optimizer_fair = optim.Adam(fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
+    optimizer = optim.Adam(fair_vae.parameters(),
+                           lr=args.learning_rate, weight_decay=1e-5)
+    optimizer_fair = optim.Adam(
+        fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
@@ -460,183 +499,10 @@ def train_fair_through_regularize():
     torch.save(fair_vae.cpu().state_dict(), fair_vae_checkpoint_path)
 
 
-# def train_mpvae_one_epoch(data, model, optimizer, scheduler, args, eval_after_one_epoch=True):
-#     np.random.shuffle(data.train_idx)
-#
-#     smooth_nll_loss = 0.0 # label encoder decoder cross entropy loss
-#     smooth_nll_loss_x = 0.0 # feature encoder decoder cross entropy loss
-#     smooth_c_loss = 0.0 # label encoder decoder ranking loss
-#     smooth_c_loss_x = 0.0 # feature encoder decoder ranking loss
-#     smooth_kl_loss = 0.0 # kl divergence
-#     smooth_total_loss = 0.0 # total loss
-#     smooth_macro_f1 = 0.0 # macro_f1 score
-#     smooth_micro_f1 = 0.0 # micro_f1 score
-#     #smooth_l2_loss = 0.0
-#
-#     temp_label = []
-#     temp_indiv_prob = []
-#
-#     with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='VAE') as t:
-#         for i in t:
-#             optimizer.zero_grad()
-#             start = i * data.batch_size
-#             end = min(data.batch_size * (i + 1), len(data.train_idx))
-#
-#             input_feat = data.input_feat[data.train_idx[start:end]]
-#             input_feat = torch.from_numpy(input_feat).to(device)
-#
-#             input_label = data.labels[data.train_idx[start:end]]
-#             input_label = torch.from_numpy(input_label)
-#             input_label = deepcopy(input_label).float().to(device)
-#
-#             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
-#                 input_label, input_feat)
-#
-#             if args.residue_sigma == "random":
-#                 r_sqrt_sigma = torch.from_numpy(
-#                     np.random.uniform(
-#                         -np.sqrt(6.0 / (args.label_dim + args.z_dim)),
-#                         np.sqrt(6.0 / (args.label_dim + args.z_dim)), (args.label_dim, args.z_dim))).to(
-#                     device)
-#                 total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
-#                     input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
-#                     r_sqrt_sigma, args)
-#             else:
-#                 total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
-#                     input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
-#                     model.r_sqrt_sigma, args)
-#
-#             total_loss.backward()
-#             grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 100)
-#             optimizer.step()
-#             if scheduler:
-#                 scheduler.step()
-#
-#             # evaluation
-#             train_metrics = evals.compute_metrics(
-#                 indiv_prob.cpu().data.numpy(), input_label.cpu().data.numpy(), 0.5,
-#                 all_metrics=False)
-#             macro_f1, micro_f1 = train_metrics['maF1'], train_metrics['miF1']
-#
-#             smooth_nll_loss += nll_loss.item()
-#             smooth_nll_loss_x += nll_loss_x.item()
-#             # smooth_l2_loss += l2_loss
-#             smooth_c_loss += c_loss.item()
-#             smooth_c_loss_x += c_loss_x.item()
-#             smooth_kl_loss += kl_loss.item()
-#             smooth_total_loss += total_loss.item()
-#             smooth_macro_f1 += macro_f1.item()
-#             smooth_micro_f1 += micro_f1.item()
-#
-#             # log the labels
-#             temp_label.append(input_label.cpu().data.numpy())
-#             # log the individual prediction of the probability on each label
-#             temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy())
-#
-#             t.set_postfix({'total_loss': smooth_total_loss / float(i+1),
-#                            'nll_loss_label': smooth_nll_loss / float(i+1),
-#                            'nll_loss_feat': smooth_nll_loss_x / float(i+1),
-#                            })
-#
-#     if eval_after_one_epoch:
-#
-#         nll_loss = smooth_nll_loss / float(i+1)
-#         nll_loss_x = smooth_nll_loss_x / float(i+1)
-#         c_loss = smooth_c_loss / float(i+1)
-#         c_loss_x = smooth_c_loss_x / float(i+1)
-#         kl_loss = smooth_kl_loss / float(i+1)
-#         total_loss = smooth_total_loss / float(i+1)
-#         macro_f1 = smooth_macro_f1 / float(i+1)
-#         micro_f1 = smooth_micro_f1 / float(i+1)
-#
-#         temp_indiv_prob = np.array(temp_indiv_prob).reshape(-1)
-#         temp_label = np.array(temp_label).reshape(-1)
-#
-#         time_str = datetime.datetime.now().isoformat()
-#         print(
-#             "macro_f1=%.6f, micro_f1=%.6f\nnll_loss=%.6f\tnll_loss_x=%.6f\nc_loss=%.6f\tc_loss_x=%.6f\tkl_loss=%.6f\ntotal_loss=%.6f\n" % (
-#             macro_f1, micro_f1, nll_loss * args.nll_coeff,
-#             nll_loss_x * args.nll_coeff, c_loss * args.c_coeff, c_loss_x * args.c_coeff, kl_loss,
-#             total_loss))
-#
-#         current_loss, val_metrics = validate_mpvae(
-#             model, data.input_feat, data.labels, data.valid_idx, args)
-
-
-# def regularzie_mpvae_unfair(data, model, optimizer, args, use_valid=True):
-#     if use_valid:
-#         idxs = data.valid_idx
-#     else:
-#         idxs = data.train_idx
-#
-#     np.random.shuffle(idxs)
-#
-#     optimizer.zero_grad()
-#
-#     labels_z, feats_z = [], []
-#     for i in range(int(len(idxs) / float(data.batch_size)) + 1):
-#         start = i * data.batch_size
-#         end = min(data.batch_size * (i + 1), len(idxs))
-#
-#         input_feat = data.input_feat[idxs[start:end]]
-#         input_feat = torch.from_numpy(input_feat).to(device)
-#
-#         input_label = data.labels[idxs[start:end]]
-#         input_label = torch.from_numpy(input_label).to(device)
-#         label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
-#             input_label, input_feat)
-#
-#         label_z = model.label_reparameterize(label_mu, label_logvar)
-#         feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
-#         labels_z.append(label_z)
-#         feats_z.append(feat_z)
-#
-#     labels_z = torch.cat(labels_z)
-#     feats_z = torch.cat(feats_z)
-#     clusters = torch.from_numpy(data.label_clusters[idxs]).to(device)
-#     sensitive_feat = torch.from_numpy(data.sensitive_feat[idxs]).to(device)
-#
-#     labels_z_unfair = 0.
-#     feats_z_unfair = 0.
-#     label_centroids = torch.unique(clusters)
-#     sensitive_centroids = torch.unique(sensitive_feat, dim=0)
-#
-#     idx = torch.arange(clusters.shape[0])
-#     for centroid in label_centroids:
-#         target_centroid = torch.eq(clusters, centroid)
-#         cluster_labels_z = labels_z[idx[target_centroid]]
-#         if len(cluster_labels_z):
-#             for sensitive in sensitive_centroids:
-#                 target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
-#                 sensitive_centroid = torch.all(
-#                     torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
-#                 cluster_labels_z_sensitive = labels_z[idx[sensitive_centroid]]
-#                 if len(cluster_labels_z_sensitive):
-#                     labels_z_unfair += torch.pow(
-#                         cluster_labels_z_sensitive.mean() - cluster_labels_z.mean(), 2)
-#
-#         cluster_feats_z = feats_z[idx[target_centroid]]
-#         if len(cluster_feats_z):
-#             for sensitive in sensitive_centroids:
-#                 target_sensitive = torch.all(torch.eq(sensitive_feat, sensitive), dim=1)
-#                 sensitive_centroid = torch.all(
-#                     torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
-#                 cluster_feats_z_sensitive = feats_z[idx[sensitive_centroid]]
-#                 if len(cluster_feats_z_sensitive):
-#                     feats_z_unfair += torch.pow(
-#                         cluster_feats_z_sensitive.mean() - cluster_feats_z.mean(), 2)
-#
-#     fairloss = args.label_z_fair_coeff * labels_z_unfair + args.feat_z_fair_coeff * feats_z_unfair
-#     if isinstance(fairloss, float):
-#         raise UserWarning('Fail to construct fairness regualizers')
-#     else:
-#         fairloss.backward()
-#         optimizer.step()
-
-
 if __name__ == '__main__':
     args = parser.parse_args()
-    device = torch.device(f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
+    device = torch.device(
+        f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
     # device = torch.device('cpu')
     param_setting = f"lr-{args.learning_rate}_" \
                     f"lr-decay_{args.lr_decay_ratio}_" \
