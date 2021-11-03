@@ -313,9 +313,9 @@ def train_mpvae_one_epoch(
             smooth_micro_f1 += micro_f1.item()
 
             # log the labels
-            temp_label.append(input_label.cpu().data.numpy())
+            # temp_label.append(input_label.cpu().data.numpy())
             # log the individual prediction of the probability on each label
-            temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy())
+            # temp_indiv_prob.append(indiv_prob.detach().data.cpu().numpy())
 
             running_postfix = {'total_loss': smooth_total_loss / float(i + 1),
                                'nll_loss_label': smooth_nll_loss / float(i + 1),
@@ -335,8 +335,8 @@ def train_mpvae_one_epoch(
         macro_f1 = smooth_macro_f1 / float(i + 1)
         micro_f1 = smooth_micro_f1 / float(i + 1)
 
-        temp_indiv_prob = np.array(temp_indiv_prob).reshape(-1)
-        temp_label = np.array(temp_label).reshape(-1)
+        # temp_indiv_prob = np.array(temp_indiv_prob).reshape(-1)
+        # temp_label = np.array(temp_label).reshape(-1)
 
         time_str = datetime.datetime.now().isoformat()
         print(
