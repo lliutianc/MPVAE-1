@@ -25,7 +25,7 @@ from main import parser, THRESHOLDS, METRICS
 
 # cluster parameters
 parser.add_argument('-labels_embed_method', type=str,
-                    choices=['cbow', 'mpvae', 'mlp'])
+                    choices=['cbow', 'mpvae', 'none'])
 parser.add_argument('-labels_cluster_method', type=str)
 parser.add_argument('-labels_cluster_distance_threshold',
                     type=float, default=.1)
