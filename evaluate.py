@@ -286,3 +286,4 @@ if __name__ == '__main__':
                 pickle.dump(valid, open(os.path.join(model_dir, 'valid_metrics.pickle'), 'wb'))
 
 
+# python evaluate.py -dataset adult -latent_dim 8 -cuda 3
