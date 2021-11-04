@@ -17,11 +17,11 @@ from data import load_data
 from fairreg import construct_labels_embed, hard_cluster
 
 
-parser.add_argument('fair_strate', type=str, choices=[
+parser.add_argument('-fairness_strate', type=str, choices=[
                     'mpvae', 'cbow', 'none', None])
 
 
-def evaluate_mpvae(model, data, fairness_strate='none', eval_fairness=True, eval_train=True, eval_valid=True):
+def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=True):
     with torch.no_grad():
         model.eval()
 
