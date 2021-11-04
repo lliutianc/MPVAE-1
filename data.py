@@ -164,9 +164,9 @@ def load_donor(subset):
     return feat, labels, sensitive
 
 
-def cast_to_numpy(df, to_onehot=True):
+def cast_to_numpy(df, use_onehot=True):
     npy = np.array(df)
-    if to_onehot:
+    if use_onehot:
         npy_oh = []
         for i in range(npy.shape[1]):
             col = npy[:, i]
@@ -185,14 +185,19 @@ def onehot(col):
     return np.equal(unique_val[np.newaxis, :], col[:, np.newaxis]).astype(np.int32)
 
 
-def load_data(dataset, mode, separate_sensitive=False):
+def load_data(dataset, mode, separate_sensitive=False, use_onehot=True):
     if dataset not in ['adult', 'donor']:
         raise NotImplementedError()
 
     datapath = DATASETPATH + dataset
-    sensitive_featfile = os.path.join(datapath, 'sensitive_oh.npy')
-    nonsensitive_featfile = os.path.join(datapath, 'nonsensitive_oh.npy')
-    labelfile = os.path.join(datapath, 'label_oh.npy')
+    if use_onehot:
+        sensitive_featfile = os.path.join(datapath, 'sensitive_oh.npy')
+        nonsensitive_featfile = os.path.join(datapath, 'nonsensitive_oh.npy')
+        labelfile = os.path.join(datapath, 'label_oh.npy')
+    else:
+        sensitive_featfile = os.path.join(datapath, 'sensitive.npy')
+        nonsensitive_featfile = os.path.join(datapath, 'nonsensitive.npy')
+        labelfile = os.path.join(datapath, 'label.npy')
 
     if not allexists(sensitive_featfile, nonsensitive_featfile, labelfile):
         print('prepare dataset...')
@@ -206,9 +211,9 @@ def load_data(dataset, mode, separate_sensitive=False):
         sensitive_feat = feat[sensitive]
         nonsensitive_feat = feat.drop(sensitive, axis=1)
 
-        nonsensitive_feat = cast_to_numpy(nonsensitive_feat)
-        sensitive_feat = cast_to_numpy(sensitive_feat)
-        labels = cast_to_numpy(labels)
+        nonsensitive_feat = cast_to_numpy(nonsensitive_feat, use_onehot)
+        sensitive_feat = cast_to_numpy(sensitive_feat, use_onehot)
+        labels = cast_to_numpy(labels, use_onehot)
 
         np.save(open(sensitive_featfile, 'wb'), sensitive_feat)
         np.save(open(nonsensitive_featfile, 'wb'), nonsensitive_feat)
