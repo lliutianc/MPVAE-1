@@ -52,7 +52,7 @@ def construct_labels_embed(data, args):
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
-        prior_vae_checkpoint_path = os.path.join(model_dir, f'prior_vae')
+        prior_vae_checkpoint_path = os.path.join(args.model_dir, f'prior_vae')
         if args.resume and os.path.exists(prior_vae_checkpoint_path):
             print('load trained prior mpvae...')
             prior_vae.load_state_dict(torch.load(prior_vae_checkpoint_path))
@@ -97,7 +97,7 @@ def construct_labels_embed(data, args):
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
-        prior_cbow_checkpoint_path = os.path.join(model_dir, f'prior_cbow')
+        prior_cbow_checkpoint_path = os.path.join(args.model_dir, f'prior_cbow')
         if args.resume and os.path.exists(prior_cbow_checkpoint_path):
             print('load trained prior cbow...')
             prior_cbow.load_state_dict(torch.load(prior_cbow_checkpoint_path))
@@ -479,7 +479,7 @@ def train_fair_through_regularize():
     fair_vae.train()
 
     fair_vae_checkpoint_path = os.path.join(
-        model_dir, f'fair_vae_prior_{args.labels_embed_method}')
+        args.model_dir, f'fair_vae_prior_{args.labels_embed_method}')
     if args.resume and os.path.exists(fair_vae_checkpoint_path):
         print('use a trained fair mpvae...')
         fair_vae.load_state_dict(torch.load(fair_vae_checkpoint_path))
@@ -515,8 +515,8 @@ if __name__ == '__main__':
                     f"l2-{args.l2_coeff}_" \
                     f"c-{args.c_coeff}"
 
-    model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
-    summary_dir = f'fairreg/summary/{args.dataset}/{param_setting}'
-    build_path(model_dir, summary_dir)
+    args.model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
+    args.summary_dir = f'fairreg/summary/{args.dataset}/{param_setting}'
+    build_path(args.model_dir, args.summary_dir)
 
     train_fair_through_regularize()

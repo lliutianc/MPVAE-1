@@ -304,13 +304,13 @@ if __name__ == '__main__':
                     f"nll-{args.nll_coeff}_" \
                     f"l2-{args.l2_coeff}_" \
                     f"c-{args.c_coeff}"
-    model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
+    args.model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
     for prior in ['cbow', 'mpvae', 'none', None]:
         if prior:
             model_file = f'fair_vae_prior_{prior}'
         else:
             model_file = 'baseline_vae'
-        model_file = os.path.join(model_dir, model_file)
+        model_file = os.path.join(args.model_dir, model_file)
         print(f'try loading model from: {model_file}')
 
         if os.path.exists(model_file):
@@ -344,10 +344,10 @@ if __name__ == '__main__':
 
             if train:
                 pickle.dump(train, open(os.path.join(
-                    model_dir, 'train_metrics.pickle'), 'wb'))
+                    args.model_dir, 'train_metrics.pickle'), 'wb'))
             if valid:
                 pickle.dump(valid, open(os.path.join(
-                    model_dir, 'valid_metrics.pickle'), 'wb'))
+                    args.model_dir, 'valid_metrics.pickle'), 'wb'))
 
 
 # python evaluate.py -dataset adult -latent_dim 8 -cuda 3
