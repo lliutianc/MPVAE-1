@@ -17,7 +17,8 @@ from data import load_data
 from fairreg import construct_labels_embed, hard_cluster
 
 
-parser.add_argument('fair_strate', type=str, choice=['mpvae', 'cbow', 'none', None])
+parser.add_argument('fair_strate', type=str, choices=[
+                    'mpvae', 'cbow', 'none', None])
 
 
 def evaluate_mpvae(model, data, fairness_strate='none', eval_fairness=True, eval_train=True, eval_valid=True):
