@@ -44,7 +44,7 @@ def construct_labels_embed(data, args):
 
     if args.labels_embed_method == 'mpvae':
         # train a prior mpvae
-        prior_vae = VAE(args).to(device)
+        prior_vae = VAE(args).to(args.device)
         prior_vae.train()
 
         optimizer = optim.Adam(prior_vae.parameters(),
@@ -64,7 +64,7 @@ def construct_labels_embed(data, args):
                     penalize_unfair=False, eval_after_one_epoch=True, args=args)
             torch.save(prior_vae.cpu().state_dict(), prior_vae_checkpoint_path)
 
-        prior_vae = prior_vae.to(device)
+        prior_vae = prior_vae.to(args.device)
         with torch.no_grad():
             prior_vae.eval()
             idxs = np.arange(int(len(data.input_feat)))
@@ -74,9 +74,9 @@ def construct_labels_embed(data, args):
                 end = min(data.batch_size * (i + 1), len(idxs))
 
                 input_feat = data.input_feat[idxs[start:end]]
-                input_feat = torch.from_numpy(input_feat).to(device)
+                input_feat = torch.from_numpy(input_feat).to(args.device)
                 input_label = data.labels[idxs[start:end]]
-                input_label = torch.from_numpy(input_label).to(device)
+                input_label = torch.from_numpy(input_label).to(args.device)
                 label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = prior_vae(
                     input_label, input_feat)
                 labels_mu.append(label_mu.cpu().data.numpy())
@@ -87,8 +87,8 @@ def construct_labels_embed(data, args):
         labels_embed = labels_mu
 
     elif args.labels_embed_method == 'cbow':
-        cbow_data = CBOWData(data.labels[train_idx], device)
-        prior_cbow = CBOW(data.labels.shape[1], args.latent_dim, 64).to(device)
+        cbow_data = CBOWData(data.labels[train_idx], args.device)
+        prior_cbow = CBOW(data.labels.shape[1], args.latent_dim, 64).to(args.device)
         prior_cbow.train()
 
         criterion = nn.NLLLoss()
@@ -120,15 +120,15 @@ def construct_labels_embed(data, args):
             torch.save(prior_cbow.cpu().state_dict(),
                        prior_cbow_checkpoint_path)
 
-        prior_cbow = prior_cbow.to(device)
+        prior_cbow = prior_cbow.to(args.device)
         with torch.no_grad():
             prior_cbow.eval()
             labels_embed = []
             for idx in np.arange(int(len(data.input_feat))):
                 input_label = data.labels[1]
-                input_label = torch.from_numpy(input_label).to(device)
+                input_label = torch.from_numpy(input_label).to(args.device)
 
-                idx = torch.arange(data.labels.shape[1], device=device)
+                idx = torch.arange(data.labels.shape[1], device=args.device)
                 label_embed = prior_cbow.get_embedding(idx[input_label == 1])
                 labels_embed.append(label_embed.cpu().data.numpy())
 
@@ -197,7 +197,7 @@ def train_mpvae_one_epoch(
         data, model, optimizer, scheduler, penalize_unfair, eval_after_one_epoch, args):
 
     np.random.shuffle(data.train_idx)
-    device = next(model.parameters()).device
+    args.device = next(model.parameters()).args.device
 
     smooth_nll_loss = 0.0  # label encoder decoder cross entropy loss
     smooth_nll_loss_x = 0.0  # feature encoder decoder cross entropy loss
@@ -220,10 +220,10 @@ def train_mpvae_one_epoch(
             end = min(data.batch_size * (i + 1), len(data.train_idx))
             idx = data.train_idx[start:end]
 
-            input_feat = torch.from_numpy(data.input_feat[idx]).to(device)
+            input_feat = torch.from_numpy(data.input_feat[idx]).to(args.device)
 
             input_label = torch.from_numpy(data.labels[idx])
-            input_label = deepcopy(input_label).float().to(device)
+            input_label = deepcopy(input_label).float().to(args.device)
 
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                 input_label, input_feat)
@@ -234,7 +234,7 @@ def train_mpvae_one_epoch(
                         -np.sqrt(6.0 / (args.label_dim + args.z_dim)),
                         np.sqrt(6.0 / (args.label_dim + args.z_dim)),
                         (args.label_dim, args.z_dim))).to(
-                    device)
+                    args.device)
                 total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
                     input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
                     r_sqrt_sigma, args)
@@ -248,9 +248,9 @@ def train_mpvae_one_epoch(
                 feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
 
                 clusters = torch.from_numpy(
-                    data.label_clusters[idx]).to(device)
+                    data.label_clusters[idx]).to(args.device)
                 sensitive_feat = torch.from_numpy(
-                    data.sensitive_feat[idx]).to(device)
+                    data.sensitive_feat[idx]).to(args.device)
 
                 reg_labels_z_unfair = 0.
                 reg_feats_z_unfair = 0.
@@ -353,7 +353,7 @@ def train_mpvae_one_epoch(
 
 
 def validate_mpvae(model, feat, labels, valid_idx, args):
-    device = next(model.parameters()).device
+    args.device = next(model.parameters()).args.device
     with torch.no_grad():
         model.eval()
         print("performing validation...")
@@ -373,9 +373,9 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
                 end = min(real_batch_size * (i + 1), len(valid_idx))
                 input_feat = feat[valid_idx[start:end]]
                 input_label = labels[valid_idx[start:end]]
-                input_feat, input_label = torch.from_numpy(input_feat).to(device), torch.from_numpy(
+                input_feat, input_label = torch.from_numpy(input_feat).to(args.device), torch.from_numpy(
                     input_label)
-                input_label = deepcopy(input_label).float().to(device)
+                input_label = deepcopy(input_label).float().to(args.device)
 
                 label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                     input_label, input_feat)
@@ -475,7 +475,7 @@ def train_fair_through_regularize():
     args.feature_dim = nonsensitive_feat.shape[1]
     args.label_dim = labels.shape[1]
 
-    fair_vae = VAE(args).to(device)
+    fair_vae = VAE(args).to(args.device)
     fair_vae.train()
 
     fair_vae_checkpoint_path = os.path.join(
@@ -505,9 +505,9 @@ def train_fair_through_regularize():
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    device = torch.device(
+    args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
-    # device = torch.device('cpu')
+    # args.device = torch.args.device('cpu')
     param_setting = f"lr-{args.learning_rate}_" \
                     f"lr-decay_{args.lr_decay_ratio}_" \
                     f"lr-times_{args.lr_decay_times}_" \

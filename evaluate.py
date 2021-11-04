@@ -46,10 +46,10 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     idx = data.train_idx[start:end]
 
                     input_feat = torch.from_numpy(
-                        data.input_feat[idx]).to(device)
+                        data.input_feat[idx]).to(args.device)
 
                     input_label = torch.from_numpy(data.labels[idx])
-                    input_label = deepcopy(input_label).float().to(device)
+                    input_label = deepcopy(input_label).float().to(args.device)
 
                     label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                         input_label, input_feat)
@@ -106,10 +106,11 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                         train_feat_z.shape[1] == args.latent_dim
                     mean_diffs = 0.
                     idxs = np.arange(len(data.train_idx))
-                    
+
                     sensitive_centroid = np.unique(train_sensitive, axis=0)
                     for label_centroid in np.unique(data.label_clusters[idxs]):
-                        target_centroid = np.equal(data.label_clusters[idxs], label_centroid)
+                        target_centroid = np.equal(
+                            data.label_clusters[idxs], label_centroid)
 
                         cluster_feat_z = train_feat_z[idxs[target_centroid]]
                         if len(cluster_feat_z):
@@ -166,10 +167,10 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     idx = data.valid_idx[start:end]
 
                     input_feat = torch.from_numpy(
-                        data.input_feat[idx]).to(device)
+                        data.input_feat[idx]).to(args.device)
 
                     input_label = torch.from_numpy(data.labels[idx])
-                    input_label = deepcopy(input_label).float().to(device)
+                    input_label = deepcopy(input_label).float().to(args.device)
 
                     label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                         input_label, input_feat)
@@ -250,10 +251,11 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                         valid_feat_z.shape[1] == args.latent_dim
                     mean_diffs = 0.
                     idxs = np.arange(len(data.valid_idx))
-                    
+
                     sensitive_centroid = np.unique(valid_sensitive, axis=0)
                     for label_centroid in np.unique(data.label_clusters[idxs]):
-                        target_centroid = np.equal(data.label_clusters[idxs], label_centroid)
+                        target_centroid = np.equal(
+                            data.label_clusters[idxs], label_centroid)
 
                         cluster_feat_z = valid_feat_z[idxs[target_centroid]]
                         if len(cluster_feat_z):
@@ -294,7 +296,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
 if __name__ == '__main__':
 
     args = parser.parse_args()
-    device = torch.device(
+    args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
     param_setting = f"lr-{args.learning_rate}_" \
                     f"lr-decay_{args.lr_decay_ratio}_" \
@@ -313,7 +315,7 @@ if __name__ == '__main__':
 
         if os.path.exists(model_file):
             np.random.seed(4)
-            #prepare label_clusters
+            # prepare label_clusters
             nonsensitive_feat, sensitive_feat, labels = load_data(
                 args.dataset, args.mode, True)
             train_cnt, valid_cnt = int(
@@ -335,7 +337,7 @@ if __name__ == '__main__':
                 label_clusters = np.ones_like(train_idx)
             data.label_clusters = label_clusters
 
-            model = VAE(args).to(device)
+            model = VAE(args).to(args.device)
             model.load_state_dict(torch.load(model_file))
             print(f'start evaluating {model_file}...')
             train, valid = evaluate_mpvae(model, data, args.fairness_strate)
