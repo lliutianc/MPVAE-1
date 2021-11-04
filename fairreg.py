@@ -26,7 +26,7 @@ from main import parser, THRESHOLDS, METRICS
 # cluster parameters
 parser.add_argument('-labels_embed_method', type=str,
                     choices=['cbow', 'mpvae', 'none'])
-parser.add_argument('-labels_cluster_method', type=str)
+parser.add_argument('-labels_cluster_method', type=str, default='kmeans')
 parser.add_argument('-labels_cluster_distance_threshold',
                     type=float, default=.1)
 parser.add_argument('-labels_cluster_min_size', type=int, default=4)
@@ -38,8 +38,9 @@ parser.add_argument('-feat_z_fair_coeff', type=float, default=1.0)
 sys.path.append('./')
 
 
-def construct_labels_embed(data):
+def construct_labels_embed(data, args):
     one_epoch_iter = np.ceil(len(data.train_idx) / args.batch_size)
+    train_idx = np.arange(int(len(data.labels) * .7))
 
     if args.labels_embed_method == 'mpvae':
         # train a prior mpvae
@@ -66,7 +67,7 @@ def construct_labels_embed(data):
         prior_vae = prior_vae.to(device)
         with torch.no_grad():
             prior_vae.eval()
-            idxs = np.arange(int(len(data.input_feat) * .9))
+            idxs = np.arange(int(len(data.input_feat)))
             labels_mu, labels_logvar = [], []
             for i in range(int(len(idxs) / float(data.batch_size)) + 1):
                 start = i * data.batch_size
@@ -86,10 +87,7 @@ def construct_labels_embed(data):
         labels_embed = labels_mu
 
     elif args.labels_embed_method == 'cbow':
-        cbow_data = CBOWData(data.labels, device)
-        print(len(cbow_data))
-        print(cbow_data[0])
-        # cbow_dataloader = DataLoader(cbow_data, batch_size=data.batch_size)
+        cbow_data = CBOWData(data.labels[train_idx], device)
         prior_cbow = CBOW(data.labels.shape[1], args.latent_dim, 64).to(device)
         prior_cbow.train()
 
@@ -126,8 +124,7 @@ def construct_labels_embed(data):
         with torch.no_grad():
             prior_cbow.eval()
             labels_embed = []
-
-            for idx in np.arange(int(len(data.input_feat) * .9)):
+            for idx in np.arange(int(len(data.input_feat))):
                 input_label = data.labels[1]
                 input_label = torch.from_numpy(input_label).to(device)
 
@@ -137,26 +134,29 @@ def construct_labels_embed(data):
 
             labels_embed = np.vstack(labels_embed)
     
-    else:
+    elif args.labels_embed_method == 'none':
         labels_embed = np.copy(data.labels)
+    else:
+        raise NotImplementedError(
+            f'Unsupported label embedding method: {args.labels_embed_method}')
 
     return labels_embed
 
 
-def hard_cluster(labels_embed, cluster_method='kmeans'):
+def hard_cluster(labels_embed, cluster_method, args):
     # TODO: do we have soft clustering algorithm? For example, can we use gumble softmax?
 
     # TODO: how to properly cluster labels based on JSD or KL average distance?
     #  Take KL for instance, afer merging two points, the new cluster is a Gaussian mixture,
     #  do we still have closed form formula to update new distance?
-
+    train_idx = np.arange(int(len(labels_embed) * .7))
     if cluster_method == 'hierarchical':
         from sklearn.cluster import AgglomerativeClustering
         distance_threshold = args.labels_cluster_distance_threshold
         succ_cluster = False
         for _ in range(10):
             cluster = AgglomerativeClustering(
-                n_clusters=None, distance_threshold=distance_threshold).fit(labels_embed)
+                n_clusters=None, distance_threshold=distance_threshold).fit(labels_embed[train_idx])
             labels_cluster = cluster.labels_
             _, counts = np.unique(labels_cluster, return_counts=True)
             if counts.min() < args.labels_cluster_min_size:
@@ -171,7 +171,7 @@ def hard_cluster(labels_embed, cluster_method='kmeans'):
         from sklearn.cluster import KMeans
         n_cluster = 32
         for _ in range(10):
-            cluster = KMeans(n_clusters=n_cluster).fit(labels_embed)
+            cluster = KMeans(n_clusters=n_cluster).fit(labels_embed[train_idx])
             labels_cluster = cluster.labels_
             _, counts = np.unique(labels_cluster, return_counts=True)
             if counts.min() < args.labels_cluster_min_size:
@@ -189,7 +189,7 @@ def hard_cluster(labels_embed, cluster_method='kmeans'):
     assert labels_cluster.shape[0] == labels_embed.shape[0], \
         f'{labels_embed.shape}, {labels_cluster.shape}'
 
-    return labels_cluster
+    return cluster.predict(labels_embed)
 
 
 def train_mpvae_one_epoch(
@@ -253,7 +253,6 @@ def train_mpvae_one_epoch(
 
                 reg_labels_z_unfair = 0.
                 reg_feats_z_unfair = 0.
-                label_centroids = torch.unique(clusters)
                 sensitive_centroids = torch.unique(sensitive_feat, dim=0)
                 idx_tensor = torch.arange(clusters.shape[0])
 
@@ -266,9 +265,9 @@ def train_mpvae_one_epoch(
                         for sensitive in sensitive_centroids:
                             target_sensitive = torch.all(
                                 torch.eq(sensitive_feat, sensitive), dim=1)
-                            sensitive_centroid = torch.all(
+                            cluster_sensitive = torch.all(
                                 torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
-                            cluster_labels_z_sensitive = label_z[idx_tensor[sensitive_centroid]]
+                            cluster_labels_z_sensitive = label_z[idx_tensor[cluster_sensitive]]
                             if len(cluster_labels_z_sensitive):
                                 reg_labels_z_unfair += torch.mean(torch.pow(
                                     cluster_labels_z_sensitive.mean(0) - cluster_label_z.mean(0), 2))
@@ -279,9 +278,9 @@ def train_mpvae_one_epoch(
                         for sensitive in sensitive_centroids:
                             target_sensitive = torch.all(
                                 torch.eq(sensitive_feat, sensitive), dim=1)
-                            sensitive_centroid = torch.all(
+                            cluster_sensitive = torch.all(
                                 torch.stack((target_sensitive, target_centroid), dim=1), dim=1)
-                            cluster_feats_z_sensitive = feat_z[idx_tensor[sensitive_centroid]]
+                            cluster_feats_z_sensitive = feat_z[idx_tensor[cluster_sensitive]]
                             if len(cluster_feats_z_sensitive):
                                 reg_feats_z_unfair += torch.mean(torch.pow(
                                     cluster_feats_z_sensitive.mean(0) - cluster_feat_z.mean(0), 2))
@@ -458,8 +457,8 @@ def train_fair_through_regularize():
     one_epoch_iter = np.ceil(len(train_idx) / args.batch_size)
     n_iter = one_epoch_iter * args.max_epoch
 
-    labels_embed = construct_labels_embed(data)
-    label_clusters = hard_cluster(labels_embed, args.labels_cluster_method)
+    labels_embed = construct_labels_embed(data, args)
+    label_clusters = hard_cluster(labels_embed, args.labels_cluster_method, args)
     # retrain a new mpvae + fair regularization
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
