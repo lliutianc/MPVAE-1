@@ -186,10 +186,11 @@ def hard_cluster(labels_embed, cluster_method, args):
         raise NotImplementedError()
 
     print(f'{len(counts)} clusters: sizes (descending):{np.sort(counts)[::-1]}')
+    labels_cluster = cluster.predict(labels_embed)
     assert labels_cluster.shape[0] == labels_embed.shape[0], \
         f'{labels_embed.shape}, {labels_cluster.shape}'
 
-    return cluster.predict(labels_embed)
+    return labels_cluster
 
 
 def train_mpvae_one_epoch(
