@@ -17,7 +17,7 @@ from data import load_data
 from fairreg import construct_labels_embed, hard_cluster
 
 
-parser.add_argument('-fairness_strate', type=str, choices=[
+parser.add_argument('-fairness_strate', type=str, default=None, choices=[
                     'mpvae', 'cbow', 'none', None])
 
 
