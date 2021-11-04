@@ -111,7 +111,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     for label_centroid in np.unique(data.label_clusters[idxs]):
                         target_centroid = np.equal(data.label_clusters[idxs], label_centroid)
 
-                        cluster_feat_z = train_feat_z[idx[target_centroid]]
+                        cluster_feat_z = train_feat_z[idxs[target_centroid]]
                         if len(cluster_feat_z):
                             for sensitive in sensitive_centroid:
                                 target_sensitive = np.all(
@@ -119,7 +119,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                                 cluster_sensitve = np.all(
                                     np.stack((target_sensitive, target_centroid), axis=1), axis=1
                                 )
-                                cluster_feat_z_sensitive = train_feat_z[idx[cluster_sensitve]]
+                                cluster_feat_z_sensitive = train_feat_z[idxs[cluster_sensitve]]
                                 if len(cluster_feat_z_sensitive):
                                     mean_diffs += np.mean(
                                         np.power(cluster_feat_z_sensitive.mean(0) - cluster_feat_z.mean(0), 2))
@@ -255,7 +255,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     for label_centroid in np.unique(data.label_clusters[idxs]):
                         target_centroid = np.equal(data.label_clusters[idxs], label_centroid)
 
-                        cluster_feat_z = valid_feat_z[idx[target_centroid]]
+                        cluster_feat_z = valid_feat_z[idxs[target_centroid]]
                         if len(cluster_feat_z):
                             for sensitive in sensitive_centroid:
                                 target_sensitive = np.all(
@@ -263,7 +263,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                                 cluster_sensitve = np.all(
                                     np.stack((target_sensitive, target_centroid), axis=1), axis=1
                                 )
-                                cluster_feat_z_sensitive = valid_feat_z[idx[cluster_sensitve]]
+                                cluster_feat_z_sensitive = valid_feat_z[idxs[cluster_sensitve]]
                                 if len(cluster_feat_z_sensitive):
                                     mean_diffs += np.mean(
                                         np.power(cluster_feat_z_sensitive.mean(0) - cluster_feat_z.mean(0), 2))
