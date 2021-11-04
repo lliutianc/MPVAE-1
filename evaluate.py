@@ -14,9 +14,13 @@ import evals
 from model import VAE, compute_loss
 from main import parser, THRESHOLDS, METRICS
 from data import load_data
+from fairreg import construct_labels_embed, hard_cluster
 
 
-def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=True):
+parser.add_argument('fair_strate', type=str, choice=['mpvae', 'cbow', 'none', None])
+
+
+def evaluate_mpvae(model, data, fairness_strate='none', eval_fairness=True, eval_train=True, eval_valid=True):
     with torch.no_grad():
         model.eval()
 
@@ -40,7 +44,8 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     end = min(data.batch_size * (i + 1), len(data.train_idx))
                     idx = data.train_idx[start:end]
 
-                    input_feat = torch.from_numpy(data.input_feat[idx]).to(device)
+                    input_feat = torch.from_numpy(
+                        data.input_feat[idx]).to(device)
 
                     input_label = torch.from_numpy(data.labels[idx])
                     input_label = deepcopy(input_label).float().to(device)
@@ -61,7 +66,8 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                         train_label.append(j)
 
                     if eval_fairness:
-                        feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
+                        feat_z = model.feat_reparameterize(
+                            feat_mu, feat_logvar)
                         train_feat_z.append(feat_z.cpu().data.numpy())
 
                 train_indiv_prob = np.array(train_indiv_prob)
@@ -90,23 +96,34 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                                     best_val_metrics[metric], val_metrics[metric])
 
                 acc, ha, ebf1, maf1, mif1 = best_val_metrics['ACC'], best_val_metrics['HA'], \
-                                            best_val_metrics['ebF1'], best_val_metrics['maF1'], \
-                                            best_val_metrics['miF1']
+                    best_val_metrics['ebF1'], best_val_metrics['maF1'], \
+                    best_val_metrics['miF1']
 
                 if eval_fairness:
                     train_feat_z = np.concatenate(train_feat_z)
                     assert train_feat_z.shape[0] == len(data.train_idx) and \
-                           train_feat_z.shape[1] == args.latent_dim
-                    train_feat_z_mean = train_feat_z.mean(0)
+                        train_feat_z.shape[1] == args.latent_dim
                     mean_diffs = 0.
                     idxs = np.arange(len(data.train_idx))
-                    for sensitive in np.unique(train_sensitive, axis=0):
-                        target_sensitive = idxs[np.all(np.equal(train_sensitive, sensitive), axis=1)]
-                        feats_z_sensitive = train_feat_z[target_sensitive]
-                        mean_diffs += np.mean(
-                            np.power(feats_z_sensitive.mean(0) - train_feat_z_mean, 2))
+                    
+                    sensitive_centroid = np.unique(train_sensitive, axis=0)
+                    for label_centroid in np.unique(data.label_clusters[idxs]):
+                        target_centroid = np.equal(data.label_clusters[idxs], label_centroid)
 
-                    best_val_metrics['fair_dp'] = mean_diffs
+                        cluster_feat_z = train_feat_z[idx[target_centroid]]
+                        if len(cluster_feat_z):
+                            for sensitive in sensitive_centroid:
+                                target_sensitive = np.all(
+                                    np.equal(train_sensitive, sensitive), axis=1)
+                                cluster_sensitve = np.all(
+                                    np.stack((target_sensitive, target_centroid), axis=1), axis=1
+                                )
+                                cluster_feat_z_sensitive = train_feat_z[idx[cluster_sensitve]]
+                                if len(cluster_feat_z_sensitive):
+                                    mean_diffs += np.mean(
+                                        np.power(cluster_feat_z_sensitive.mean(0) - cluster_feat_z.mean(0), 2))
+
+                    best_val_metrics['fair'] = mean_diffs
 
                     # nll_coeff: BCE coeff, lambda_1
                     # c_coeff: Ranking loss coeff, lambda_2
@@ -147,7 +164,8 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     end = min(data.batch_size * (i + 1), len(data.valid_idx))
                     idx = data.valid_idx[start:end]
 
-                    input_feat = torch.from_numpy(data.input_feat[idx]).to(device)
+                    input_feat = torch.from_numpy(
+                        data.input_feat[idx]).to(device)
 
                     input_label = torch.from_numpy(data.labels[idx])
                     input_label = deepcopy(input_label).float().to(device)
@@ -168,7 +186,8 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                         valid_label.append(j)
 
                     if eval_fairness:
-                        feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
+                        feat_z = model.feat_reparameterize(
+                            feat_mu, feat_logvar)
                         valid_feat_z.append(feat_z.cpu().data.numpy())
 
                 valid_indiv_prob = np.array(valid_indiv_prob)
@@ -197,8 +216,8 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                                     best_val_metrics[metric], val_metrics[metric])
 
                 acc, ha, ebf1, maf1, mif1 = best_val_metrics['ACC'], best_val_metrics['HA'], \
-                                            best_val_metrics['ebF1'], best_val_metrics['maF1'], \
-                                            best_val_metrics['miF1']
+                    best_val_metrics['ebF1'], best_val_metrics['maF1'], \
+                    best_val_metrics['miF1']
 
                 # nll_coeff: BCE coeff, lambda_1
                 # c_coeff: Ranking loss coeff, lambda_2
@@ -208,20 +227,48 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                 #         acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff,
                 #         c_loss * args.c_coeff, total_loss]]))
 
+                # if eval_fairness:
+                #     valid_feat_z = np.concatenate(valid_feat_z)
+                #     assert valid_feat_z.shape[0] == len(data.valid_idx) and valid_feat_z.shape[
+                #         1] == args.latent_dim
+                #     valid_feat_z_mean = valid_feat_z.mean(0)
+                #     mean_diffs = 0.
+                #     idxs = np.arange(len(data.valid_idx))
+                #     for sensitive in np.unique(valid_sensitive, axis=0):
+                #         target_sensitive = idxs[np.all(
+                #             np.equal(valid_sensitive, sensitive), axis=1)]
+                #         feats_z_sensitive = valid_feat_z[target_sensitive]
+                #         mean_diffs += np.mean(
+                #             np.power(feats_z_sensitive.mean(0) - valid_feat_z_mean, 2))
+
+                #     best_val_metrics['fair'] = mean_diffs
+
                 if eval_fairness:
                     valid_feat_z = np.concatenate(valid_feat_z)
-                    assert valid_feat_z.shape[0] == len(data.valid_idx) and valid_feat_z.shape[
-                        1] == args.latent_dim
-                    valid_feat_z_mean = valid_feat_z.mean(0)
+                    assert valid_feat_z.shape[0] == len(data.valid_idx) and \
+                        valid_feat_z.shape[1] == args.latent_dim
                     mean_diffs = 0.
                     idxs = np.arange(len(data.valid_idx))
-                    for sensitive in np.unique(valid_sensitive, axis=0):
-                        target_sensitive = idxs[np.all(np.equal(valid_sensitive, sensitive), axis=1)]
-                        feats_z_sensitive = valid_feat_z[target_sensitive]
-                        mean_diffs += np.mean(
-                            np.power(feats_z_sensitive.mean(0) - valid_feat_z_mean, 2))
+                    
+                    sensitive_centroid = np.unique(valid_sensitive, axis=0)
+                    for label_centroid in np.unique(data.label_clusters[idxs]):
+                        target_centroid = np.equal(data.label_clusters[idxs], label_centroid)
 
-                    best_val_metrics['fair_dp'] = mean_diffs
+                        cluster_feat_z = valid_feat_z[idx[target_centroid]]
+                        if len(cluster_feat_z):
+                            for sensitive in sensitive_centroid:
+                                target_sensitive = np.all(
+                                    np.equal(valid_sensitive, sensitive), axis=1)
+                                cluster_sensitve = np.all(
+                                    np.stack((target_sensitive, target_centroid), axis=1), axis=1
+                                )
+                                cluster_feat_z_sensitive = valid_feat_z[idx[cluster_sensitve]]
+                                if len(cluster_feat_z_sensitive):
+                                    mean_diffs += np.mean(
+                                        np.power(cluster_feat_z_sensitive.mean(0) - cluster_feat_z.mean(0), 2))
+
+                    best_val_metrics['fair'] = mean_diffs
+
                     # nll_coeff: BCE coeff, lambda_1
                     # c_coeff: Ranking loss coeff, lambda_2
                     print("********************valid********************")
@@ -236,7 +283,6 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                         ' & '.join(
                             [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
 
-
             valid_best_metrics = best_val_metrics
         else:
             valid_best_metrics = None
@@ -245,8 +291,10 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
 
 
 if __name__ == '__main__':
+
     args = parser.parse_args()
-    device = torch.device(f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
+    device = torch.device(
+        f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
     param_setting = f"lr-{args.learning_rate}_" \
                     f"lr-decay_{args.lr_decay_ratio}_" \
                     f"lr-times_{args.lr_decay_times}_" \
@@ -261,13 +309,16 @@ if __name__ == '__main__':
             model_file = 'baseline_vae'
         model_file = os.path.join(model_dir, model_file)
         print(f'try loading model from: {model_file}')
+
         if os.path.exists(model_file):
             np.random.seed(4)
-            nonsensitive_feat, sensitive_feat, labels = load_data(args.dataset, args.mode, True)
-            train_cnt, valid_cnt = int(len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
+            #prepare label_clusters
+            nonsensitive_feat, sensitive_feat, labels = load_data(
+                args.dataset, args.mode, True)
+            train_cnt, valid_cnt = int(
+                len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
             train_idx = np.arange(train_cnt)
             valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
-
             data = types.SimpleNamespace(
                 input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx,
                 valid_idx=valid_idx, batch_size=args.batch_size, label_clusters=None,
@@ -275,15 +326,25 @@ if __name__ == '__main__':
             args.feature_dim = nonsensitive_feat.shape[1]
             args.label_dim = labels.shape[1]
 
+            if args.fairness_strate:
+                args.labels_embed_method = args.fairness_strate
+                labels_embed = construct_labels_embed(data, args)
+                label_clusters = hard_cluster(labels_embed, 'kmeans', args)
+            else:
+                label_clusters = np.ones_like(train_idx)
+            data.label_clusters = label_clusters
+
             model = VAE(args).to(device)
             model.load_state_dict(torch.load(model_file))
             print(f'start evaluating {model_file}...')
-            train, valid = evaluate_mpvae(model, data)
+            train, valid = evaluate_mpvae(model, data, args.fairness_strate)
 
             if train:
-                pickle.dump(train, open(os.path.join(model_dir, 'train_metrics.pickle'), 'wb'))
+                pickle.dump(train, open(os.path.join(
+                    model_dir, 'train_metrics.pickle'), 'wb'))
             if valid:
-                pickle.dump(valid, open(os.path.join(model_dir, 'valid_metrics.pickle'), 'wb'))
+                pickle.dump(valid, open(os.path.join(
+                    model_dir, 'valid_metrics.pickle'), 'wb'))
 
 
 # python evaluate.py -dataset adult -latent_dim 8 -cuda 3
