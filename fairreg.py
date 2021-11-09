@@ -188,6 +188,8 @@ def hard_cluster(labels_embed, cluster_method, args, **kwargs):
         from kmodes.kprototypes import KPrototypes
         n_cluster = 32
         for _ in range(10):
+            print(kwargs.get('catecols'))
+            print(labels_embed[train_idx])
             cluster = KPrototypes(n_jobs=-1, n_clusters=n_cluster, init='Cao', random_state=0).fit(
                 labels_embed[train_idx], categorical=kwargs.get('catecols'))
             labels_cluster = cluster.labels_
@@ -489,9 +491,9 @@ def construct_label_clusters():
     elif args.labels_cluster_method == 'kprototypes':
         labels_embed = construct_labels_embed(data, args)
         if args.labels_embed_method != 'none':
-            labels_feat = np.vstack([labels_embed, nonsensitive_feat])
+            labels_feat = np.hstack([labels_embed, nonsensitive_feat])
         else:
-            labels_feat = np.vstack([labels, nonsensitive_feat])
+            labels_feat = np.hstack([labels, nonsensitive_feat])
         _, catecols = preprocess(labels_feat, 'categorical', True)
         label_clusters = hard_cluster(
             labels, args.labels_cluster_method, args, catecols=catecols)
