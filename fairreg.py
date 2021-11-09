@@ -503,7 +503,7 @@ def construct_label_clusters():
         raise NotImplementedError()
     
     assert label_clusters.shape == (nonsensitive_feat.shape[0], )
-    return label_clusters
+    return label_clusters.astype(np.int32)
 
 def train_fair_through_regularize():
     
