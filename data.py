@@ -246,7 +246,7 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
         np.save(open(nonsensitive_featfile, 'wb'), nonsensitive_feat)
         np.save(open(labelfile, 'wb'), labels)
     else:
-        print('load existing dataset: {dataset}...')
+        print(f'load existing dataset: {dataset}...')
 
         sensitive_feat = np.load(open(sensitive_featfile, 'rb'), allow_pickle=True)
         nonsensitive_feat = np.load(
