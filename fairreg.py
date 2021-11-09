@@ -478,6 +478,7 @@ def construct_label_clusters():
     
     if args.labels_cluster_method == 'kmodes':
         _, catecols = preprocess(labels, 'categorical', True)
+        print(catecols)
         label_clusters = hard_cluster(
             labels, args.labels_cluster_method, args, catecols=catecols)
 
