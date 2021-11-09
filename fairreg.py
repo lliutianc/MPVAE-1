@@ -18,7 +18,7 @@ import evals
 from utils import build_path, get_label, get_feat
 from model import VAE, compute_loss
 from fairmodel import FairCritic, compute_fair_loss
-from data import load_data
+from data import load_data, preprocess
 from embed import CBOW, CBOWData
 
 from main import parser, THRESHOLDS, METRICS
@@ -143,7 +143,7 @@ def construct_labels_embed(data, args):
     return labels_embed
 
 
-def hard_cluster(labels_embed, cluster_method, args):
+def hard_cluster(labels_embed, cluster_method, **kwargs):
     # TODO: do we have soft clustering algorithm? For example, can we use gumble softmax?
 
     # TODO: how to properly cluster labels based on JSD or KL average distance?
@@ -178,6 +178,25 @@ def hard_cluster(labels_embed, cluster_method, args):
                 n_cluster /= 2
             else:
                 succ_cluster = True
+                break
+            if n_cluster <= 1:
+                break
+        if succ_cluster is False:
+            raise UserWarning('Labels clustering not converged')
+
+    elif cluster_method in ['kmodes', 'kprototypes']:
+        from kmodes.kprototypes import KPrototypes
+        n_cluster = 32
+        for _ in range(10):
+            cluster = KPrototypes(n_jobs=-1, n_clusters=n_cluster).fit(labels_embed[train_idx], kwargs.get('catecols'))
+            labels_cluster = cluster.labels_
+            _, counts = np.unique(labels_cluster, return_counts=True)
+            if counts.min() < args.labels_cluster_min_size:
+                n_cluster /= 2
+            else:
+                succ_cluster = True
+                break
+            if n_cluster <= 1:
                 break
         if succ_cluster is False:
             raise UserWarning('Labels clustering not converged')
@@ -439,41 +458,67 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
     return nll_loss, best_val_metrics
 
 
-def train_fair_through_regularize():
-
+def construct_label_clusters():
     np.random.seed(4)
-    input_feat, labels = load_data(args.dataset, args.mode)
-    train_cnt, valid_cnt = int(
-        len(input_feat) * 0.7), int(len(input_feat) * .2)
-    train_idx = np.arange(train_cnt)
-    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
 
-    data = types.SimpleNamespace(
-        input_feat=input_feat, labels=labels, train_idx=train_idx, valid_idx=valid_idx,
-        batch_size=args.batch_size)
-    args.feature_dim = input_feat.shape[1]
-    args.label_dim = labels.shape[1]
-    print(args.feature_dim, args.label_dim)
-
-    one_epoch_iter = np.ceil(len(train_idx) / args.batch_size)
-    n_iter = one_epoch_iter * args.max_epoch
-
-    labels_embed = construct_labels_embed(data, args)
-    label_clusters = hard_cluster(labels_embed, args.labels_cluster_method, args)
-    # retrain a new mpvae + fair regularization
-    np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
-        args.dataset, args.mode, True)
+        args.dataset, args.mode, True, None)
     train_cnt, valid_cnt = int(
         len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
     train_idx = np.arange(train_cnt)
     valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
 
     data = types.SimpleNamespace(
+        input_feat=preprocess(nonsensitive_feat, 'onehot'),
+        labels=preprocess(labels, 'onehot'),
+        train_idx=train_idx, valid_idx=valid_idx,
+        batch_size=args.batch_size)
+    args.feature_dim = data.input_feat.shape[1]
+    args.label_dim = data.labels.shape[1]
+    
+    if args.labels_cluster_method == 'kmodes':
+        _, catecols = preprocess(labels, 'categorical', True)
+        label_clusters = hard_cluster(
+            labels, args.labels_cluster_method, args, catecols=catecols)
+
+    elif args.labels_cluster_method in ['kmeans', 'hierarchical']:
+        labels_embed = construct_labels_embed(data, args)
+        label_clusters = hard_cluster(labels_embed, args.labels_cluster_method, args)
+
+    elif args.labels_cluster_method == 'kprototypes':
+        labels_embed = construct_labels_embed(data, args)
+        if args.labels_embed_method != 'none':
+            labels_feat = np.vstack([labels_embed, nonsensitive_feat])
+        else:
+            labels_feat = np.vstack([labels, nonsensitive_feat])
+        _, catecols = preprocess(labels_feat, 'categorical', True)
+        label_clusters = hard_cluster(
+            labels, args.labels_cluster_method, args, catecols=catecols)
+
+    else:
+        raise NotImplementedError()
+    
+    return label_clusters
+
+def train_fair_through_regularize():
+    
+    label_clusters = construct_label_clusters()
+
+    # retrain a new mpvae + fair regularization
+    np.random.seed(4)
+    nonsensitive_feat, sensitive_feat, labels = load_data(
+        args.dataset, args.mode, True, 'onehot')
+    train_cnt, valid_cnt = int(
+        len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
+    train_idx = np.arange(train_cnt)
+    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+    one_epoch_iter = np.ceil(len(train_idx) / args.batch_size)
+
+    data = types.SimpleNamespace(
         input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx, valid_idx=valid_idx,
         batch_size=args.batch_size, label_clusters=label_clusters, sensitive_feat=sensitive_feat)
-    args.feature_dim = nonsensitive_feat.shape[1]
-    args.label_dim = labels.shape[1]
+    args.feature_dim = data.input_feat.shape[1]
+    args.label_dim = data.labels.shape[1]
 
     fair_vae = VAE(args).to(args.device)
     fair_vae.train()
@@ -488,8 +533,8 @@ def train_fair_through_regularize():
 
     optimizer = optim.Adam(fair_vae.parameters(),
                            lr=args.learning_rate, weight_decay=1e-5)
-    optimizer_fair = optim.Adam(
-        fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
+    # optimizer_fair = optim.Adam(
+    #     fair_vae.parameters(), lr=args.learning_rate, weight_decay=1e-5)
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
@@ -507,6 +552,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
+    if args.labels_cluster_method == 'kmodes':
+        if args.labels_embed_method != 'none':
+            raise ValueError('Cannot run K-modes on embedded representations')
+        
     # args.device = torch.args.device('cpu')
     param_setting = f"lr-{args.learning_rate}_" \
                     f"lr-decay_{args.lr_decay_ratio}_" \
