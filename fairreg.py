@@ -248,7 +248,8 @@ def train_mpvae_one_epoch(
 
             input_label = torch.from_numpy(data.labels[idx])
             input_label = deepcopy(input_label).float().to(args.device)
-
+            print(input_feat.dtype)
+            print(input_label.dtype)
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                 input_label, input_feat)
 
