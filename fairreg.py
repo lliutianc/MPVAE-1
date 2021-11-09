@@ -502,7 +502,13 @@ def construct_label_clusters():
 
 def train_fair_through_regularize():
     
-    label_clusters = construct_label_clusters()
+    label_cluster_path = os.path.join(
+        args.model_dir, f'label_cluster_{args.labels_embed_method}_{args.labels_cluster_method}.npy')
+    if args.resume and os.path.exists(label_cluster_path):
+        label_clusters = np.load(open(label_cluster_path, 'rb'))
+    else:
+        label_clusters = construct_label_clusters()
+        np.save(open(label_cluster_path, 'wb'), label_clusters)
 
     # retrain a new mpvae + fair regularization
     np.random.seed(4)
@@ -524,7 +530,7 @@ def train_fair_through_regularize():
     fair_vae.train()
 
     fair_vae_checkpoint_path = os.path.join(
-        args.model_dir, f'fair_vae_prior_{args.labels_embed_method}')
+        args.model_dir, f'fair_vae_prior_{args.labels_embed_method}_{args.labels_cluster_method}')
     if args.resume and os.path.exists(fair_vae_checkpoint_path):
         print('use a trained fair mpvae...')
         fair_vae.load_state_dict(torch.load(fair_vae_checkpoint_path))
