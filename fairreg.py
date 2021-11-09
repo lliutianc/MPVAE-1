@@ -248,8 +248,6 @@ def train_mpvae_one_epoch(
 
             input_label = torch.from_numpy(data.labels[idx])
             input_label = deepcopy(input_label).float().to(args.device)
-            print(input_feat.dtype)
-            print(input_label.dtype)
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                 input_label, input_feat)
 
@@ -521,6 +519,9 @@ def train_fair_through_regularize():
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
         args.dataset, args.mode, True, 'onehot')
+    for i in range(nonsensitive_feat.shape[1]):
+        print(nonsensitive_feat[:, i].dtype)
+        
     train_cnt, valid_cnt = int(
         len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
     train_idx = np.arange(train_cnt)
