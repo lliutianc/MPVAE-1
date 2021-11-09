@@ -188,7 +188,8 @@ def hard_cluster(labels_embed, cluster_method, args, **kwargs):
         from kmodes.kprototypes import KPrototypes
         n_cluster = 32
         for _ in range(10):
-            cluster = KPrototypes(n_jobs=-1, n_clusters=n_cluster).fit(labels_embed[train_idx], kwargs.get('catecols'))
+            cluster = KPrototypes(n_jobs=-1, n_clusters=n_cluster).fit(
+                labels_embed[train_idx], categorical=kwargs.get('catecols'))
             labels_cluster = cluster.labels_
             _, counts = np.unique(labels_cluster, return_counts=True)
             if counts.min() < args.labels_cluster_min_size:
@@ -478,7 +479,6 @@ def construct_label_clusters():
     
     if args.labels_cluster_method == 'kmodes':
         _, catecols = preprocess(labels, 'categorical', True)
-        print(catecols)
         label_clusters = hard_cluster(
             labels, args.labels_cluster_method, args, catecols=catecols)
 
