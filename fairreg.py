@@ -143,7 +143,7 @@ def construct_labels_embed(data, args):
     return labels_embed
 
 
-def hard_cluster(labels_embed, cluster_method, **kwargs):
+def hard_cluster(labels_embed, cluster_method, args, **kwargs):
     # TODO: do we have soft clustering algorithm? For example, can we use gumble softmax?
 
     # TODO: how to properly cluster labels based on JSD or KL average distance?
