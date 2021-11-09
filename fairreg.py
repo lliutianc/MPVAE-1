@@ -166,6 +166,7 @@ def hard_cluster(labels_embed, cluster_method, args, **kwargs):
                 break
         if succ_cluster is False:
             raise UserWarning('Labels clustering not converged')
+        labels_cluster = cluster.predict(labels_embed)
 
     elif cluster_method == 'kmeans':
         from sklearn.cluster import KMeans
@@ -183,15 +184,12 @@ def hard_cluster(labels_embed, cluster_method, args, **kwargs):
                 break
         if succ_cluster is False:
             raise UserWarning('Labels clustering not converged')
+        labels_cluster = cluster.predict(labels_embed)
 
     elif cluster_method in ['kmodes', 'kprototypes']:
         from kmodes.kprototypes import KPrototypes
         n_cluster = 16
         for _ in range(10):
-            print(n_cluster)
-            print(kwargs.get('catecols'))
-            print(labels_embed[train_idx])
-            print(labels_embed.shape)
             cluster = KPrototypes(n_jobs=-1, n_clusters=n_cluster, init='Cao', random_state=0).fit(
                 labels_embed[train_idx], categorical=kwargs.get('catecols'))
             labels_cluster = cluster.labels_
@@ -205,12 +203,14 @@ def hard_cluster(labels_embed, cluster_method, args, **kwargs):
                 break
         if succ_cluster is False:
             raise UserWarning('Labels clustering not converged')
+        labels_cluster = cluster.predict(
+            labels_embed, categorical=kwargs.get('catecols'))
 
     else:
         raise NotImplementedError()
 
     print(f'{len(counts)} clusters: sizes (descending):{np.sort(counts)[::-1]}')
-    labels_cluster = cluster.predict(labels_embed)
+    
     assert labels_cluster.shape[0] == labels_embed.shape[0], \
         f'{labels_embed.shape}, {labels_cluster.shape}'
 
