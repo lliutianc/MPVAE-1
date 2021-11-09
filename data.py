@@ -212,7 +212,7 @@ def categroical(col):
 def cast_to_float(df):
     for idx in range(df.shape[1]):
         if df[:, idx].dtype == np.float64:
-            df[:, idx].astype(np.float32)
+            df[:, idx] = df[:, idx].astype(np.float32)
     
     return df 
 
