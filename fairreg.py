@@ -221,7 +221,7 @@ def train_mpvae_one_epoch(
         data, model, optimizer, scheduler, penalize_unfair, eval_after_one_epoch, args):
 
     np.random.shuffle(data.train_idx)
-    args.device = next(model.parameters()).args.device
+    args.device = next(model.parameters()).device
 
     smooth_nll_loss = 0.0  # label encoder decoder cross entropy loss
     smooth_nll_loss_x = 0.0  # feature encoder decoder cross entropy loss
@@ -377,7 +377,7 @@ def train_mpvae_one_epoch(
 
 
 def validate_mpvae(model, feat, labels, valid_idx, args):
-    args.device = next(model.parameters()).args.device
+    args.device = next(model.parameters()).device
     with torch.no_grad():
         model.eval()
         print("performing validation...")
