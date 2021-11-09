@@ -29,7 +29,7 @@ parser.add_argument('-labels_embed_method', type=str,
 parser.add_argument('-labels_cluster_method', type=str, default='kmeans')
 parser.add_argument('-labels_cluster_distance_threshold',
                     type=float, default=.1)
-parser.add_argument('-labels_cluster_min_size', type=int, default=4)
+parser.add_argument('-labels_cluster_min_size', type=int, default=50)
 # fair regularizer
 parser.add_argument('-label_z_fair_coeff', type=float, default=1.0)
 parser.add_argument('-feat_z_fair_coeff', type=float, default=1.0)
@@ -186,16 +186,18 @@ def hard_cluster(labels_embed, cluster_method, args, **kwargs):
 
     elif cluster_method in ['kmodes', 'kprototypes']:
         from kmodes.kprototypes import KPrototypes
-        n_cluster = 32
+        n_cluster = 16
         for _ in range(10):
+            print(n_cluster)
             print(kwargs.get('catecols'))
             print(labels_embed[train_idx])
+            print(labels_embed.shape)
             cluster = KPrototypes(n_jobs=-1, n_clusters=n_cluster, init='Cao', random_state=0).fit(
                 labels_embed[train_idx], categorical=kwargs.get('catecols'))
             labels_cluster = cluster.labels_
             _, counts = np.unique(labels_cluster, return_counts=True)
             if counts.min() < args.labels_cluster_min_size:
-                n_cluster /= 2
+                n_cluster -= 2
             else:
                 succ_cluster = True
                 break
