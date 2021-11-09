@@ -498,6 +498,7 @@ def construct_label_clusters():
     else:
         raise NotImplementedError()
     
+    assert label_clusters.shape == train_idx.shape
     return label_clusters
 
 def train_fair_through_regularize():
