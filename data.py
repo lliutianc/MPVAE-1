@@ -248,9 +248,10 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
     else:
         print('load existing dataset: {dataset}...')
 
-        sensitive_feat = np.load(open(sensitive_featfile, 'rb'))
-        nonsensitive_feat = np.load(open(nonsensitive_featfile, 'rb'))
-        labels = np.load(open(labelfile, 'rb'))
+        sensitive_feat = np.load(open(sensitive_featfile, 'rb'), allow_pickle=True)
+        nonsensitive_feat = np.load(
+            open(nonsensitive_featfile, 'rb'), allow_pickle=True)
+        labels = np.load(open(labelfile, 'rb'), allow_pickle=True)
 
     if separate_sensitive:
         return nonsensitive_feat, sensitive_feat, labels
