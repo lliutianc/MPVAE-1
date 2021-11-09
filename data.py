@@ -209,6 +209,14 @@ def categroical(col):
     return np.argmax(onehot(col), 1).astype(np.int32)
 
 
+def cast_to_float(df):
+    for idx in range(df.shape[1]):
+        if df[:, idx].dtype == np.float64:
+            df[:, idx].astype(np.float32)
+    
+    return df 
+
+
 def load_data(dataset, mode, separate_sensitive=False, categorical_encode='onehot'):
     if categorical_encode not in ['onehot', 'categorical', None]:
         raise ValueError('Unrecognized categorical_encode')
@@ -248,10 +256,11 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
     else:
         print(f'load existing dataset: {dataset}...')
 
-        sensitive_feat = np.load(open(sensitive_featfile, 'rb'), allow_pickle=True)
-        nonsensitive_feat = np.load(
-            open(nonsensitive_featfile, 'rb'), allow_pickle=True)
-        labels = np.load(open(labelfile, 'rb'), allow_pickle=True)
+        sensitive_feat = cast_to_float(np.load(
+            open(sensitive_featfile, 'rb'), allow_pickle=True))
+        nonsensitive_feat = cast_to_float(np.load(
+            open(nonsensitive_featfile, 'rb'), allow_pickle=True))
+        labels = cast_to_float(np.load(open(labelfile, 'rb'), allow_pickle=True))
 
     if separate_sensitive:
         return nonsensitive_feat, sensitive_feat, labels
