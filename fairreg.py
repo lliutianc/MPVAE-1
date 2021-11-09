@@ -519,9 +519,7 @@ def train_fair_through_regularize():
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
         args.dataset, args.mode, True, 'onehot')
-    for i in range(nonsensitive_feat.shape[1]):
-        print(nonsensitive_feat[:, i].dtype)
-        
+
     train_cnt, valid_cnt = int(
         len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
     train_idx = np.arange(train_cnt)
