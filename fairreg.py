@@ -188,7 +188,7 @@ def hard_cluster(labels_embed, cluster_method, args, **kwargs):
         from kmodes.kprototypes import KPrototypes
         n_cluster = 32
         for _ in range(10):
-            cluster = KPrototypes(n_jobs=-1, n_clusters=n_cluster).fit(
+            cluster = KPrototypes(n_jobs=-1, n_clusters=n_cluster, init='Cao', random_state=0).fit(
                 labels_embed[train_idx], categorical=kwargs.get('catecols'))
             labels_cluster = cluster.labels_
             _, counts = np.unique(labels_cluster, return_counts=True)
