@@ -226,8 +226,8 @@ def apriori_dist(labelset1, labelset2, apriori_rules):
 
 
 def apriori_cluster(labels, args):
-
-    labels = labels.astype(str)
+    labels[:, 0] = labels[:, 0].astype(str)
+    
     encoder = TransactionEncoder()
     labels_df = encoder.fit_transform(labels)
     cols = encoder.columns_
