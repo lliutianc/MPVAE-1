@@ -309,6 +309,8 @@ if __name__ == '__main__':
     for prior in ['cbow', 'mpvae', 'none', None]:
         if prior:
             model_file = f'fair_vae_prior_{prior}'
+            if args.fairness_strate_cluster == 'kmodes':
+                model_file += '_kmodes'
         else:
             model_file = 'baseline_vae'
         model_file = os.path.join(args.model_dir, model_file)
@@ -327,8 +329,8 @@ if __name__ == '__main__':
                 input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx,
                 valid_idx=valid_idx, batch_size=args.batch_size, label_clusters=None,
                 sensitive_feat=sensitive_feat)
-            args.feature_dim = nonsensitive_feat.shape[1]
-            args.label_dim = labels.shape[1]
+            args.feature_dim = data.input_feat.shape[1]
+            args.label_dim = data.labels.shape[1]
 
             if args.fairness_strate_embed:
                 args.labels_embed_method = args.fairness_strate_embed
