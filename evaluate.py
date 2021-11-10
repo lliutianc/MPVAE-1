@@ -306,13 +306,15 @@ if __name__ == '__main__':
                     f"l2-{args.l2_coeff}_" \
                     f"c-{args.c_coeff}"
     args.model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
-    for prior in ['cbow', 'mpvae', 'none', None]:
-        if prior:
-            model_file = f'fair_vae_prior_{prior}'
-            if args.fairness_strate_cluster == 'kmodes':
-                model_file += '_kmodes'
+    for cluster, embed in zip(['kmeans', 'kmodes'], ['cbow', 'mpvae', 'none', None]):
+        args.fairness_strate_cluster = cluster
+        args.fairness_strate_embed = embed
+
+        if embed:
+            model_file = f'fair_vae_prior_{embed}_{args.fairness_strate_cluster}'
         else:
             model_file = 'baseline_vae'
+            
         model_file = os.path.join(args.model_dir, model_file)
         print(f'try loading model from: {model_file}')
 
