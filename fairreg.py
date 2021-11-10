@@ -170,13 +170,13 @@ def hard_cluster(labels_embed, cluster_method, args, **kwargs):
 
     elif cluster_method == 'kmeans':
         from sklearn.cluster import KMeans
-        n_cluster = 32
+        n_cluster = 16
         for _ in range(10):
             cluster = KMeans(n_clusters=n_cluster).fit(labels_embed[train_idx])
             labels_cluster = cluster.labels_
             _, counts = np.unique(labels_cluster, return_counts=True)
             if counts.min() < args.labels_cluster_min_size:
-                n_cluster /= 2
+                n_cluster -= 2
             else:
                 succ_cluster = True
                 break
