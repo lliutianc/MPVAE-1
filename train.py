@@ -494,6 +494,7 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
                 input_feat = feat[valid_idx[start:end]]
                 input_label = labels[valid_idx[start:end]]
                 print(input_feat)
+                print(type(input_feat))
                 exit(1)
                 input_feat = torch.from_numpy(input_feat).float().to(args.device), 
                 input_label = torch.from_numpy(input_label).float().to(args.device)
