@@ -17,9 +17,10 @@ from fairreg import THRESHOLDS, METRICS
 from fairreg import construct_labels_embed, hard_cluster, construct_label_clusters, parser
 
 
-parser.add_argument('-fairness_strate', type=str, default=None, choices=[
+parser.add_argument('-fairness_strate_embed', type=str, default=None, choices=[
                     'mpvae', 'cbow', 'none', None])
-
+parser.add_argument('-fairness_strate_cluster', type=str, default=None, choices=[
+                    'kmeans', 'kmodes', 'kprototype', 'hierarchical'])
 
 def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=True):
     with torch.no_grad():
@@ -329,8 +330,9 @@ if __name__ == '__main__':
             args.feature_dim = nonsensitive_feat.shape[1]
             args.label_dim = labels.shape[1]
 
-            if args.fairness_strate:
-                args.labels_embed_method = args.fairness_strate
+            if args.fairness_strate_embed:
+                args.labels_embed_method = args.fairness_strate_embed
+                args.labels_cluster_method = args.fairness_strate_cluster
 
                 label_cluster_path = os.path.join(
                     args.model_dir, f'label_cluster_{args.labels_embed_method}_{args.labels_cluster_method}.npy')
@@ -349,7 +351,8 @@ if __name__ == '__main__':
             model = VAE(args).to(args.device)
             model.load_state_dict(torch.load(model_file))
             print(f'start evaluating {model_file}...')
-            train, valid = evaluate_mpvae(model, data, args.fairness_strate)
+            train, valid = evaluate_mpvae(
+                model, data, args.fairness_strate_embed)
 
             if train:
                 pickle.dump(train, open(os.path.join(
