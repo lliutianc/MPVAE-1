@@ -226,8 +226,8 @@ def apriori_dist(labelset1, labelset2, apriori_rules):
 
 
 def apriori_cluster(labels, args):
-    labels[:, 0] = labels[:, 0].astype(str)
-    
+    labels = labels.astype(str)
+
     encoder = TransactionEncoder()
     labels_df = encoder.fit_transform(labels)
     cols = encoder.columns_
@@ -248,7 +248,7 @@ def apriori_cluster(labels, args):
                 labelsets.append(set([income, occu, work]))
 
     dist_matrix = np.asarray(
-        [[apriori_cluster(p1, p2) for p2 in labelsets] for p1 in labelsets])
+        [[apriori_dist(p1, p2) for p2 in labelsets] for p1 in labelsets])
     dist_matrix[np.isinf(dist_matrix)] = dist_matrix[~np.isinf(dist_matrix)].max() * 10
 
     distance_threshold = 0.01
