@@ -15,7 +15,7 @@ import torch.nn as nn
 from torch import optim
 
 from embed import CBOW, CBOWData
-from fairreg import train_mpvae_one_epoch
+from train import train_mpvae_one_epoch
 from data import preprocess
 from model import VAE
 

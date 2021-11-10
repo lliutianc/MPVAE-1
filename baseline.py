@@ -13,7 +13,7 @@ from tqdm import tqdm
 from utils import build_path
 from model import VAE
 from data import load_data
-from fairreg import train_mpvae_one_epoch
+from train import train_mpvae_one_epoch
 
 from main import parser
 
