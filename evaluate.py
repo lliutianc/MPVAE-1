@@ -14,7 +14,8 @@ import evals
 from model import VAE, compute_loss
 from data import load_data
 from fairreg import THRESHOLDS, METRICS
-from fairreg import construct_labels_embed, hard_cluster, construct_label_clusters, parser
+from fairreg import parser
+from label_cluster import construct_labels_embed, hard_cluster, construct_label_clusters
 
 
 parser.add_argument('-fairness_strate_embed', type=str, default=None, choices=[
