@@ -16,7 +16,7 @@ from torch import optim
 
 from embed import CBOW, CBOWData
 from train import train_mpvae_one_epoch
-from data import preprocess
+from data import preprocess, load_data
 from model import VAE
 
 
