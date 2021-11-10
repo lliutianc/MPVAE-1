@@ -12,9 +12,9 @@ import types
 
 import evals
 from model import VAE, compute_loss
-from main import parser, THRESHOLDS, METRICS
 from data import load_data
-from fairreg import construct_labels_embed, hard_cluster
+from fairreg import THRESHOLDS, METRICS
+from fairreg import construct_labels_embed, hard_cluster, construct_label_clusters, parser
 
 
 parser.add_argument('-fairness_strate', type=str, default=None, choices=[
@@ -331,8 +331,17 @@ if __name__ == '__main__':
 
             if args.fairness_strate:
                 args.labels_embed_method = args.fairness_strate
-                labels_embed = construct_labels_embed(data, args)
-                label_clusters = hard_cluster(labels_embed, 'kmeans', args)
+
+                label_cluster_path = os.path.join(
+                    args.model_dir, f'label_cluster_{args.labels_embed_method}_{args.labels_cluster_method}.npy')
+                if args.resume and os.path.exists(label_cluster_path):
+                    label_clusters = np.load(open(label_cluster_path, 'rb'))
+                else:
+                    label_clusters = construct_label_clusters()
+                    np.save(open(label_cluster_path, 'wb'), label_clusters)
+
+                # labels_embed = construct_labels_embed(data, args)
+                # label_clusters = hard_cluster(labels_embed, 'kmeans', args)
             else:
                 label_clusters = np.ones_like(train_idx)
             data.label_clusters = label_clusters
