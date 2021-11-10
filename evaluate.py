@@ -311,10 +311,10 @@ if __name__ == '__main__':
         args.fairness_strate_embed = embed
 
         if embed:
-            model_file = f'fair_vae_prior_{embed}_{args.fairness_strate_cluster}'
+            model_file = f'fair_vae_prior_{embed}_{cluster}'
         else:
             model_file = 'baseline_vae'
-            
+
         model_file = os.path.join(args.model_dir, model_file)
         print(f'try loading model from: {model_file}')
 
@@ -334,7 +334,7 @@ if __name__ == '__main__':
             args.feature_dim = data.input_feat.shape[1]
             args.label_dim = data.labels.shape[1]
 
-            if args.fairness_strate_embed:
+            if args.fairness_strate_embed == 'none':
                 args.labels_embed_method = args.fairness_strate_embed
                 args.labels_cluster_method = args.fairness_strate_cluster
 
