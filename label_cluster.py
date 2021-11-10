@@ -336,7 +336,7 @@ def construct_label_clusters(args):
         label_clusters = instance_based_cluster(
             labels, args.labels_cluster_method, args, catecols=catecols)
 
-    elif args.label_cluster_method == 'apriori':
+    elif args.labels_cluster_method == 'apriori':
         if args.dataset != 'adult':
             raise NotImplementedError('Only support adult dataset')
         label_clusters = apriori_cluster(labels, args)
