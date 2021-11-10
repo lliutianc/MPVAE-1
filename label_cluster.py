@@ -248,7 +248,7 @@ def apriori_cluster(labels, args):
                 labelsets.append(set([income, occu, work]))
 
     dist_matrix = np.asarray(
-        [[apriori_dist(p1, p2) for p2 in labelsets] for p1 in labelsets])
+        [[apriori_dist(p1, p2, labels_rules) for p2 in labelsets] for p1 in labelsets])
     dist_matrix[np.isinf(dist_matrix)] = dist_matrix[~np.isinf(dist_matrix)].max() * 10
 
     distance_threshold = 0.01
