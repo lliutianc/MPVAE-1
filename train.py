@@ -493,9 +493,9 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
                 end = min(real_batch_size * (i + 1), len(valid_idx))
                 input_feat = feat[valid_idx[start:end]]
                 input_label = labels[valid_idx[start:end]]
-                input_feat, input_label = torch.from_numpy(input_feat).to(args.device), torch.from_numpy(
-                    input_label)
-                input_label = deepcopy(input_label).float().to(args.device)
+                
+                input_feat = torch.from_numpy(input_feat).float().to(args.device), 
+                input_label = torch.from_numpy(input_label).float().to(args.device)
 
                 label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                     input_label, input_feat)
