@@ -462,7 +462,7 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
     return nll_loss, best_val_metrics
 
 
-def construct_label_clusters():
+def construct_label_clusters(args):
     np.random.seed(4)
 
     nonsensitive_feat, sensitive_feat, labels = load_data(
@@ -512,7 +512,7 @@ def train_fair_through_regularize():
     if args.resume and os.path.exists(label_cluster_path):
         label_clusters = np.load(open(label_cluster_path, 'rb'))
     else:
-        label_clusters = construct_label_clusters()
+        label_clusters = construct_label_clusters(args)
         np.save(open(label_cluster_path, 'wb'), label_clusters)
 
     # retrain a new mpvae + fair regularization

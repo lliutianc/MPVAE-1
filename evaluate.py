@@ -19,7 +19,7 @@ from fairreg import construct_labels_embed, hard_cluster, construct_label_cluste
 
 parser.add_argument('-fairness_strate_embed', type=str, default=None, choices=[
                     'mpvae', 'cbow', 'none', None])
-parser.add_argument('-fairness_strate_cluster', type=str, default=None, choices=[
+parser.add_argument('-fairness_strate_cluster', type=str, default='kmeans', choices=[
                     'kmeans', 'kmodes', 'kprototype', 'hierarchical'])
 
 def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=True):
@@ -339,7 +339,7 @@ if __name__ == '__main__':
                 if args.resume and os.path.exists(label_cluster_path):
                     label_clusters = np.load(open(label_cluster_path, 'rb'))
                 else:
-                    label_clusters = construct_label_clusters()
+                    label_clusters = construct_label_clusters(args)
                     np.save(open(label_cluster_path, 'wb'), label_clusters)
 
                 # labels_embed = construct_labels_embed(data, args)
@@ -362,4 +362,4 @@ if __name__ == '__main__':
                     args.model_dir, 'valid_metrics.pickle'), 'wb'))
 
 
-# python evaluate.py -dataset adult -latent_dim 8 -cuda 3
+# python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmodes -cuda 6 
