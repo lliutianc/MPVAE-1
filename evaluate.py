@@ -328,7 +328,7 @@ if __name__ == '__main__':
         label_cluster_path = os.path.join(
             args.model_dir, f'label_cluster_{args.fairness_strate_embed}_{args.fairness_strate_cluster}.npy')
         print(f'Load fairness strate: {label_cluster_path}...')
-        if args.resume and os.path.exists(label_cluster_path):
+        if os.path.exists(label_cluster_path):
             label_clusters = np.load(open(label_cluster_path, 'rb'))
         else:
             label_clusters = construct_label_clusters(args)
