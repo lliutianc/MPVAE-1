@@ -58,9 +58,9 @@ def construct_labels_embed(data, args):
                 end = min(data.batch_size * (i + 1), len(idxs))
 
                 input_feat = data.input_feat[idxs[start:end]]
-                input_feat = torch.from_numpy(input_feat).to(args.device)
+                input_feat = torch.from_numpy(input_feat).float().to(args.device)
                 input_label = data.labels[idxs[start:end]]
-                input_label = torch.from_numpy(input_label).to(args.device)
+                input_label = torch.from_numpy(input_label).float().to(args.device)
                 label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = prior_vae(
                     input_label, input_feat)
                 labels_mu.append(label_mu.cpu().data.numpy())
@@ -112,7 +112,7 @@ def construct_labels_embed(data, args):
             labels_embed = []
             for idx in np.arange(int(len(data.input_feat))):
                 input_label = data.labels[1]
-                input_label = torch.from_numpy(input_label).to(args.device)
+                input_label = torch.from_numpy(input_label).float().to(args.device)
 
                 idx = torch.arange(data.labels.shape[1], device=args.device)
                 label_embed = prior_cbow.get_embedding(idx[input_label == 1])
