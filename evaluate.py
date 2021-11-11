@@ -308,6 +308,35 @@ if __name__ == '__main__':
                     f"l2-{args.l2_coeff}_" \
                     f"c-{args.c_coeff}"
     args.model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
+
+    np.random.seed(4)
+    # prepare label_clusters
+    nonsensitive_feat, sensitive_feat, labels = load_data(
+        args.dataset, args.mode, True)
+    train_cnt, valid_cnt = int(
+        len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
+    train_idx = np.arange(train_cnt)
+    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+    data = types.SimpleNamespace(
+        input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx,
+        valid_idx=valid_idx, batch_size=args.batch_size, label_clusters=None,
+        sensitive_feat=sensitive_feat)
+    args.feature_dim = data.input_feat.shape[1]
+    args.label_dim = data.labels.shape[1]
+
+    if args.fairness_strate_embed == 'none':
+        label_cluster_path = os.path.join(
+            args.model_dir, f'label_cluster_{args.fairness_strate_embed}_{args.fairness_strate_cluster}.npy')
+        print(f'Load fairness strate: {label_cluster_path}...')
+        if args.resume and os.path.exists(label_cluster_path):
+            label_clusters = np.load(open(label_cluster_path, 'rb'))
+        else:
+            label_clusters = construct_label_clusters(args)
+            np.save(open(label_cluster_path, 'wb'), label_clusters)
+    else:
+        label_clusters = np.ones_like(train_idx)
+    data.label_clusters = label_clusters
+    
     for cluster in ['kmeans', 'kmodes', 'apriori']:
         for embed in ['mpvae', 'none', None]:
             args.labels_cluster_method = cluster
@@ -322,36 +351,6 @@ if __name__ == '__main__':
             print(f'try loading model from: {model_file}')
 
             if os.path.exists(model_file):
-                np.random.seed(4)
-                # prepare label_clusters
-                nonsensitive_feat, sensitive_feat, labels = load_data(
-                    args.dataset, args.mode, True)
-                train_cnt, valid_cnt = int(
-                    len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
-                train_idx = np.arange(train_cnt)
-                valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
-                data = types.SimpleNamespace(
-                    input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx,
-                    valid_idx=valid_idx, batch_size=args.batch_size, label_clusters=None,
-                    sensitive_feat=sensitive_feat)
-                args.feature_dim = data.input_feat.shape[1]
-                args.label_dim = data.labels.shape[1]
-
-                if args.fairness_strate_embed == 'none':
-                    label_cluster_path = os.path.join(
-                        args.model_dir, f'label_cluster_{args.fairness_strate_embed}_{args.fairness_strate_cluster}.npy')
-                    if args.resume and os.path.exists(label_cluster_path):
-                        label_clusters = np.load(open(label_cluster_path, 'rb'))
-                    else:
-                        label_clusters = construct_label_clusters(args)
-                        np.save(open(label_cluster_path, 'wb'), label_clusters)
-
-                    # labels_embed = construct_labels_embed(data, args)
-                    # label_clusters = hard_cluster(labels_embed, 'kmeans', args)
-                else:
-                    label_clusters = np.ones_like(train_idx)
-                data.label_clusters = label_clusters
-
                 model = VAE(args).to(args.device)
                 model.load_state_dict(torch.load(model_file))
                 print(f'start evaluating {model_file}...')
@@ -367,3 +366,6 @@ if __name__ == '__main__':
 
 
 # python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmodes -cuda 6 
+# python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmeans -cuda 6
+# python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster apriori -cuda 6
+# python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed mpvae -fairness_strate_cluster kmeans -cuda 6
