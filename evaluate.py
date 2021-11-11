@@ -21,7 +21,8 @@ from label_cluster import construct_label_clusters
 parser.add_argument('-fairness_strate_embed', type=str, default=None, choices=[
                     'mpvae', 'cbow', 'none', None])
 parser.add_argument('-fairness_strate_cluster', type=str, default='kmeans', choices=[
-                    'kmeans', 'kmodes', 'kprototype', 'hierarchical'])
+                    'kmeans', 'kmodes', 'apriori', 'kprototype', 'hierarchical'])
+
 
 def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=True):
     with torch.no_grad():
@@ -307,10 +308,10 @@ if __name__ == '__main__':
                     f"l2-{args.l2_coeff}_" \
                     f"c-{args.c_coeff}"
     args.model_dir = f'fairreg/model/{args.dataset}/{param_setting}'
-    for cluster in ['kmeans', 'kmodes']:
-        for embed in ['cbow', 'mpvae', 'none', None]:
-            args.fairness_strate_cluster = cluster
-            args.fairness_strate_embed = embed
+    for cluster in ['kmeans', 'kmodes', 'apriori']:
+        for embed in ['mpvae', 'none', None]:
+            args.labels_cluster_method = cluster
+            args.labels_embed_method = embed
 
             if embed:
                 model_file = f'fair_vae_prior_{embed}_{cluster}'
@@ -337,11 +338,8 @@ if __name__ == '__main__':
                 args.label_dim = data.labels.shape[1]
 
                 if args.fairness_strate_embed == 'none':
-                    args.labels_embed_method = args.fairness_strate_embed
-                    args.labels_cluster_method = args.fairness_strate_cluster
-
                     label_cluster_path = os.path.join(
-                        args.model_dir, f'label_cluster_{args.labels_embed_method}_{args.labels_cluster_method}.npy')
+                        args.model_dir, f'label_cluster_{args.fairness_strate_embed}_{args.fairness_strate_cluster}.npy')
                     if args.resume and os.path.exists(label_cluster_path):
                         label_clusters = np.load(open(label_cluster_path, 'rb'))
                     else:
