@@ -20,19 +20,9 @@ from data import load_data
 from embed import CBOW
 from label_cluster import construct_label_clusters
 from train import train_mpvae_one_epoch, validate_mpvae
-from main import parser, THRESHOLDS, METRICS
+from main import THRESHOLDS, METRICS
+from fairreg import parser
 
-# cluster parameters
-parser.add_argument('-labels_embed_method', type=str, default='',
-                    choices=['cbow', 'mpvae', 'none', ''])
-parser.add_argument('-labels_cluster_method', type=str, default='apriori')
-parser.add_argument('-labels_cluster_distance_threshold',
-                    type=float, default=None)
-parser.add_argument('-labels_cluster_num', type=int, default=None)
-parser.add_argument('-labels_cluster_min_size', type=int, default=50)
-# fair regularizer
-parser.add_argument('-label_z_fair_coeff', type=float, default=1.0)
-parser.add_argument('-feat_z_fair_coeff', type=float, default=1.0)
 parser.add_argument('-min_support', type=float, default=None)
 parser.add_argument('-min_confidence', type=float, default=None)
 
