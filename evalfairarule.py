@@ -7,7 +7,7 @@ import numpy as np
 from tqdm import tqdm
 
 from copy import deepcopy
-import os
+import os, sys
 import types
 
 import evals
@@ -25,6 +25,8 @@ parser.add_argument('-fairness_strate_embed', type=str, default='', choices=[
                     'mpvae', 'cbow', 'none', ''])
 parser.add_argument('-fairness_strate_cluster', type=str, default='kmeans', choices=[
                     'kmeans', 'kmodes', 'apriori', 'kprototype', 'hierarchical'])
+
+sys.path.append('./')
 
 
 def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=True):
