@@ -2,6 +2,7 @@ import os, types
 
 import numpy as np
 import pandas as pd
+from scipy.spatial import distance
 
 from tqdm import tqdm 
 
@@ -235,9 +236,11 @@ def apriori_cluster(labels, args):
     cols = encoder.columns_
     cols[0] = 'high_income'
     labels_df = pd.DataFrame(labels_df, columns=cols)
+    min_support = args.min_support or 1 / len(labels_df)
+    min_confidence = args.min_confidence or 0.
     labels_apri = apriori(
-        labels_df, min_support=1 / len(labels_df), use_colnames=True, verbose=1)
-    labels_rules = association_rules(labels_apri, min_threshold=0.)
+        labels_df, min_support=min_support, use_colnames=True, verbose=1)
+    labels_rules = association_rules(labels_apri, min_threshold=min_confidence)
 
     income_level = np.unique(labels[:, 0])
     occupation = np.unique(labels[:, 1])
@@ -253,10 +256,13 @@ def apriori_cluster(labels, args):
         [[apriori_dist(p1, p2, labels_rules) for p2 in labelsets] for p1 in labelsets])
     dist_matrix[np.isinf(dist_matrix)] = dist_matrix[~np.isinf(dist_matrix)].max() * 10
 
-    distance_threshold = 0.01
+    distance_threshold = args.labels_cluster_distance_threshold
+    n_clusters = args.labels_cluster_num
+    if n_clusters: distance_threshold = None
     for _ in range(10):
         cluster = AgglomerativeClustering(
-            n_clusters=None, distance_threshold=0.05, 
+            n_clusters=n_clusters, 
+            distance_threshold=distance_threshold,
             linkage='average', affinity='precomputed')
         labelcluster = cluster.fit_predict(dist_matrix)
 
@@ -270,7 +276,10 @@ def apriori_cluster(labels, args):
 
         _, counts = np.unique(labels_cluster, return_counts=True)
         if counts.min() < args.labels_cluster_min_size:
-            distance_threshold *= 2
+            if distance_threshold: 
+                distance_threshold *= 2
+            if n_clusters:
+                n_clusters /= 2
         else:
             succ_cluster = True
             break
@@ -290,7 +299,8 @@ def construct_label_clusters(args):
     `kmodes` directly uses original labels, 
     
     `apriori` computes distance between label1 and label2 using following rule:
-        dist(label1, label2) := |confidence(share -> dist_1) - confidence(share -> dist_2)|
+        dist(label1, label2) := |confidence(share -> dist_1) - confidence(share -> dist_2)|.
+        Then a hierarchical algorithm is run. 
 
     Args:
         args ([type]): args used in training.
