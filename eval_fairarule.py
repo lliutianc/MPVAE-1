@@ -284,6 +284,9 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
+    if args.labels_cluster_num:
+        args.labels_cluster_min_size = None
+        
     for min_support in [0.001, 0.005, 0.01, 0.05]:
         param_setting = f"n_cluster={args.labels_cluster_num}-"\
                         f"cluster_distance_thre={args.labels_cluster_distance_threshold}"
@@ -323,13 +326,13 @@ if __name__ == '__main__':
         data.label_clusters = label_clusters
         print(f'cluster numbers: {len(np.unique(label_clusters))}')
         
-        for min_support in [0.001, 0.005, 0.01, 0.05]:
+        for min_support_ in [0.001, 0.005, 0.01, 0.05]:
             model_file = os.path.join(
                 args.model_dir,
                 f'label_cluster-'
                 f'n_cluster={args.labels_cluster_num}-'
                 f'dist_cluster={args.labels_cluster_distance_threshold}-'
-                f'min_support={min_support}-'
+                f'min_support={min_support_}-'
                 f'min_confidence={args.min_confidence}' + '.pkl')
 
             model_file = os.path.join(args.model_dir, model_file)
