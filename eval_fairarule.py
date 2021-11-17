@@ -18,10 +18,12 @@ from fairarule import parser
 from label_cluster import construct_label_clusters
 
 
-parser.add_argument('-fairness_strate_embed', type=str, default=None, choices=[
-                    'mpvae', 'cbow', 'none', None])
+parser.add_argument('-fairness_strate_embed', type=str, default='', choices=[
+                    'mpvae', 'cbow', 'none', ''])
 parser.add_argument('-fairness_strate_cluster', type=str, default='kmeans', choices=[
                     'kmeans', 'kmodes', 'apriori', 'kprototype', 'hierarchical'])
+
+sys.path.append('./')
 
 
 def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=True):
@@ -285,7 +287,6 @@ if __name__ == '__main__':
 
         args.model_dir = f'fair_through_arule/model/{args.dataset}/{param_setting}'
         args.summary_dir = f'fair_through_arule/summary/{args.dataset}/{param_setting}'
-        
 
         np.random.seed(4)
         # prepare label_clusters
@@ -343,4 +344,4 @@ if __name__ == '__main__':
 # python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed mpvae -fairness_strate_cluster kmeans -cuda 6
 
 
-# python eval_fairarule.py -dataset adult -latent_dim 8 -fairness_strate_embed none -cuda 6
+# python eval_fairarule.py -dataset adult -latent_dim 8 -fairness_strate_embed none -labels_embed_method none -cuda 6
