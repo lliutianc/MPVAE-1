@@ -12,5 +12,7 @@ module load Conda/3
 conda activate fairmlc
 
 
-python baseline.py -dataset adult -latent_dim 8 -epoch 20 -bs 64
+python baseline.py -dataset adult -latent_dim 8 -epoch 20 -cuda 6
 
+
+python fairreg.py -dataset adult -latent_dim 8 -labels_cluster_distance_threshold 0.01 -epoch 20 -labels_embed_method mpvae -labels_cluster_method kmeans
