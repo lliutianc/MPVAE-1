@@ -137,18 +137,25 @@ def instance_based_cluster(labels_embed, cluster_method, args, **kwargs):
     #  Take KL for instance, afer merging two points, the new cluster is a Gaussian mixture,
     #  do we still have closed form formula to update new distance?
 
-    # TODO: make n_cluster and min_dist hparam to tune
     train_idx = np.arange(int(len(labels_embed) * .7))
+    succ_cluster = False
+
     if cluster_method == 'hierarchical':
         distance_threshold = args.labels_cluster_distance_threshold
-        succ_cluster = False
+        n_clusters = args.labels_cluster_num
+        if n_clusters: distance_threshold = None        
         for _ in range(10):
             cluster = AgglomerativeClustering(
-                n_clusters=None, distance_threshold=distance_threshold).fit(labels_embed[train_idx])
+                n_clusters=n_clusters, 
+                distance_threshold=distance_threshold,
+                linkage='average').fit(labels_embed[train_idx])
             labels_cluster = cluster.labels_
             _, counts = np.unique(labels_cluster, return_counts=True)
             if counts.min() < args.labels_cluster_min_size:
-                distance_threshold *= 2
+                if distance_threshold:
+                    distance_threshold *= 2
+                if n_clusters:
+                    n_clusters -= 2
             else:
                 succ_cluster = True
                 break
@@ -157,35 +164,35 @@ def instance_based_cluster(labels_embed, cluster_method, args, **kwargs):
         labels_cluster = cluster.predict(labels_embed)
 
     elif cluster_method == 'kmeans':
-        n_cluster = 16
+        n_clusters = args.labels_cluster_num or 16
         for _ in range(10):
-            cluster = KMeans(n_clusters=n_cluster).fit(labels_embed[train_idx])
+            cluster = KMeans(n_clusters=n_clusters).fit(labels_embed[train_idx])
             labels_cluster = cluster.labels_
             _, counts = np.unique(labels_cluster, return_counts=True)
             if counts.min() < args.labels_cluster_min_size:
-                n_cluster -= 2
+                n_clusters -= 2
             else:
                 succ_cluster = True
                 break
-            if n_cluster <= 1:
+            if n_clusters <= 1:
                 break
         if succ_cluster is False:
             raise UserWarning('Labels clustering not converged')
         labels_cluster = cluster.predict(labels_embed)
 
     elif cluster_method in ['kmodes', 'kprototypes']:
-        n_cluster = 16
+        n_clusters = args.labels_cluster_num
         for _ in range(10):
-            cluster = KPrototypes(n_jobs=-1, n_clusters=n_cluster, init='Cao', random_state=0).fit(
+            cluster = KPrototypes(n_jobs=-1, n_clusters=n_clusters, init='Cao', random_state=0).fit(
                 labels_embed[train_idx], categorical=kwargs.get('catecols'))
             labels_cluster = cluster.labels_
             _, counts = np.unique(labels_cluster, return_counts=True)
             if counts.min() < args.labels_cluster_min_size:
-                n_cluster -= 2
+                n_clusters -= 2
             else:
                 succ_cluster = True
                 break
-            if n_cluster <= 1:
+            if n_clusters <= 1:
                 break
         if succ_cluster is False:
             raise UserWarning('Labels clustering not converged')
@@ -261,6 +268,8 @@ def apriori_cluster(labels, args):
     distance_threshold = args.labels_cluster_distance_threshold
     n_clusters = args.labels_cluster_num
     if n_clusters: distance_threshold = None
+    succ_cluster = False
+
     for _ in range(10):
         cluster = AgglomerativeClustering(
             n_clusters=n_clusters, 
@@ -281,7 +290,7 @@ def apriori_cluster(labels, args):
             if distance_threshold: 
                 distance_threshold *= 2
             if n_clusters:
-                n_clusters = int(n_clusters // 2)
+                n_clusters -= 2
         else:
             succ_cluster = True
             break
