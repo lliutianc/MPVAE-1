@@ -41,12 +41,13 @@ sys.path.append('./')
 
 def train_fair_through_regularize():
 
+    hparams = f'label_cluster-'\
+            f'n_cluster={args.labels_cluster_num}-'\
+            f'dist_cluster={args.labels_cluster_distance_threshold}-'\
+            f'min_support={args.min_support}-'\
+            f'min_confidence = {args.min_confidence}'
     label_cluster_path = os.path.join(
-        args.model_dir, f'label_cluster-'\
-                        f'n_cluster={args.labels_cluster_num}-'\
-                        f'dist_cluster={args.labels_cluster_distance_threshold}-'\
-                        f'min_support={args.min_support}-'\
-                        f'min_confidence={args.min_confidence}.npy')
+        args.model_dir, hparams + '.npy')
 
     if args.resume and os.path.exists(label_cluster_path):
         label_clusters = np.load(open(label_cluster_path, 'rb'))
@@ -75,7 +76,7 @@ def train_fair_through_regularize():
     fair_vae.train()
 
     fair_vae_checkpoint_path = os.path.join(
-        args.model_dir, f'fair_vae_prior_{args.labels_embed_method}_{args.labels_cluster_method}')
+        args.model_dir, 'fair_vae_prior_{hparamsf}.pkl')
     if args.resume and os.path.exists(fair_vae_checkpoint_path):
         print('use a trained fair mpvae...')
         fair_vae.load_state_dict(torch.load(fair_vae_checkpoint_path))
