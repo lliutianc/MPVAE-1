@@ -286,7 +286,7 @@ if __name__ == '__main__':
 
     if args.labels_cluster_num:
         args.labels_cluster_min_size = None
-        
+
     for min_support in [0.001, 0.005, 0.01, 0.05]:
         param_setting = f"n_cluster={args.labels_cluster_num}-"\
                         f"cluster_distance_thre={args.labels_cluster_distance_threshold}"
@@ -317,6 +317,7 @@ if __name__ == '__main__':
             f'min_support={min_support}-'
             f'min_confidence={args.min_confidence}' + '.npy')
 
+        print(label_cluster_path)
         if os.path.exists(label_cluster_path):
             label_clusters = np.load(open(label_cluster_path, 'rb'))
         else:
