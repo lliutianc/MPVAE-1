@@ -337,7 +337,10 @@ if __name__ == '__main__':
                 print(f'start evaluating {model_file}...')
                 train, valid = evaluate_mpvae(model, data, True)
         
-# python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmeans -cuda 6
+# python eval_fairarule.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmeans -cuda 6
 # python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmodes -cuda 6 
 # python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster apriori -cuda 6
 # python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed mpvae -fairness_strate_cluster kmeans -cuda 6
+
+
+# python eval_fairarule.py -dataset adult -latent_dim 8 -fairness_strate_embed none -cuda 6
