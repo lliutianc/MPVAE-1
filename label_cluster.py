@@ -136,6 +136,8 @@ def instance_based_cluster(labels_embed, cluster_method, args, **kwargs):
     # TODO: how to properly cluster labels based on JSD or KL average distance?
     #  Take KL for instance, afer merging two points, the new cluster is a Gaussian mixture,
     #  do we still have closed form formula to update new distance?
+
+    # TODO: make n_cluster and min_dist hparam to tune
     train_idx = np.arange(int(len(labels_embed) * .7))
     if cluster_method == 'hierarchical':
         distance_threshold = args.labels_cluster_distance_threshold

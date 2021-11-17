@@ -26,8 +26,6 @@ parser.add_argument('-fairness_strate_embed', type=str, default='', choices=[
 parser.add_argument('-fairness_strate_cluster', type=str, default='kmeans', choices=[
                     'kmeans', 'kmodes', 'apriori', 'kprototype', 'hierarchical'])
 
-sys.path.append('./')
-
 
 def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=True):
     with torch.no_grad():
