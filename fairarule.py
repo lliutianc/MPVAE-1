@@ -23,7 +23,7 @@ from train import train_mpvae_one_epoch, validate_mpvae
 from main import parser, THRESHOLDS, METRICS
 
 # cluster parameters
-parser.add_argument('-labels_embed_method', type=str, default='',
+parser.add_argument('-labels_embed_method', default='',
                     choices=['cbow', 'mpvae', 'none', ''])
 parser.add_argument('-labels_cluster_method', type=str, default='apriori')
 parser.add_argument('-labels_cluster_distance_threshold',
