@@ -137,7 +137,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
 
                     # nll_coeff: BCE coeff, lambda_1
                     # c_coeff: Ranking loss coeff, lambda_2
-                    print("********************valid********************")
+                    print("********************train********************")
                     print(round(best_val_metrics['fair'], 4))
                     # print(
                     #     ' & '.join(
@@ -145,7 +145,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                 else:
                     # nll_coeff: BCE coeff, lambda_1
                     # c_coeff: Ranking loss coeff, lambda_2
-                    print("********************valid********************")
+                    print("********************train********************")
                     # print(
                     #     ' & '.join(
                     #         [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
