@@ -324,7 +324,7 @@ if __name__ == '__main__':
             np.save(open(label_cluster_path, 'wb'), label_clusters)
 
         data.label_clusters = label_clusters
-        print(f'cluster numbers: {len(np.unique(label_clusters))}')
+        print(f'min_support={min_support}, cluster numbers: {len(np.unique(label_clusters))}')
         
         for min_support_ in [0.001, 0.005, 0.01, 0.05]:
             model_file = os.path.join(
@@ -341,11 +341,62 @@ if __name__ == '__main__':
                 model.load_state_dict(torch.load(model_file))
                 print(f'start evaluating {model_file}...')
                 train, valid = evaluate_mpvae(model, data, True)
+
+    for min_confidence in [0.01, 0.05, 0.1, 0.25]:
+        param_setting = f"n_cluster={args.labels_cluster_num}-"\
+                        f"cluster_distance_thre={args.labels_cluster_distance_threshold}"
+
+        args.model_dir = f'fair_through_arule/model/{args.dataset}/{param_setting}'
+        args.summary_dir = f'fair_through_arule/summary/{args.dataset}/{param_setting}'
+
+        np.random.seed(4)
+        # prepare label_clusters
+        nonsensitive_feat, sensitive_feat, labels = load_data(
+            args.dataset, args.mode, True)
+        train_cnt, valid_cnt = int(
+            len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
+        train_idx = np.arange(train_cnt)
+        valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+        data = types.SimpleNamespace(
+            input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx,
+            valid_idx=valid_idx, batch_size=args.batch_size, label_clusters=None,
+            sensitive_feat=sensitive_feat)
+        args.feature_dim = data.input_feat.shape[1]
+        args.label_dim = data.labels.shape[1]
         
-# python eval_fairarule.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmeans -cuda 6
-# python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmodes -cuda 6 
-# python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster apriori -cuda 6
-# python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed mpvae -fairness_strate_cluster kmeans -cuda 6
+        label_cluster_path = os.path.join(
+            args.model_dir, 
+            f'label_cluster-'
+            f'n_cluster={args.labels_cluster_num}-'
+            f'dist_cluster={args.labels_cluster_distance_threshold}-'
+            f'min_support={args.min_support}-'
+            f'min_confidence={min_confidence}' + '.npy')
+            
+        if os.path.exists(label_cluster_path):
+            label_clusters = np.load(open(label_cluster_path, 'rb'))
+        else:
+            label_clusters = construct_label_clusters(args)
+            np.save(open(label_cluster_path, 'wb'), label_clusters)
 
+        data.label_clusters = label_clusters
+        print(f'min_support={min_support}, cluster numbers: {len(np.unique(label_clusters))}')
+        
+        for min_confidence_ in [0.001, 0.005, 0.01, 0.05]:
+            model_file = os.path.join(
+                args.model_dir,
+                f'fair_vae_prior_label_cluster-'
+                f'n_cluster={args.labels_cluster_num}-'
+                f'dist_cluster={args.labels_cluster_distance_threshold}-'
+                f'min_support={args.min_support}-'
+                f'min_confidence=min_confidence_' + '.pkl')
+            print(f'try loading model from: {model_file}')
 
-# python eval_fairarule.py -dataset adult -latent_dim 8 -fairness_strate_embed none -labels_embed_method none -cuda 6
+            if os.path.exists(model_file):
+                model = VAE(args).to(args.device)
+                model.load_state_dict(torch.load(model_file))
+                print(f'start evaluating {model_file}...')
+                train, valid = evaluate_mpvae(model, data, True)
+
+        
+
+# python eval_fairarule.py - dataset adult - latent_dim 8 - fairness_strate_embed none - labels_embed_method none - cuda 6 - labels_cluster_num 8
