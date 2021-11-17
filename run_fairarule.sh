@@ -17,7 +17,6 @@ python fairarule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method 
 python fairarule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -labels_cluster_num 8 -min_support 0.01
 python fairarule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -labels_cluster_num 8 -min_support 0.05
 
-
 # tune min_confidence
 python fairarule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -labels_cluster_num 8 -min_confidence 0.01
 python fairarule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -labels_cluster_num 8 -min_confidence 0.05
