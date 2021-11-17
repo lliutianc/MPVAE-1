@@ -23,7 +23,6 @@ from train import train_mpvae_one_epoch, validate_mpvae
 from main import parser, THRESHOLDS, METRICS
 
 # cluster parameters
-parser.add_argument('-labels_embed_method', type=str, default='none')
 parser.add_argument('-labels_cluster_method', type=str, default='apriori')
 parser.add_argument('-labels_cluster_distance_threshold',
                     type=float, default=None)
@@ -103,7 +102,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
-        
+
     # args.device = torch.args.device('cpu')
     param_setting = f"n_cluster={args.labels_cluster_num}-"\
                     f"cluster_distance_thre={args.labels_cluster_distance_threshold}"
