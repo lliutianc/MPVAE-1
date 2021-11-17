@@ -316,8 +316,7 @@ if __name__ == '__main__':
             f'dist_cluster={args.labels_cluster_distance_threshold}-'
             f'min_support={min_support}-'
             f'min_confidence={args.min_confidence}' + '.npy')
-
-        print(label_cluster_path)
+            
         if os.path.exists(label_cluster_path):
             label_clusters = np.load(open(label_cluster_path, 'rb'))
         else:
@@ -330,7 +329,7 @@ if __name__ == '__main__':
         for min_support_ in [0.001, 0.005, 0.01, 0.05]:
             model_file = os.path.join(
                 args.model_dir,
-                f'label_cluster-'
+                f'fair_vae_prior_label_cluster-'
                 f'n_cluster={args.labels_cluster_num}-'
                 f'dist_cluster={args.labels_cluster_distance_threshold}-'
                 f'min_support={min_support_}-'
