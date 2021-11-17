@@ -17,11 +17,7 @@ from fairreg import THRESHOLDS, METRICS
 from fairreg import parser
 from label_cluster import construct_label_clusters
 
-parser.add_argument('-labels_cluster_num', type=int, default=None)
-parser.add_argument('-labels_cluster_min_size', type=int, default=50)
 # fair regularizer
-parser.add_argument('-label_z_fair_coeff', type=float, default=1.0)
-parser.add_argument('-feat_z_fair_coeff', type=float, default=1.0)
 parser.add_argument('-min_support', type=float, default=None)
 parser.add_argument('-min_confidence', type=float, default=None)
 
