@@ -258,7 +258,6 @@ def apriori_cluster(labels, args):
 
     distance_threshold = args.labels_cluster_distance_threshold
     n_clusters = args.labels_cluster_num
-    print(n_clusters)
     if n_clusters: distance_threshold = None
     for _ in range(10):
         cluster = AgglomerativeClustering(
@@ -280,11 +279,11 @@ def apriori_cluster(labels, args):
             if distance_threshold: 
                 distance_threshold *= 2
             if n_clusters:
-                n_clusters /= 2
+                n_clusters = int(n_clusters // 2)
         else:
             succ_cluster = True
             break
-    
+    print(f'Final n_cluster={n_clusters}, distance_threshold={distance_threshold}')
     if succ_cluster is False:
         raise UserWarning('Labels clustering not converged')
 
