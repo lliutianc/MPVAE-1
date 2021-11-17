@@ -314,7 +314,7 @@ if __name__ == '__main__':
             f'min_support={min_support}-'
             f'min_confidence={args.min_confidence}' + '.npy')
 
-        if args.resume and os.path.exists(label_cluster_path):
+        if os.path.exists(label_cluster_path):
             label_clusters = np.load(open(label_cluster_path, 'rb'))
         else:
             label_clusters = construct_label_clusters(args)
