@@ -14,12 +14,12 @@ import evals
 from model import VAE, compute_loss
 from data import load_data
 from fairreg import THRESHOLDS, METRICS
-from fairreg import parser
+from fairarule import parser
 from label_cluster import construct_label_clusters
 
 # fair regularizer
-parser.add_argument('-min_support', type=float, default=None)
-parser.add_argument('-min_confidence', type=float, default=None)
+# parser.add_argument('-min_support', type=float, default=None)
+# parser.add_argument('-min_confidence', type=float, default=None)
 
 parser.add_argument('-fairness_strate_embed', type=str, default='', choices=[
                     'mpvae', 'cbow', 'none', ''])
