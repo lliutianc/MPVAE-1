@@ -334,8 +334,6 @@ if __name__ == '__main__':
                 f'dist_cluster={args.labels_cluster_distance_threshold}-'
                 f'min_support={min_support_}-'
                 f'min_confidence={args.min_confidence}' + '.pkl')
-
-            model_file = os.path.join(args.model_dir, model_file)
             print(f'try loading model from: {model_file}')
 
             if os.path.exists(model_file):
