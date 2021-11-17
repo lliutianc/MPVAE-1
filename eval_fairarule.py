@@ -388,7 +388,7 @@ if __name__ == '__main__':
                 f'n_cluster={args.labels_cluster_num}-'
                 f'dist_cluster={args.labels_cluster_distance_threshold}-'
                 f'min_support={args.min_support}-'
-                f'min_confidence=min_confidence_' + '.pkl')
+                f'min_confidence={min_confidence_}' + '.pkl')
             print(f'try loading model from: {model_file}')
 
             if os.path.exists(model_file):
