@@ -308,7 +308,7 @@ if __name__ == '__main__':
             f'n_cluster={args.labels_cluster_num}-'
             f'dist_cluster={args.labels_cluster_distance_threshold}-'
             f'min_support={min_support}-'
-            f'min_confidence = {args.min_confidence}' + '.npy')
+            f'min_confidence={args.min_confidence}' + '.npy')
 
         if args.resume and os.path.exists(label_cluster_path):
             label_clusters = np.load(open(label_cluster_path, 'rb'))
@@ -326,7 +326,7 @@ if __name__ == '__main__':
                 f'n_cluster={args.labels_cluster_num}-'
                 f'dist_cluster={args.labels_cluster_distance_threshold}-'
                 f'min_support={min_support}-'
-                f'min_confidence = {args.min_confidence}' + '.pkl')
+                f'min_confidence={args.min_confidence}' + '.pkl')
 
             model_file = os.path.join(args.model_dir, model_file)
             print(f'try loading model from: {model_file}')

@@ -45,7 +45,7 @@ def train_fair_through_regularize():
             f'n_cluster={args.labels_cluster_num}-'\
             f'dist_cluster={args.labels_cluster_distance_threshold}-'\
             f'min_support={args.min_support}-'\
-            f'min_confidence = {args.min_confidence}'
+            f'min_confidence={args.min_confidence}'
     label_cluster_path = os.path.join(
         args.model_dir, hparams + '.npy')
 
