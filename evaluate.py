@@ -338,7 +338,7 @@ if __name__ == '__main__':
     data.label_clusters = label_clusters
     
     for cluster in ['kmeans', 'kmodes', 'apriori']:
-        for embed in ['mpvae', 'none', None]:
+        for embed in ['none', 'mpvae', None]:
             args.labels_cluster_method = cluster
             args.labels_embed_method = embed
 
@@ -364,8 +364,7 @@ if __name__ == '__main__':
                     pickle.dump(valid, open(os.path.join(
                         args.model_dir, 'valid_metrics.pickle'), 'wb'))
 
-
-# python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmodes -cuda 6 
 # python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmeans -cuda 6
+# python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmodes -cuda 6 
 # python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster apriori -cuda 6
 # python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed mpvae -fairness_strate_cluster kmeans -cuda 6
