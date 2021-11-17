@@ -76,7 +76,7 @@ def train_fair_through_regularize():
     fair_vae.train()
 
     fair_vae_checkpoint_path = os.path.join(
-        args.model_dir, 'fair_vae_prior_{hparamsf}.pkl')
+        args.model_dir, f'fair_vae_prior_{hparams}.pkl')
     if args.resume and os.path.exists(fair_vae_checkpoint_path):
         print('use a trained fair mpvae...')
         fair_vae.load_state_dict(torch.load(fair_vae_checkpoint_path))
