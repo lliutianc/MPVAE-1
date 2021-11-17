@@ -285,7 +285,7 @@ if __name__ == '__main__':
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
     if args.labels_cluster_num:
-        args.labels_cluster_min_size = None
+        args.labels_cluster_distance_threshold = None
 
     for min_support in [0.001, 0.005, 0.01, 0.05]:
         param_setting = f"n_cluster={args.labels_cluster_num}-"\
