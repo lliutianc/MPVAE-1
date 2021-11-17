@@ -112,7 +112,7 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     train_feat_z = np.concatenate(train_feat_z)
                     assert train_feat_z.shape[0] == len(data.train_idx) and \
                         train_feat_z.shape[1] == args.latent_dim
-                    mean_diffs = 0.
+                    mean_diffs = []
                     idxs = np.arange(len(data.train_idx))
 
                     sensitive_centroid = np.unique(train_sensitive, axis=0)
@@ -130,25 +130,25 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                                 )
                                 cluster_feat_z_sensitive = train_feat_z[idxs[cluster_sensitve]]
                                 if len(cluster_feat_z_sensitive):
-                                    mean_diffs += np.mean(
-                                        np.power(cluster_feat_z_sensitive.mean(0) - cluster_feat_z.mean(0), 2))
+                                    mean_diffs.append(np.mean(
+                                        np.power(cluster_feat_z_sensitive.mean(0) - cluster_feat_z.mean(0), 2)))
 
-                    best_val_metrics['fair'] = mean_diffs
+                    best_val_metrics['fair'] = np.mean(mean_diffs)
 
                     # nll_coeff: BCE coeff, lambda_1
                     # c_coeff: Ranking loss coeff, lambda_2
-                    print("********************train********************")
-                    print(
-                        ' & '.join([
-                            str(round(m, 4)) for m in [
-                                acc, ha, ebf1, maf1, mif1, mean_diffs]]))
+                    print("********************valid********************")
+                    print(round(best_val_metrics['fair'], 4))
+                    # print(
+                    #     ' & '.join(
+                    #         [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1, mean_diffs]]))
                 else:
                     # nll_coeff: BCE coeff, lambda_1
                     # c_coeff: Ranking loss coeff, lambda_2
-                    print("********************train********************")
-                    print(
-                        ' & '.join(
-                            [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
+                    print("********************valid********************")
+                    # print(
+                    #     ' & '.join(
+                    #         [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
 
             train_best_metrics = best_val_metrics
         else:
