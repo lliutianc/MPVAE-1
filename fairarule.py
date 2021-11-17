@@ -23,8 +23,7 @@ from train import train_mpvae_one_epoch, validate_mpvae
 from main import parser, THRESHOLDS, METRICS
 
 # cluster parameters
-parser.add_argument('-labels_embed_method', type=str, default='none', 
-                    choices=['cbow', 'mpvae', 'none'])
+parser.add_argument('-labels_embed_method', type=str, default='none')
 parser.add_argument('-labels_cluster_method', type=str, default='apriori')
 parser.add_argument('-labels_cluster_distance_threshold',
                     type=float, default=None)
@@ -42,10 +41,10 @@ sys.path.append('./')
 def train_fair_through_regularize():
 
     hparams = f'label_cluster-'\
-            f'n_cluster={args.labels_cluster_num}-'\
-            f'dist_cluster={args.labels_cluster_distance_threshold}-'\
-            f'min_support={args.min_support}-'\
-            f'min_confidence={args.min_confidence}'
+              f'n_cluster={args.labels_cluster_num}-'\
+              f'dist_cluster={args.labels_cluster_distance_threshold}-'\
+              f'min_support={args.min_support}-'\
+              f'min_confidence={args.min_confidence}'
     label_cluster_path = os.path.join(
         args.model_dir, hparams + '.npy')
 
