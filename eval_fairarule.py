@@ -7,6 +7,7 @@ import numpy as np
 from tqdm import tqdm
 
 from copy import deepcopy
+import sys
 import os
 import types
 
@@ -15,10 +16,21 @@ from model import VAE, compute_loss
 from data import load_data
 from fairreg import THRESHOLDS, METRICS
 from fairarule import parser
-from fairreg import parser
-exit(1)
+from main import parser
 from label_cluster import construct_label_clusters
 
+parser.add_argument('-labels_embed_method', type=str, default='',
+                    choices=['cbow', 'mpvae', 'none', ''])
+parser.add_argument('-labels_cluster_method', type=str, default='apriori')
+parser.add_argument('-labels_cluster_distance_threshold',
+                    type=float, default=None)
+parser.add_argument('-labels_cluster_num', type=int, default=None)
+parser.add_argument('-labels_cluster_min_size', type=int, default=50)
+# fair regularizer
+parser.add_argument('-label_z_fair_coeff', type=float, default=1.0)
+parser.add_argument('-feat_z_fair_coeff', type=float, default=1.0)
+parser.add_argument('-min_support', type=float, default=None)
+parser.add_argument('-min_confidence', type=float, default=None)
 
 parser.add_argument('-fairness_strate_embed', type=str, default='', choices=[
                     'mpvae', 'cbow', 'none', ''])
