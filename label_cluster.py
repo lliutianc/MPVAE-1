@@ -268,8 +268,9 @@ def apriori_cluster(labels, args):
     distance_threshold = args.labels_cluster_distance_threshold
     n_clusters = args.labels_cluster_num
     if n_clusters: distance_threshold = None
-    succ_cluster = False
+    print(min_support, min_confidence)
 
+    succ_cluster = False
     for _ in range(10):
         cluster = AgglomerativeClustering(
             n_clusters=n_clusters, 
