@@ -382,7 +382,7 @@ if __name__ == '__main__':
         print(
             f'min_confidence={min_confidence}, cluster numbers: {counts}')
 
-        for min_confidence_ in [0.001, 0.005, 0.01, 0.05]:
+        for min_confidence_ in [0.01, 0.05, 0.1, 0.25]:
             model_file = os.path.join(
                 args.model_dir,
                 f'fair_vae_prior-'
