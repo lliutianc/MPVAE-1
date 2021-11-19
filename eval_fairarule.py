@@ -284,6 +284,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
+    args.labels_cluster_method = 'apriori'
 
     if args.labels_cluster_num:
         args.labels_cluster_distance_threshold = None
@@ -313,8 +314,6 @@ if __name__ == '__main__':
         label_cluster_path = os.path.join(
             args.model_dir,
             f'label_cluster-'
-            f'n_cluster={args.labels_cluster_num}-'
-            f'dist_cluster={args.labels_cluster_distance_threshold}-'
             f'min_support={min_support}-'
             f'min_confidence={args.min_confidence}' + '.npy')
 
@@ -397,4 +396,4 @@ if __name__ == '__main__':
                 train, valid = evaluate_mpvae(model, data, True)
 
 
-# python eval_fairarule.py - dataset adult - latent_dim 8 - fairness_strate_embed none - labels_embed_method none - cuda 6 - labels_cluster_num 8
+# python eval_fairarule.py -dataset adult -latent_dim 8 -fairness_strate_embed none -labels_embed_method none -cuda 6 -labels_cluster_num 8
