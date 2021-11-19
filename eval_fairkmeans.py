@@ -285,8 +285,7 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
-    if args.labels_cluster_num:
-        args.labels_cluster_distance_threshold = None
+    args.labels_cluster_distance_threshold = None
 
     for k in [8, 16, 32, 64]:
         param_setting = f"n_cluster={k}-"\
