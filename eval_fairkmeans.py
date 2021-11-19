@@ -324,8 +324,8 @@ if __name__ == '__main__':
             f'cluster numbers: {len(np.unique(label_clusters))}')
 
         for k_ in [8, 16, 32, 64]:
-            param_setting = f"n_cluster={k}-cluster_distance_thre={args.labels_cluster_distance_threshold}"
-            model_dir_ = f'fair_through_kmeans/model/{args.dataset}/{param_setting}'
+            param_setting_ = f"n_cluster={k_}-cluster_distance_thre={args.labels_cluster_distance_threshold}"
+            model_dir_ = f'fair_through_kmeans/model/{args.dataset}/{param_setting_}'
 
             model_file = os.path.join(
                 model_dir_,
