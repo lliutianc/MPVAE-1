@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=fairmlc-regularized-arule
-#SBATCH --gres=gpu:k80:1
+#SBATCH --gres=gpu:v100:1
 #SBATCH --mem-per-cpu=16G
 #SBATCH --mail-type=END
 
@@ -12,7 +12,7 @@ module load Conda/3
 conda activate fairmlc
 
 # tune min_support
-python fairarule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -labels_cluster_num 8 -min_support 0.001
+python fairarule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -labels_cluster_num 8 -min_support 0.001 -cuda 7
 python fairarule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -labels_cluster_num 8 -min_support 0.005
 python fairarule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -labels_cluster_num 8 -min_support 0.01
 python fairarule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -labels_cluster_num 8 -min_support 0.05
