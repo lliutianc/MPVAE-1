@@ -326,13 +326,12 @@ if __name__ == '__main__':
 
         for k_ in [8, 16, 32, 64]:
             param_setting = f"n_cluster={k}-cluster_distance_thre={args.labels_cluster_distance_threshold}"
-            model_dir = f'fair_through_kmeans/model/{args.dataset}/{param_setting}'
+            model_dir_ = f'fair_through_kmeans/model/{args.dataset}/{param_setting}'
 
             model_file = os.path.join(
                 model_dir_,
                 f'fair_vae_prior-'
-                f'min_support={min_support_}-'
-                f'min_confidence={args.min_confidence}' + '.pkl')
+                f'labels_embed={args.labels_embed_method}' + '.pkl')
             print(f'try loading model from: {model_file}')
 
             if os.path.exists(model_file):
