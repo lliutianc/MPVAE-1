@@ -7,7 +7,8 @@ import numpy as np
 from tqdm import tqdm
 
 from copy import deepcopy
-import os, sys
+import os
+import sys
 import types
 
 import evals
@@ -308,15 +309,15 @@ if __name__ == '__main__':
             sensitive_feat=sensitive_feat)
         args.feature_dim = data.input_feat.shape[1]
         args.label_dim = data.labels.shape[1]
-        
+
         label_cluster_path = os.path.join(
-            args.model_dir, 
+            args.model_dir,
             f'label_cluster-'
             f'n_cluster={args.labels_cluster_num}-'
             f'dist_cluster={args.labels_cluster_distance_threshold}-'
             f'min_support={min_support}-'
             f'min_confidence={args.min_confidence}' + '.npy')
-            
+
         if os.path.exists(label_cluster_path):
             label_clusters = np.load(open(label_cluster_path, 'rb'))
         else:
@@ -324,8 +325,9 @@ if __name__ == '__main__':
             np.save(open(label_cluster_path, 'wb'), label_clusters)
 
         data.label_clusters = label_clusters
-        print(f'min_support={min_support}, cluster numbers: {len(np.unique(label_clusters))}')
-        
+        print(
+            f'min_support={min_support}, cluster numbers: {len(np.unique(label_clusters))}')
+
         for min_support_ in [0.001, 0.005, 0.01, 0.05]:
             model_file = os.path.join(
                 args.model_dir,
@@ -363,15 +365,13 @@ if __name__ == '__main__':
             sensitive_feat=sensitive_feat)
         args.feature_dim = data.input_feat.shape[1]
         args.label_dim = data.labels.shape[1]
-        
+
         label_cluster_path = os.path.join(
-            args.model_dir, 
+            args.model_dir,
             f'label_cluster-'
-            f'n_cluster={args.labels_cluster_num}-'
-            f'dist_cluster={args.labels_cluster_distance_threshold}-'
             f'min_support={args.min_support}-'
             f'min_confidence={min_confidence}' + '.npy')
-            
+
         if os.path.exists(label_cluster_path):
             label_clusters = np.load(open(label_cluster_path, 'rb'))
         else:
@@ -379,14 +379,13 @@ if __name__ == '__main__':
             np.save(open(label_cluster_path, 'wb'), label_clusters)
 
         data.label_clusters = label_clusters
-        print(f'min_support={min_support}, cluster numbers: {len(np.unique(label_clusters))}')
-        
+        print(
+            f'min_support={min_support}, cluster numbers: {len(np.unique(label_clusters))}')
+
         for min_confidence_ in [0.001, 0.005, 0.01, 0.05]:
             model_file = os.path.join(
                 args.model_dir,
                 f'fair_vae_prior_label_cluster-'
-                f'n_cluster={args.labels_cluster_num}-'
-                f'dist_cluster={args.labels_cluster_distance_threshold}-'
                 f'min_support={args.min_support}-'
                 f'min_confidence={min_confidence_}' + '.pkl')
             print(f'try loading model from: {model_file}')
@@ -397,6 +396,5 @@ if __name__ == '__main__':
                 print(f'start evaluating {model_file}...')
                 train, valid = evaluate_mpvae(model, data, True)
 
-        
 
 # python eval_fairarule.py - dataset adult - latent_dim 8 - fairness_strate_embed none - labels_embed_method none - cuda 6 - labels_cluster_num 8
