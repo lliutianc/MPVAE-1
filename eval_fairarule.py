@@ -325,8 +325,9 @@ if __name__ == '__main__':
             np.save(open(label_cluster_path, 'wb'), label_clusters)
 
         data.label_clusters = label_clusters
+        _, counts = np.unique(label_clusters, return_counts=True)
         print(
-            f'min_support={min_support}, cluster numbers: {len(np.unique(label_clusters))}')
+            f'min_support={min_support}, cluster numbers: {counts}')
 
         for min_support_ in [0.001, 0.005, 0.01, 0.05]:
             model_file = os.path.join(
@@ -341,7 +342,7 @@ if __name__ == '__main__':
                 model.load_state_dict(torch.load(model_file))
                 print(f'start evaluating {model_file}...')
                 train, valid = evaluate_mpvae(model, data, True)
-
+    print('\n' * 5)
     for min_confidence in [0.01, 0.05, 0.1, 0.25]:
         param_setting = f"n_cluster={args.labels_cluster_num}-"\
                         f"cluster_distance_thre={args.labels_cluster_distance_threshold}"
@@ -377,8 +378,9 @@ if __name__ == '__main__':
             np.save(open(label_cluster_path, 'wb'), label_clusters)
 
         data.label_clusters = label_clusters
+        _, counts = np.unique(label_clusters, return_counts=True)
         print(
-            f'min_support={min_support}, cluster numbers: {len(np.unique(label_clusters))}')
+            f'min_confidence={min_confidence}, cluster numbers: {counts}')
 
         for min_confidence_ in [0.001, 0.005, 0.01, 0.05]:
             model_file = os.path.join(
