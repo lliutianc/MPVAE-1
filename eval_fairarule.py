@@ -332,8 +332,6 @@ if __name__ == '__main__':
             model_file = os.path.join(
                 args.model_dir,
                 f'fair_vae_prior_label_cluster-'
-                f'n_cluster={args.labels_cluster_num}-'
-                f'dist_cluster={args.labels_cluster_distance_threshold}-'
                 f'min_support={min_support_}-'
                 f'min_confidence={args.min_confidence}' + '.pkl')
             print(f'try loading model from: {model_file}')
