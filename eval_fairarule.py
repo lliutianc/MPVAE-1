@@ -331,7 +331,7 @@ if __name__ == '__main__':
         for min_support_ in [0.001, 0.005, 0.01, 0.05]:
             model_file = os.path.join(
                 args.model_dir,
-                f'fair_vae_prior_label_cluster-'
+                f'fair_vae_prior-'
                 f'min_support={min_support_}-'
                 f'min_confidence={args.min_confidence}' + '.pkl')
             print(f'try loading model from: {model_file}')
@@ -383,7 +383,7 @@ if __name__ == '__main__':
         for min_confidence_ in [0.001, 0.005, 0.01, 0.05]:
             model_file = os.path.join(
                 args.model_dir,
-                f'fair_vae_prior_label_cluster-'
+                f'fair_vae_prior-'
                 f'min_support={args.min_support}-'
                 f'min_confidence={min_confidence_}' + '.pkl')
             print(f'try loading model from: {model_file}')
