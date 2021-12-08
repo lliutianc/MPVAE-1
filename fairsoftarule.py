@@ -60,8 +60,8 @@ def apriori_distance(args):
     labels_oh = preprocess(labels, 'onehot').astype(int)
     labels = labels.astype(str)
 
-    labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
-    labels_oh_str = np.unique(labels_oh_str, axis=0)
+    # labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
+    # labels_oh_str = np.unique(labels_oh_str, axis=0)
 
     labels_oh_str, count = np.unique(labels_oh_str, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
@@ -426,7 +426,7 @@ def train_fair_through_regularize():
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
     target_fair_labels = label_type[:5].astype(int)
-    print(target_fair_labels, count[count_sort_idx][:5])
+    print(target_fair_labels, count[count_sort_idx])
 
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):
