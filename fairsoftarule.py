@@ -414,7 +414,7 @@ def train_fair_through_regularize():
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
-    target_fair_labels = label_type[:1]
+    target_fair_labels = label_type[:1].astype(int)
 
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):
