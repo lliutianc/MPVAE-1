@@ -384,9 +384,11 @@ if __name__ == '__main__':
             model_file = model_files[0]
             print(f'try loading model from: {model_file}')
 
-            label_dist = np.load(open(label_dist_file, 'rb'))
+            label_dist = np.load(open(os.path.join(
+                args.model_dir, label_dist, label_dist_file), 'rb'))
             model = VAE(args).to(args.device)
-            model.load_state_dict(torch.load(model_file))
+            model.load_state_dict(torch.load(os.path.join(
+                args.model_dir, label_dist, model_file)))
 
             print(f'start evaluating {model_file}...')
             train, valid = evaluate_mpvae(model, data, label_dist)
