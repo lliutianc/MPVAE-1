@@ -52,6 +52,7 @@ def apriori_pair_dist(labelset1, labelset2, apriori_rules):
 
     return score
 
+
 def apriori_distance(args):
     np.random.seed(4)
 
@@ -97,11 +98,11 @@ def apriori_distance(args):
             dist_dict[lab1] = {}
             for p2 in labelsets:
                 p2_oh = labels_express.get(frozenset(p2), None)
-                if p2_oh is not None: 
+                if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
                     dist_dict[lab1][lab2] = apriori_pair_dist(
                         p1, p2, labels_rules)
-    
+
     return dist_dict
 
 
@@ -115,7 +116,7 @@ def train_mpvae_softfair_one_epoch(
     target_fair_labels_str = []
     for target_fair_label in target_fair_labels:
         target_fair_label = ''.join(target_fair_label.astype(str))
-        target_fair_labels_str.append(target_fair_labels_str)
+        target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
 
     np.random.shuffle(data.train_idx)
@@ -183,7 +184,8 @@ def train_mpvae_softfair_one_epoch(
                         distance = target_label_dist.get(
                             ''.join(label.astype(str)), 0.)
                         batch_distance.append(distance)
-                    batch_distance = torch.tensor(batch_distance).to(args.device)
+                    batch_distance = torch.tensor(
+                        batch_distance).to(args.device)
                     gamma = 1.
                     weights = torch.exp(-batch_distance * gamma)
                     weights = torch.clamp(weights, min=1e-6)
@@ -386,7 +388,7 @@ def train_fair_through_regularize():
     one_epoch_iter = np.ceil(len(train_idx) / args.batch_size)
 
     data = types.SimpleNamespace(
-        input_feat=nonsensitive_feat, labels=labels, sensitive_feat=sensitive_feat, 
+        input_feat=nonsensitive_feat, labels=labels, sensitive_feat=sensitive_feat,
         train_idx=train_idx, valid_idx=valid_idx, batch_size=args.batch_size)
     args.feature_dim = data.input_feat.shape[1]
     args.label_dim = data.labels.shape[1]
@@ -404,7 +406,7 @@ def train_fair_through_regularize():
 
     optimizer = optim.Adam(fair_vae.parameters(),
                            lr=args.learning_rate, weight_decay=1e-5)
-                           
+
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
@@ -431,7 +433,7 @@ if __name__ == '__main__':
 
     if args.labels_cluster_num:
         args.labels_cluster_distance_threshold = None
-    
+
     param_setting = f"arule"
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
