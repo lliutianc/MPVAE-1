@@ -60,16 +60,20 @@ def apriori_distance(args):
     labels_oh = preprocess(labels, 'onehot').astype(int)
     labels = labels.astype(str)
 
-    # print(labels_oh.shape)
-
     labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
     labels_oh_str = np.unique(labels_oh_str, axis=0)
+
+    labels_oh_str, count = np.unique(labels_oh_str, axis=0, return_counts=True)
+    count_sort_idx = np.argsort(-count)
+    label_type = labels_oh_str[count_sort_idx][:5]
+    print(label_type)
+    
     labels_express = {}
     for label in labels_oh_str:
         label_oh = label[:-3]
         label_str = label[-3:]
         # print(len(label), len(label_oh), len(label_str))
-        # print(label)
+        # print(label
         labels_express[frozenset(label_str)] = label_oh.astype(int)
 
     encoder = TransactionEncoder()
@@ -122,7 +126,7 @@ def train_mpvae_softfair_one_epoch(
         target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
     print(target_fair_labels)
-    
+
     np.random.shuffle(data.train_idx)
     args.device = next(model.parameters()).device
 
@@ -417,16 +421,12 @@ def train_fair_through_regularize():
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
-    # test fairness on some labels
+    # Test fairness on some labels
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
-    # print(labels.shape)
     label_type = label_type[count_sort_idx]
-    target_fair_labels = label_type[:1].astype(int)
-    # print(list(label_dist.keys()))
-    # print(label_type.shape)
-    # print(target_fair_labels)
-    # exit(1)
+    target_fair_labels = label_type[:5].astype(int)
+
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):
         train_mpvae_softfair_one_epoch(
