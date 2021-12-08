@@ -58,10 +58,20 @@ def apriori_distance(args):
 
     _, _, labels = load_data(
         args.dataset, args.mode, True, None)
-    labels_oh = preprocess(labels, 'onehot')
+    labels_oh = preprocess(labels, 'onehot').astype(int)
+    labels = labels.astype(str)
+
     print(labels_oh.shape)
 
-    labels = labels.astype(str)
+    labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
+    labels_oh_str = np.unique(labels_oh_str, axis=0)
+    labels_express = {}
+    for label in labels_oh_str:
+        label_oh = label[:-3]
+        label_str = label[-3:]
+        print(len(label), len(label_oh), len(label_str))
+        print(label)
+        labels_express[frozenset(label_str)] = label_oh.astype(int)
 
     encoder = TransactionEncoder()
     labels_df = encoder.fit_transform(labels)
@@ -83,15 +93,6 @@ def apriori_distance(args):
         for occu in occupation[1:]:
             for work in workclass[1:]:
                 labelsets.append(set([income, occu, work]))
-
-    labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
-    labels_oh_str = np.unique(labels_oh_str, axis=0)
-    labels_express = {}
-    for label in labels_oh_str:
-        label_oh = label[:-3]
-        label_str = label[-3:]
-        print(len(label), len(label_oh), len(label_str))
-        labels_express[frozenset(label_str)] = label_oh.astype(int)
 
     dist_dict = {}
     for p1 in labelsets:
