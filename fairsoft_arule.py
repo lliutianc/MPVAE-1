@@ -19,7 +19,7 @@ from utils import build_path
 from model import VAE, compute_loss
 from data import load_data, preprocess
 from main import THRESHOLDS, METRICS
-from fairreg import parser
+from faircluster_train import parser
 
 parser.add_argument('-min_support', type=float, default=None)
 parser.add_argument('-min_confidence', type=float, default=None)
@@ -190,7 +190,7 @@ def train_mpvae_softfair_one_epoch(
                     batch_distance = []
                     for label in data.labels[idx]:
                         distance = target_label_dist.get(
-                            ''.join(label.astype(str)), 0.)
+                            ''.join(label.astype(str)), np.inf)
                         batch_distance.append(distance)
                     batch_distance = torch.tensor(
                         batch_distance).to(args.device).reshape(-1, 1)
@@ -198,9 +198,6 @@ def train_mpvae_softfair_one_epoch(
                     weights = torch.exp(-batch_distance * gamma)
                     weights = torch.clamp(weights, min=1e-6)
 
-                    # print(label_z.shape)
-                    # print(weights.shape)
-                    # exit(1)
                     label_z_weighted = torch.sum(
                         label_z * weights, axis=0) / weights.sum()
                     feat_z_weighted = torch.sum(
@@ -441,10 +438,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
-    args.labels_cluster_method = 'apriori'
-
-    if args.labels_cluster_num:
-        args.labels_cluster_distance_threshold = None
 
     param_setting = f"arule"
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
