@@ -413,6 +413,7 @@ def train_fair_through_regularize():
     # test fairness on some labels
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
+    print(labels.shape)
     label_type = label_type[count_sort_idx]
     target_fair_labels = label_type[:1].astype(int)
     print(list(label_dist.keys()))
