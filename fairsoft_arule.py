@@ -1,5 +1,6 @@
 import sys
 import os
+import pickle 
 import datetime
 from copy import deepcopy
 import types
@@ -380,10 +381,10 @@ def train_fair_through_regularize():
         args.model_dir, f'label_dist-{hparams}.npy')
 
     if args.resume and os.path.exists(label_dist_path):
-        label_dist = np.load(open(label_dist_path, 'rb'))
+        label_dist = pickle.load(open(label_dist_path, 'rb'))
     else:
         label_dist = apriori_distance(args)
-        np.save(open(label_dist_path, 'wb'), label_dist)
+        pickle.save(open(label_dist_path, 'wb'), label_dist)
 
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
