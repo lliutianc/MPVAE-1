@@ -384,8 +384,10 @@ if __name__ == '__main__':
             model_file = model_files[0]
             print(f'try loading model from: {model_file}')
 
-            label_dist = pickle.load(open(os.path.join(
-                args.model_dir, label_dist, label_dist_file), 'rb'))
+            label_dist = np.load(open(os.path.join(
+                args.model_dir, label_dist, label_dist_file), 'rb'), allow_pickle=True)
+            print(label_dist)
+            exit(1)
             model = VAE(args).to(args.device)
             model.load_state_dict(torch.load(os.path.join(
                 args.model_dir, label_dist, model_file)))
