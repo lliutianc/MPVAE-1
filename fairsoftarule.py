@@ -55,7 +55,6 @@ def apriori_pair_dist(labelset1, labelset2, apriori_rules):
 
 def apriori_distance(args):
     np.random.seed(4)
-
     _, _, labels = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)
@@ -122,7 +121,8 @@ def train_mpvae_softfair_one_epoch(
         target_fair_label = ''.join(target_fair_label.astype(str))
         target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
-
+    print(target_fair_labels)
+    
     np.random.shuffle(data.train_idx)
     args.device = next(model.parameters()).device
 
