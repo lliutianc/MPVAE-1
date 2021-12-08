@@ -14,8 +14,8 @@ import types
 import evals
 from model import VAE, compute_loss
 from data import load_data
-from fairreg import THRESHOLDS, METRICS
-from fairarule import parser
+from faircluster_train import THRESHOLDS, METRICS
+from faircluster_arule import parser
 from label_cluster import construct_label_clusters
 
 # fair regularizer

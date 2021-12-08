@@ -21,15 +21,20 @@ from embed import CBOW
 from label_cluster import construct_label_clusters
 from train import train_mpvae_one_epoch, validate_mpvae
 from main import THRESHOLDS, METRICS
-from fairreg import parser
+from faircluster_train import parser
+
+parser.add_argument('-min_support', type=float, default=None)
+parser.add_argument('-min_confidence', type=float, default=None)
 
 sys.path.append('./')
 
 
 def train_fair_through_regularize():
 
+    hparams = f'min_support={args.min_support}-'\
+              f'min_confidence={args.min_confidence}'
     label_cluster_path = os.path.join(
-        args.model_dir, f'label_cluster-labels_embed={args.labels_embed_method}.npy')
+        args.model_dir, f'label_cluster-{hparams}.npy')
 
     if args.resume and os.path.exists(label_cluster_path):
         label_clusters = np.load(open(label_cluster_path, 'rb'))
@@ -58,7 +63,7 @@ def train_fair_through_regularize():
     fair_vae.train()
 
     fair_vae_checkpoint_path = os.path.join(
-        args.model_dir, f'fair_vae_prior-labels_embed={args.labels_embed_method}.pkl')
+        args.model_dir, f'fair_vae_prior-{hparams}.pkl')
     if args.resume and os.path.exists(fair_vae_checkpoint_path):
         print('use a trained fair mpvae...')
         fair_vae.load_state_dict(torch.load(fair_vae_checkpoint_path))
@@ -67,15 +72,16 @@ def train_fair_through_regularize():
 
     optimizer = optim.Adam(fair_vae.parameters(),
                            lr=args.learning_rate, weight_decay=1e-5)
+                           
     scheduler = torch.optim.lr_scheduler.StepLR(
-        optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), 
-        args.lr_decay_ratio)
+        optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):
         train_mpvae_one_epoch(
             data, fair_vae, optimizer, scheduler,
             penalize_unfair=True, eval_after_one_epoch=True, args=args)
+        # regularzie_mpvae_unfair(data, fair_vae, optimizer_fair, args, use_valid=True)
 
     torch.save(fair_vae.cpu().state_dict(), fair_vae_checkpoint_path)
 
@@ -84,14 +90,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
+    args.labels_cluster_method = 'apriori'
+
     if args.labels_cluster_num:
         args.labels_cluster_distance_threshold = None
-
+    
     param_setting = f"n_cluster={args.labels_cluster_num}-"\
                     f"cluster_distance_thre={args.labels_cluster_distance_threshold}"
 
-    args.model_dir = f'fair_through_kmeans/model/{args.dataset}/{param_setting}'
-    args.summary_dir = f'fair_through_kmeans/summary/{args.dataset}/{param_setting}'
+    args.model_dir = f'fair_through_arule/model/{args.dataset}/{param_setting}'
+    args.summary_dir = f'fair_through_arule/summary/{args.dataset}/{param_setting}'
     build_path(args.model_dir, args.summary_dir)
 
     train_fair_through_regularize()
