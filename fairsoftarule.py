@@ -93,12 +93,12 @@ def apriori_distance(args):
     for p1 in labelsets:
         p1_oh = labels_express.get(frozenset(p1), None)
         if p1_oh is not None:
-            lab1 = ''.join(p1_oh)
+            lab1 = ''.join(p1_oh.astype(str))
             dist_dict[lab1] = {}
             for p2 in labelsets:
                 p2_oh = labels_express.get(frozenset(p2), None)
                 if p2_oh is not None: 
-                    lab2 = ''.join(p2_oh)
+                    lab2 = ''.join(p2_oh.astype(str))
                     dist_dict[lab1][lab2] = apriori_pair_dist(
                         p1, p2, labels_rules)
     
