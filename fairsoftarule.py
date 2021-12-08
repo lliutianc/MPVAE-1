@@ -60,7 +60,7 @@ def apriori_distance(args):
     labels_oh = preprocess(labels, 'onehot').astype(int)
     labels = labels.astype(str)
 
-    # labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
+    labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
     # labels_oh_str = np.unique(labels_oh_str, axis=0)
 
     labels_oh_str, count = np.unique(labels_oh_str, axis=0, return_counts=True)
