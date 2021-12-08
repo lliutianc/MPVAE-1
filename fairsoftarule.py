@@ -194,6 +194,8 @@ def train_mpvae_softfair_one_epoch(
                     weights = torch.exp(-batch_distance * gamma)
                     weights = torch.clamp(weights, min=1e-6)
 
+                    print(label_z.shape)
+                    print(weights.shape)
                     label_z_weighted = torch.sum(
                         label_z * weights, axis=0) / weights.sum()
                     feat_z_weighted = torch.sum(
