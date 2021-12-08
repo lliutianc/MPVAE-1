@@ -61,12 +61,12 @@ def apriori_distance(args):
     labels = labels.astype(str)
 
     labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
-    # labels_oh_str = np.unique(labels_oh_str, axis=0)
+    labels_oh_str = np.unique(labels_oh_str, axis=0)
 
-    labels_oh_str, count = np.unique(labels_oh_str, axis=0, return_counts=True)
-    count_sort_idx = np.argsort(-count)
-    label_type = labels_oh_str[count_sort_idx][:5]
-    print(label_type, count[count_sort_idx][:5])
+    # labels_oh_str, count = np.unique(labels_oh_str, axis=0, return_counts=True)
+    # count_sort_idx = np.argsort(-count)
+    # label_type = labels_oh_str[count_sort_idx][:5]
+    # print(label_type, count[count_sort_idx][:5])
     
     labels_express = {}
     for label in labels_oh_str:
@@ -125,7 +125,7 @@ def train_mpvae_softfair_one_epoch(
         target_fair_label = ''.join(target_fair_label.astype(str))
         target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
-    print(target_fair_labels)
+    # print(target_fair_labels)
 
     np.random.shuffle(data.train_idx)
     args.device = next(model.parameters()).device
@@ -198,9 +198,9 @@ def train_mpvae_softfair_one_epoch(
                     weights = torch.exp(-batch_distance * gamma)
                     weights = torch.clamp(weights, min=1e-6)
 
-                    print(label_z.shape)
-                    print(weights.shape)
-                    exit(1)
+                    # print(label_z.shape)
+                    # print(weights.shape)
+                    # exit(1)
                     label_z_weighted = torch.sum(
                         label_z * weights, axis=0) / weights.sum()
                     feat_z_weighted = torch.sum(
@@ -426,7 +426,7 @@ def train_fair_through_regularize():
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
     target_fair_labels = label_type[:5].astype(int)
-    print(target_fair_labels, count[count_sort_idx])
+    # print(target_fair_labels, count[count_sort_idx])
 
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):
