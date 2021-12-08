@@ -416,6 +416,7 @@ def train_fair_through_regularize():
     label_type = label_type[count_sort_idx]
     target_fair_labels = label_type[:1].astype(int)
     print(list(label_dist.keys()))
+    print(label_type.shape)
     print(target_fair_labels)
     exit(1)
     print('start training fair mpvae...')
