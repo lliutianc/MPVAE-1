@@ -299,7 +299,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
     return train_best_metrics, valid_best_metrics
 
 
-def evaluate_over_labels(target_labels, args):
+def evaluate_over_labels(target_fair_labels, args):
 
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
@@ -363,7 +363,7 @@ def evaluate_target_labels(args):
     idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
     target_fair_labels = label_type[idx: idx + 1].astype(int)
 
-    evaluate_over_labels(target_fair_labels)
+    evaluate_over_labels(target_fair_labels, args)
 
 
 def evaluate_nearest_neighbor_labels(args):
@@ -387,7 +387,7 @@ def evaluate_nearest_neighbor_labels(args):
         target_fair_labels = retrieve_nearest_neighbor_labels(
             target_fair_label, 5, label_dist)
 
-        evaluate_over_labels(target_fair_labels)
+        evaluate_over_labels(target_fair_labels, args)
 
 
 if __name__ == '__main__':
