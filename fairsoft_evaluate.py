@@ -115,7 +115,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                     assert train_feat_z.shape[0] == len(data.train_idx) and \
                         train_feat_z.shape[1] == args.latent_dim
 
-                    sensitive_feat = np.unique(train_sensitive, axis=0)
+                    sensitive_centroid = np.unique(train_sensitive, axis=0)
                     idxs = np.arange(len(data.train_idx))
 
                     mean_diffs = []
@@ -131,14 +131,12 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
 
                         if weights.sum() > 0:
                             feat_z_weighted = np.sum(
-                                feat_z * weights, axis=0) / weights.sum()
+                                train_feat_z * weights, axis=0) / weights.sum()
 
-                            sensitive_centroid = np.unique(
-                                train_sensitive, axis=0)
                             for sensitive in sensitive_centroid:
                                 target_sensitive = np.all(
                                     np.equal(train_sensitive, sensitive), axis=1)
-                                feat_z_sensitive = feat_z[idxs[target_sensitive]]
+                                feat_z_sensitive = train_feat_z[idxs[target_sensitive]]
                                 weights_sensitive = weights[idxs[target_sensitive]]
                                 if weights_sensitive.sum() > 0:
                                     unfair_feat_z_sen = np.sum(
@@ -247,7 +245,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                     assert valid_feat_z.shape[0] == len(data.valid_idx) and \
                         valid_feat_z.shape[1] == args.latent_dim
 
-                    sensitive_feat = np.unique(valid_sensitive, axis=0)
+                    sensitive_centroid = np.unique(valid_sensitive, axis=0)
                     idxs = np.arange(len(data.valid_idx))
 
                     mean_diffs = []
@@ -263,14 +261,12 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
 
                         if weights.sum() > 0:
                             feat_z_weighted = np.sum(
-                                feat_z * weights, axis=0) / weights.sum()
+                                valid_feat_z * weights, axis=0) / weights.sum()
 
-                            sensitive_centroid = np.unique(
-                                valid_sensitive, axis=0)
                             for sensitive in sensitive_centroid:
                                 target_sensitive = np.all(
                                     np.equal(valid_sensitive, sensitive), axis=1)
-                                feat_z_sensitive = feat_z[idxs[target_sensitive]]
+                                feat_z_sensitive = valid_feat_z[idxs[target_sensitive]]
                                 weights_sensitive = weights[idxs[target_sensitive]]
                                 if weights_sensitive.sum() > 0:
                                     unfair_feat_z_sen = np.sum(
