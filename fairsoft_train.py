@@ -1,3 +1,6 @@
+from tqdm import tqdm
+from torch import optim
+
 import sys
 import datetime
 from copy import deepcopy
@@ -5,8 +8,6 @@ sys.path.append('./')
 
 import torch
 import torch.nn as nn
-from torch import optim
-
 import numpy as np
 import pandas as pd
 from mlxtend.frequent_patterns import apriori, association_rules
