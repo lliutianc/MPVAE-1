@@ -264,7 +264,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                         if weights.sum() > 0:
                             feat_z_weighted = np.sum(
                                 valid_feat_z * weights, axis=0) / weights.sum()
-                            
+
                             for sensitive in sensitive_centroid:
                                 target_sensitive = np.all(
                                     np.equal(valid_sensitive, sensitive), axis=1)
@@ -300,7 +300,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
 
 
 def evaluate_over_labels(target_labels, args):
-    
+
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
         args.dataset, args.mode, True)
@@ -345,10 +345,11 @@ def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances
         return []
     label_dist = label_distances[target_label]
     label_dist = sorted(
-        label_dist.items(), everse=True, key=lambda item: item[1])
-    neighbors = [item[0] for item in label_dist[:num_neighbor + 1] if item[1] < 1.]
+        label_dist.items(), reverse=True, key=lambda item: item[1])
+    neighbors = [item[0]
+                 for item in label_dist[:num_neighbor + 1] if item[1] < 1.]
     assert target_label not in neighbors and len(neighbors) == num_neighbor
-    
+
     return neighbors
 
 
@@ -383,8 +384,9 @@ def evaluate_nearest_neighbor_labels(args):
         label_dist_file = label_dist_files[0]
         label_dist = pickle.load(open(os.path.join(
             args.model_dir, 'arule', label_dist_file), 'rb'))
-        target_fair_labels = retrieve_nearest_neighbor_labels(target_fair_label, 5, label_dist)
-        
+        target_fair_labels = retrieve_nearest_neighbor_labels(
+            target_fair_label, 5, label_dist)
+
         evaluate_over_labels(target_fair_labels)
 
 
