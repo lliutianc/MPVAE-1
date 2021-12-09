@@ -30,7 +30,8 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
 
     target_fair_labels_str = []
     for target_fair_label in target_fair_labels:
-        target_fair_label = ''.join(target_fair_label.astype(str))
+        if isinstance(target_fair_label, np.ndarray):
+            target_fair_label = ''.join(target_fair_label.astype(str))
         target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
 
