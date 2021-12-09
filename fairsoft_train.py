@@ -91,7 +91,7 @@ def train_mpvae_softfair_one_epoch(
                     for label in data.labels[idx]:
                         label = label.astype(int)
                         distance = target_label_dist.get(
-                            ''.join(label.astype(str)), np.inf)
+                            ''.join(label.astype(str)), 0.)
                         weights.append(distance)
                     weights = torch.tensor(weights).to(args.device).reshape(-1, 1)
 

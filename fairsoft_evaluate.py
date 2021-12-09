@@ -124,7 +124,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                         for label in data.labels[idxs]:
                             label = label.astype(int)
                             distance = target_label_dist.get(
-                                ''.join(label.astype(str)), np.inf)
+                                ''.join(label.astype(str)), 0.)
                             weights.append(distance)
                         weights = np.array(weights).reshape(-1, 1)
                         print(weights.sum())
@@ -254,7 +254,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                         for label in data.labels[idxs]:
                             label = label.astype(int)
                             distance = target_label_dist.get(
-                                ''.join(label.astype(str)), np.inf)
+                                ''.join(label.astype(str)), 0.)
                             weights.append(distance)
                         weights = np.array(weights).reshape(-1, 1)
 
