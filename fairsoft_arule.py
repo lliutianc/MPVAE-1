@@ -73,8 +73,6 @@ def apriori_distance(args):
     for label in labels_oh_str:
         label_oh = label[:-3]
         label_str = label[-3:]
-        # print(len(label), len(label_oh), len(label_str))
-        # print(label
         labels_express[frozenset(label_str)] = label_oh.astype(int)
 
     encoder = TransactionEncoder()
@@ -384,7 +382,7 @@ def train_fair_through_regularize():
         label_dist = pickle.load(open(label_dist_path, 'rb'))
     else:
         label_dist = apriori_distance(args)
-        pickle.dump(open(label_dist_path, 'wb'), label_dist)
+        pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
