@@ -57,6 +57,7 @@ def train_mpvae_softfair_one_epoch(
     temp_label = []
     temp_indiv_prob = []
 
+    _tmp_target = 0
     with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='Train VAE') as t:
         for i in t:
             optimizer.zero_grad()
@@ -102,7 +103,6 @@ def train_mpvae_softfair_one_epoch(
                 for target_fair_label in target_fair_labels:
                     target_label_dist = label_distances[target_fair_label]
                     batch_distance = []
-                    _tmp_target = 0
                     for label in data.labels[idx]:
                         distance = target_label_dist.get(
                             ''.join(label.astype(str)), np.inf)
@@ -112,7 +112,7 @@ def train_mpvae_softfair_one_epoch(
                     batch_distance = torch.tensor(
                         batch_distance).to(args.device).reshape(-1, 1)
                     print(_tmp_target)
-                    exit(1)
+                    # exit(1)
                     gamma = 1.
                     weights = torch.exp(-batch_distance)
                     if weights.sum() > 0:
@@ -199,6 +199,7 @@ def train_mpvae_softfair_one_epoch(
         current_loss, val_metrics = validate_mpvae(
             model, data.input_feat, data.labels, data.valid_idx, args)
 
+    exit(1)
 
 def validate_mpvae(model, feat, labels, valid_idx, args):
     args.device = next(model.parameters()).device
