@@ -1,4 +1,5 @@
 import os
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -255,11 +256,15 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
     else:
         print(f'load existing dataset: {dataset}...')
 
-        sensitive_feat = cast_to_float(np.load(
-            open(sensitive_featfile, 'rb'), allow_pickle=True))
-        nonsensitive_feat = cast_to_float(np.load(
-            open(nonsensitive_featfile, 'rb'), allow_pickle=True))
-        labels = cast_to_float(np.load(open(labelfile, 'rb'), allow_pickle=True))
+        sensitive_feat = np.load(
+            open(sensitive_featfile, 'rb'), allow_pickle=True)
+        nonsensitive_feat = np.load(
+            open(nonsensitive_featfile, 'rb'), allow_pickle=True)
+        labels = np.load(open(labelfile, 'rb'), allow_pickle=True)
+
+    sensitive_feat = cast_to_float(sensitive_feat)
+    nonsensitive_feat = cast_to_float(nonsensitive_feat)
+    labels = cast_to_float(labels)
 
     if separate_sensitive:
         return nonsensitive_feat, sensitive_feat, labels
