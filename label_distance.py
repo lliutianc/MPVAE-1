@@ -32,7 +32,7 @@ def apriori_pair_dist(labelset1, labelset2, apriori_rules):
     return score
 
 
-def apriori_distance(args):
+def apriori_distance(args, gamma=1., minimum_clip=1e-6, maximum_clip=None):
     np.random.seed(4)
     _, _, labels = load_data(
         args.dataset, args.mode, True, None)
@@ -79,8 +79,9 @@ def apriori_distance(args):
                 p2_oh = labels_express.get(frozenset(p2), None)
                 if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
-                    dist_dict[lab1][lab2] = apriori_pair_dist(
-                        p1, p2, labels_rules)
+                    dist = apriori_pair_dist(p1, p2, labels_rules)
+                    weight = np.exp(-gamma * dist)
+                    dist_dict[lab1][lab2] = np.clip(weight, minimum_clip, maximum_clip)
 
     return dist_dict
 
@@ -94,12 +95,6 @@ def indication_distance(args):
 
     labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
     labels_oh_str = np.unique(labels_oh_str, axis=0)
-    
-    # label_type, count = np.unique(labels_oh_str, axis=0, return_counts=True)
-    # count_sort_idx = np.argsort(-count)
-    # label_type = label_type[count_sort_idx]
-    # target_fair_labels = label_type[:1]
-    # print(target_fair_labels, count[count_sort_idx])
 
     labels_express = {}
     for label in labels_oh_str:
@@ -126,6 +121,6 @@ def indication_distance(args):
                 p2_oh = labels_express.get(frozenset(p2), None)
                 if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
-                    dist_dict[lab1][lab2] = 0. if lab1 == lab2 else np.inf
+                    dist_dict[lab1][lab2] = 1.0 if lab1 == lab2 else 0.
 
     return dist_dict
