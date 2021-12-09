@@ -93,7 +93,7 @@ def indication_distance(args):
     labels = labels.astype(str)
 
     labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
-    labels_oh_str = np.unique(labels_oh_str, axis=0)
+    # labels_oh_str = np.unique(labels_oh_str, axis=0)
     
     label_type, count = np.unique(labels_oh_str, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
