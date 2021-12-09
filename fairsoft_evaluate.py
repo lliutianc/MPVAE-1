@@ -17,10 +17,21 @@ from faircluster_train import parser
 from label_cluster import construct_label_clusters
 
 
-IMPLEMENTED_METHODS = ['arule', 'none']
+IMPLEMENTED_METHODS = ['arule', 'indication_function']
 
 
 def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairness=True, eval_train=True, eval_valid=True):
+    if eval_fairness and target_fair_labels is None:
+        target_fair_labels = list(label_distances.keys())
+        raise NotImplementedError('Have not supported smooth-OD yet.')
+
+    target_fair_labels_str = []
+    for target_fair_label in target_fair_labels:
+        target_fair_label = ''.join(target_fair_label.astype(str))
+        target_fair_labels_str.append(target_fair_label)
+    target_fair_labels = target_fair_labels_str
+
+
     with torch.no_grad():
         model.eval()
 
