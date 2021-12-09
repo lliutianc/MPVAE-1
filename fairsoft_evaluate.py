@@ -376,14 +376,14 @@ if __name__ == '__main__':
     label_type = label_type[count_sort_idx]
     target_fair_labels = label_type[:1].astype(int)
 
-    for label_dist in IMPLEMENTED_METHODS:
+    for label_dist_metric in IMPLEMENTED_METHODS:
         label_dist_files = search_files(
-            os.path.join(args.model_dir, label_dist), '.npy')
+            os.path.join(args.model_dir, label_dist_metric), '.npy')
         if len(label_dist_files):
             print(f'Evaluate fairness definition: {label_dist}...')
             label_dist_file = label_dist_files[0]
             label_dist = pickle.load(open(os.path.join(
-                args.model_dir, label_dist, label_dist_file), 'rb'))
+                args.model_dir, label_dist_metric, label_dist_file), 'rb'))
 
             for model_prior in IMPLEMENTED_METHODS:
                 model_files = search_files(os.path.join(
@@ -397,6 +397,6 @@ if __name__ == '__main__':
                         args.model_dir, model_prior, model_file)))
 
                     # print(f'start evaluating {model_file}...')
-                    train, valid = evaluate_mpvae(model, data, label_dist)
+                    train, valid = evaluate_mpvae(model, data, target_fair_labels, label_dist)
 
 # python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6
