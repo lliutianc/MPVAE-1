@@ -203,6 +203,8 @@ def train_mpvae_softfair_one_epoch(
         current_loss, val_metrics = validate_mpvae(
             model, data.input_feat, data.labels, data.valid_idx, args)
 
+    exit(1)
+
 
 def validate_mpvae(model, feat, labels, valid_idx, args):
     args.device = next(model.parameters()).device
