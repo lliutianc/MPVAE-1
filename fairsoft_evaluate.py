@@ -1,5 +1,6 @@
 from copy import deepcopy
 import os
+from sys import prefix
 import types
 import pickle
 
@@ -15,7 +16,7 @@ from data import load_data
 from faircluster_train import THRESHOLDS, METRICS
 from faircluster_train import parser
 from label_cluster import construct_label_clusters
-
+from utils import search_files
 
 IMPLEMENTED_METHODS = ['arule', 'baseline']
 
@@ -298,21 +299,8 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
     return train_best_metrics, valid_best_metrics
 
 
-def search_files(path, filetype):
-    files = []
-    for file in os.listdir(path):
-        if file[-len(filetype):] == filetype:
-            files.append(file)
-    return files
-
-
-if __name__ == '__main__':
-
-    args = parser.parse_args()
-    args.device = torch.device(
-        f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
-    args.model_dir = f'fair_through_distance/model/{args.dataset}'
-
+def evaluate_over_labels(target_labels, args):
+    
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
         args.dataset, args.mode, True)
@@ -327,17 +315,9 @@ if __name__ == '__main__':
     args.feature_dim = data.input_feat.shape[1]
     args.label_dim = data.labels.shape[1]
 
-    # Test fairness on some labels
-    label_type, count = np.unique(labels, axis=0, return_counts=True)
-    count_sort_idx = np.argsort(-count)
-    label_type = label_type[count_sort_idx]
-    idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
-    target_fair_labels = label_type[idx: idx + 1].astype(int)
-    # target_fair_labels = label_type[:1].astype(int)
-
     for label_dist_metric in IMPLEMENTED_METHODS:
         label_dist_files = search_files(
-            os.path.join(args.model_dir, label_dist_metric), '.npy')
+            os.path.join(args.model_dir, label_dist_metric), postfix='.npy')
         if len(label_dist_files):
             print(f'Evaluate fairness definition: {label_dist_metric}...')
             label_dist_file = label_dist_files[0]
@@ -355,7 +335,66 @@ if __name__ == '__main__':
                     model.load_state_dict(torch.load(os.path.join(
                         args.model_dir, model_prior, model_file)))
 
-                    # print(f'start evaluating {model_file}...')
-                    train, valid = evaluate_mpvae(model, data, target_fair_labels, label_dist)
+                    train, valid = evaluate_mpvae(
+                        model, data, target_fair_labels, label_dist)
+
+
+def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances):
+    if target_label not in label_distances:
+        return []
+    label_dist = label_distances[target_label]
+    label_dist = sorted(
+        label_dist.items(), everse=True, key=lambda item: item[1])
+    neighbors = [item[0] for item in label_dist[:num_neighbor + 1] if item[1] < 1.]
+    assert target_label not in neighbors and len(neighbors) == num_neighbor
+    
+    return neighbors
+
+
+def evaluate_target_labels(args):
+    np.random.seed(4)
+    nonsensitive_feat, sensitive_feat, labels = load_data(
+        args.dataset, args.mode, True)
+    label_type, count = np.unique(labels, axis=0, return_counts=True)
+    count_sort_idx = np.argsort(-count)
+    label_type = label_type[count_sort_idx]
+    idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
+    target_fair_labels = label_type[idx: idx + 1].astype(int)
+
+    evaluate_over_labels(target_fair_labels)
+
+
+def evaluate_nearest_neighbor_labels(args):
+    np.random.seed(4)
+    nonsensitive_feat, sensitive_feat, labels = load_data(
+        args.dataset, args.mode, True)
+    label_type, count = np.unique(labels, axis=0, return_counts=True)
+    count_sort_idx = np.argsort(-count)
+    label_type = label_type[count_sort_idx]
+    idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
+    target_fair_label = label_type[idx].astype(int)
+
+    #  TODO: use args to handle
+    label_dist_files = search_files(
+        os.path.join(args.model_dir, 'arule'), postfix='.npy')
+
+    if len(label_dist_files):
+        label_dist_file = label_dist_files[0]
+        label_dist = pickle.load(open(os.path.join(
+            args.model_dir, 'arule', label_dist_file), 'rb'))
+        target_fair_labels = retrieve_nearest_neighbor_labels(target_fair_label, 5, label_dist)
+        
+        evaluate_over_labels(target_fair_labels)
+
+
+if __name__ == '__main__':
+
+    args = parser.parse_args()
+    args.device = torch.device(
+        f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
+    args.model_dir = f'fair_through_distance/model/{args.dataset}'
+
+    # evaluate_target_labels(args)
+    evaluate_nearest_neighbor_labels(args)
 
 # python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6 -target_label_idx 10
