@@ -31,7 +31,6 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
         target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
 
-
     with torch.no_grad():
         model.eval()
 
@@ -110,7 +109,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                     best_val_metrics['ebF1'], best_val_metrics['maF1'], \
                     best_val_metrics['miF1']
 
-                if eval_fairness and label_dist is not None:
+                if eval_fairness:
                     train_feat_z = np.concatenate(train_feat_z)
                     assert train_feat_z.shape[0] == len(data.train_idx) and \
                         train_feat_z.shape[1] == args.latent_dim
@@ -128,7 +127,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                                 ''.join(label.astype(str)), np.inf)
                             weights.append(distance)
                         weights = np.array(weights).reshape(-1, 1)
-                        
+                        print(weights.sum())
                         if weights.sum() > 0:
                             feat_z_weighted = np.sum(
                                 train_feat_z * weights, axis=0) / weights.sum()
@@ -143,7 +142,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                                         feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
                                     mean_diffs.append(
                                         np.mean(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
-
+                    print(mean_diffs)
                     mean_diffs = np.mean(mean_diffs)
 
                     # nll_coeff: BCE coeff, lambda_1
