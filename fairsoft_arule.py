@@ -1,6 +1,6 @@
 import sys
 import os
-import pickle 
+import pickle
 import datetime
 from copy import deepcopy
 import types
@@ -18,7 +18,8 @@ from mlxtend.preprocessing import TransactionEncoder
 import evals
 from utils import build_path
 from model import VAE, compute_loss
-from data import load_data, preprocess
+from data import load_data
+from label_distance import apriori_distance
 from main import THRESHOLDS, METRICS
 from faircluster_train import parser
 
@@ -26,90 +27,6 @@ parser.add_argument('-min_support', type=float, default=None)
 parser.add_argument('-min_confidence', type=float, default=None)
 
 sys.path.append('./')
-
-
-def apriori_pair_dist(labelset1, labelset2, apriori_rules):
-    if labelset1 == labelset2:
-        return 0
-
-    samelabels = labelset1.intersection(labelset2)
-    diff1 = labelset1.difference(samelabels)
-    diff2 = labelset2.difference(samelabels)
-
-    if len(samelabels) == 0:
-        return np.inf
-
-    score = np.inf
-    candidates = apriori_rules.loc[apriori_rules['antecedents'] == frozenset(
-        samelabels)]
-    if len(candidates):
-        score1 = candidates.loc[
-            candidates['consequents'] == frozenset(diff1), 'confidence']
-        score2 = candidates.loc[
-            candidates['consequents'] == frozenset(diff2), 'confidence']
-
-        if len(score1) and len(score2):
-            score = np.abs(score1.to_numpy() - score2.to_numpy()).item()
-
-    return score
-
-
-def apriori_distance(args):
-    np.random.seed(4)
-    _, _, labels = load_data(
-        args.dataset, args.mode, True, None)
-    labels_oh = preprocess(labels, 'onehot').astype(int)
-    labels = labels.astype(str)
-
-    labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
-    labels_oh_str = np.unique(labels_oh_str, axis=0)
-
-    # labels_oh_str, count = np.unique(labels_oh_str, axis=0, return_counts=True)
-    # count_sort_idx = np.argsort(-count)
-    # label_type = labels_oh_str[count_sort_idx][:5]
-    # print(label_type, count[count_sort_idx][:5])
-    
-    labels_express = {}
-    for label in labels_oh_str:
-        label_oh = label[:-3]
-        label_str = label[-3:]
-        labels_express[frozenset(label_str)] = label_oh.astype(int)
-
-    encoder = TransactionEncoder()
-    labels_df = encoder.fit_transform(labels)
-    cols = encoder.columns_
-    cols[0] = 'high_income'
-    labels_df = pd.DataFrame(labels_df, columns=cols)
-
-    min_support = args.min_support or 1 / len(labels_df)
-    min_confidence = args.min_confidence or 0.
-    labels_apri = apriori(
-        labels_df, min_support=min_support, use_colnames=True, verbose=1)
-    labels_rules = association_rules(labels_apri, min_threshold=min_confidence)
-
-    income_level = np.unique(labels[:, 0])
-    occupation = np.unique(labels[:, 1])
-    workclass = np.unique(labels[:, 2])
-    labelsets = []
-    for income in income_level:
-        for occu in occupation[1:]:
-            for work in workclass[1:]:
-                labelsets.append(set([income, occu, work]))
-
-    dist_dict = {}
-    for p1 in labelsets:
-        p1_oh = labels_express.get(frozenset(p1), None)
-        if p1_oh is not None:
-            lab1 = ''.join(p1_oh.astype(str))
-            dist_dict[lab1] = {}
-            for p2 in labelsets:
-                p2_oh = labels_express.get(frozenset(p2), None)
-                if p2_oh is not None:
-                    lab2 = ''.join(p2_oh.astype(str))
-                    dist_dict[lab1][lab2] = apriori_pair_dist(
-                        p1, p2, labels_rules)
-
-    return dist_dict
 
 
 def train_mpvae_softfair_one_epoch(
@@ -445,4 +362,4 @@ if __name__ == '__main__':
 
     train_fair_through_regularize()
 
-# python fairsoft_arule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -min_confidence 0.25  -cuda 
+# python fairsoft_arule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -min_confidence 0.25  -cuda
