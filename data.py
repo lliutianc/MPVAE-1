@@ -203,6 +203,7 @@ def preprocess(df, categorical_encode, show_categorcial_idx=False):
 def onehot(col):
     col = col.astype(str)
     unique_val = np.array(list(set(col)))
+    unique_val.sort()
     return np.char.equal(unique_val[np.newaxis, :], col[:, np.newaxis]).astype(np.int32)
 
 
