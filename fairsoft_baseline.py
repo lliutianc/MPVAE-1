@@ -40,7 +40,9 @@ def train_mpvae_softfair_one_epoch(
         target_fair_label = ''.join(target_fair_label.astype(str))
         target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
-
+    print(target_fair_labels)
+    exit(1)
+    
     np.random.shuffle(data.train_idx)
     args.device = next(model.parameters()).device
 
