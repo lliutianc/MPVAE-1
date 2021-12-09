@@ -20,6 +20,7 @@ from utils import build_path
 from model import VAE, compute_loss
 from data import load_data
 from label_distance import apriori_distance
+
 from main import THRESHOLDS, METRICS
 from faircluster_train import parser
 

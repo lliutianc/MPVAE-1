@@ -18,38 +18,14 @@ from mlxtend.preprocessing import TransactionEncoder
 import evals
 from utils import build_path
 from model import VAE, compute_loss
-from data import load_data, preprocess
+from data import load_data
+from label_distance import indication_distance
+
 from main import THRESHOLDS, METRICS
 from faircluster_train import parser
 
 
 sys.path.append('./')
-
-
-def apriori_pair_dist(labelset1, labelset2, apriori_rules):
-    if labelset1 == labelset2:
-        return 0
-
-    samelabels = labelset1.intersection(labelset2)
-    diff1 = labelset1.difference(samelabels)
-    diff2 = labelset2.difference(samelabels)
-
-    if len(samelabels) == 0:
-        return np.inf
-
-    score = np.inf
-    candidates = apriori_rules.loc[apriori_rules['antecedents'] == frozenset(
-        samelabels)]
-    if len(candidates):
-        score1 = candidates.loc[
-            candidates['consequents'] == frozenset(diff1), 'confidence']
-        score2 = candidates.loc[
-            candidates['consequents'] == frozenset(diff2), 'confidence']
-
-        if len(score1) and len(score2):
-            score = np.abs(score1.to_numpy() - score2.to_numpy()).item()
-
-    return score
 
 
 def train_mpvae_softfair_one_epoch(
@@ -64,7 +40,6 @@ def train_mpvae_softfair_one_epoch(
         target_fair_label = ''.join(target_fair_label.astype(str))
         target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
-    # print(target_fair_labels)
 
     np.random.shuffle(data.train_idx)
     args.device = next(model.parameters()).device
@@ -133,7 +108,8 @@ def train_mpvae_softfair_one_epoch(
                         batch_distance.append(distance)
                     batch_distance = torch.tensor(
                         batch_distance).to(args.device).reshape(-1, 1)
-                    weights = batch_distance
+                    gamma = 1.
+                    weights = torch.exp(-batch_distance)
 
                     if weights.sum() > 0:
                         label_z_weighted = torch.sum(
