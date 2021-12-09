@@ -389,6 +389,7 @@ def evaluate_nearest_neighbor_labels(args):
         if target_fair_labels == []:
             print(f'Fail to retrieve nearest neighbors...')
         else:
+            print(f'Evaluate on nearest neibors: {target_fair_labels}')
             evaluate_over_labels(target_fair_labels, args)
 
 
