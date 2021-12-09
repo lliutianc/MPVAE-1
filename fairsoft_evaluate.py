@@ -19,6 +19,8 @@ from label_cluster import construct_label_clusters
 
 IMPLEMENTED_METHODS = ['arule', 'baseline']
 
+parser.add_argument('-target_label_idx', type=int, default=0)
+
 
 def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairness=True, eval_train=True, eval_valid=True):
     if eval_fairness and target_fair_labels is None:
@@ -329,7 +331,7 @@ if __name__ == '__main__':
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
-    idx = 10  # idx choices: 0, 10, 20, 50
+    idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
     target_fair_labels = label_type[idx: idx + 1].astype(int)
     # target_fair_labels = label_type[:1].astype(int)
 

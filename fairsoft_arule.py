@@ -27,6 +27,7 @@ from fairsoft_train import train_mpvae_softfair_one_epoch
 
 parser.add_argument('-min_support', type=float, default=None)
 parser.add_argument('-min_confidence', type=float, default=None)
+parser.add_argument('-target_label_idx', type=int, default=0)
 
 sys.path.append('./')
 
@@ -52,7 +53,7 @@ def train_fair_through_regularize():
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
-    idx = 10  # idx choices: 0, 10, 20, 50
+    idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
     target_fair_labels = label_type[idx: idx + 1].astype(int)
     # print(target_fair_labels)
 
@@ -106,4 +107,4 @@ if __name__ == '__main__':
 
     train_fair_through_regularize()
 
-# python fairsoft_arule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -min_confidence 0.25  -cuda
+# python fairsoft_arule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -min_confidence 0.25  -cuda 6 -target_label_idx 10
