@@ -60,6 +60,7 @@ def train_mpvae_softfair_one_epoch(
     temp_label = []
     temp_indiv_prob = []
 
+    _tmp_target = 0
     with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='Train VAE') as t:
         for i in t:
             optimizer.zero_grad()
@@ -109,6 +110,9 @@ def train_mpvae_softfair_one_epoch(
                         distance = target_label_dist.get(
                             ''.join(label.astype(str)), np.inf)
                         batch_distance.append(distance)
+                        if ''.join(label.astype(str)) == target_fair_label:
+                            _tmp_target += 1
+                    print(_tmp_target)
                     batch_distance = torch.tensor(
                         batch_distance).to(args.device).reshape(-1, 1)
                     gamma = 1.
