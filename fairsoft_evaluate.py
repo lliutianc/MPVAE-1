@@ -326,8 +326,7 @@ def evaluate_over_labels(target_fair_labels, args):
 
             for model_prior in IMPLEMENTED_METHODS:
                 model_files = search_files(os.path.join(
-                    args.model_dir, model_prior), '.pkl')
-                print(model_files)
+                    args.model_dir, model_prior), postfix='.pkl')
                 if len(model_files):
                     model_file = model_files[0]
                     print(f'try loading model from: {model_file}')
