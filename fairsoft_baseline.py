@@ -113,6 +113,8 @@ def train_mpvae_softfair_one_epoch(
 
                         if ''.join(label.astype(str)) == target_fair_label:
                             _tmp_target += 1
+                        print(''.join(label.astype(str)), target_fair_label)
+                        exit(1)
                     print(_tmp_target)
                     batch_distance = torch.tensor(
                         batch_distance).to(args.device).reshape(-1, 1)
