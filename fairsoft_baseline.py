@@ -45,15 +45,9 @@ def train_fair_through_regularize():
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
-
-    for idx in [0, 10, 20, 30, 50]:
-        target_fair_labels = label_type[idx: idx + 1].astype(int)
-        print(target_fair_labels, count[count_sort_idx][idx: idx + 1])
-
-    # idx = 0
+    idx = 10  # idx choices: 0, 10, 20, 50
     target_fair_labels = label_type[idx: idx + 1].astype(int)
     # print(target_fair_labels, count[count_sort_idx][idx: idx + 1])
-    exit(1)
 
     train_cnt, valid_cnt = int(
         len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)

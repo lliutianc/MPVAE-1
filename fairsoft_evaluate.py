@@ -329,7 +329,9 @@ if __name__ == '__main__':
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
-    target_fair_labels = label_type[:1].astype(int)
+    idx = 10  # idx choices: 0, 10, 20, 50
+    target_fair_labels = label_type[idx: idx + 1].astype(int)
+    # target_fair_labels = label_type[:1].astype(int)
 
     for label_dist_metric in IMPLEMENTED_METHODS:
         label_dist_files = search_files(
