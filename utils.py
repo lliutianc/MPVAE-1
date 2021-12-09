@@ -35,3 +35,15 @@ def get_feat(data, order, offset, label_dim, feature_dim):
 def allexists(*files):
 	exist = [os.path.exists(f) for f in files]
 	return min(exist)
+
+
+def search_files(path, prefix=None, postfix=None):
+    files = []
+    for file in os.listdir(path):
+        if prefix:
+            match_pre = True if file[:len(prefix)] == prefix else False
+        if postfix:
+            match_post = True if file[-len(postfix):] == postfix else False
+        if match_pre and match_post:
+            files.append(file)
+    return files
