@@ -112,8 +112,8 @@ def indication_distance(args):
     workclass = np.unique(labels[:, 2])
     labelsets = []
     for income in income_level:
-        for occu in occupation[1:]:
-            for work in workclass[1:]:
+        for occu in occupation:
+            for work in workclass:
                 labelsets.append(set([income, occu, work]))
 
     dist_dict = {}
