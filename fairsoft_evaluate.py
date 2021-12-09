@@ -340,6 +340,7 @@ def evaluate_over_labels(target_labels, args):
 
 
 def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances):
+    target_label = ''.join(target_label.astype(str))
     if target_label not in label_distances:
         return []
     label_dist = label_distances[target_label]
