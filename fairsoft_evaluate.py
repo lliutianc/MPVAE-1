@@ -1,3 +1,6 @@
+from copy import deepcopy
+import os
+import types
 import pickle
 
 import torch
@@ -5,10 +8,6 @@ import torch.nn as nn
 
 import numpy as np
 from tqdm import tqdm
-
-from copy import deepcopy
-import os
-import types
 
 import evals
 from model import VAE, compute_loss
@@ -18,11 +17,8 @@ from faircluster_train import parser
 from label_cluster import construct_label_clusters
 
 
-parser.add_argument('-fairness_strate_embed', type=str, default=None, choices=[
-                    'mpvae', 'cbow', 'none', None])
-parser.add_argument('-fairness_strate_cluster', type=str, default='kmeans', choices=[
-                    'kmeans', 'kmodes', 'apriori', 'kprototype', 'hierarchical'])
-
+IMPLEMENTED_METHODS = ['arule', 'none']
+ 
 
 def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairness=True, eval_train=True, eval_valid=True):
     with torch.no_grad():
@@ -111,31 +107,33 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                     sensitive_feat = np.unique(train_sensitive, axis=0)
                     idxs = np.arange(len(data.train_idx))
 
+                    mean_diffs = []
                     for target_fair_label in target_fair_labels:
                         target_label_dist = label_distances[target_fair_label]
-                        batch_distance = []
+                        weights = []
                         for label in data.labels[idxs]:
+                            label = label.astype(int)
                             distance = target_label_dist.get(
                                 ''.join(label.astype(str)), np.inf)
-                            batch_distance.append(distance)
-                        batch_distance = np.array(batch_distance).reshape(-1, 1)
-                    gamma = 1.
-                    weights = np.exp(-batch_distance * gamma)
-                    weights = np.maximum(weights, 1e-6)
-                    feat_z_weighted = np.sum(
-                        feat_z * weights, axis=0) / weights.sum()
-                    
-                    mean_diffs = []
-                    sensitive_centroid = np.unique(train_sensitive, axis=0)
-                    for sensitive in sensitive_centroid:
-                        target_sensitive = np.all(
-                            np.equal(train_sensitive, sensitive), axis=1)
-                        feat_z_sensitive = feat_z[idxs[target_sensitive]]
-                        weights_sensitive = weights[idxs[target_sensitive]]
-                        unfair_feat_z_sen = np.sum(
-                            feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
-                        mean_diffs.append(np.mean(np.power(unfair_feat_z_sen, 2)))
-                   
+                            weights.append(distance)
+                        weights = np.array(weights).reshape(-1, 1)
+                        
+                        if weights.sum() > 0:
+                            feat_z_weighted = np.sum(
+                                feat_z * weights, axis=0) / weights.sum()
+                            
+                            sensitive_centroid = np.unique(train_sensitive, axis=0)
+                            for sensitive in sensitive_centroid:
+                                target_sensitive = np.all(
+                                    np.equal(train_sensitive, sensitive), axis=1)
+                                feat_z_sensitive = feat_z[idxs[target_sensitive]]
+                                weights_sensitive = weights[idxs[target_sensitive]]
+                                if weights_sensitive.sum() > 0:
+                                    unfair_feat_z_sen = np.sum(
+                                        feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
+                                    mean_diffs.append(
+                                        np.mean(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
+                            
                     mean_diffs = np.mean(mean_diffs)
 
                     # nll_coeff: BCE coeff, lambda_1
@@ -356,7 +354,6 @@ if __name__ == '__main__':
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
 
     np.random.seed(4)
-    # prepare label_clusters
     nonsensitive_feat, sensitive_feat, labels = load_data(
         args.dataset, args.mode, True)
     train_cnt, valid_cnt = int(
@@ -375,23 +372,28 @@ if __name__ == '__main__':
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
     target_fair_labels = label_type[:1].astype(int)
-
-    for label_dist in ['arule', 'none']:
+    
+    for label_dist in IMPLEMENTED_METHODS:
         label_dist_files = search_files(os.path.join(args.model_dir, label_dist), '.npy')
-        model_files = search_files(os.path.join(args.model_dir, label_dist), '.pkl')
-        if len(label_dist_files) and len(model_files):
+        if len(label_dist_files):
+            print(f'Evaluate fairness definition: {label_dist}...')
             label_dist_file = label_dist_files[0]
-            model_file = model_files[0]
-            print(f'try loading model from: {model_file}')
+            for model_prior in IMPLEMENTED_METHODS:
+                model_files = search_files(os.path.join(args.model_dir, label_dist), '.pkl')
+                if len(model_files):
+                    model_file = model_files[0]
+                    print(f'try loading model from: {model_file}')
 
-            label_dist = pickle.load(open(os.path.join(
-                args.model_dir, label_dist, label_dist_file), 'rb'), allow_pickle=True)
-            model = VAE(args).to(args.device)
-            model.load_state_dict(torch.load(os.path.join(
-                args.model_dir, label_dist, model_file)))
+                    label_dist = pickle.load(open(os.path.join(
+                        args.model_dir, label_dist, label_dist_file), 'rb'), allow_pickle=True)
+                    model = VAE(args).to(args.device)
+                    model.load_state_dict(torch.load(os.path.join(
+                        args.model_dir, label_dist, model_file)))
 
-            print(f'start evaluating {model_file}...')
-            train, valid = evaluate_mpvae(model, data, label_dist)
+                    # print(f'start evaluating {model_file}...')
+                    train, valid = evaluate_mpvae(model, data, label_dist)
+            
+            
 
 # python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6
 # python evaluate.py -dataset adult -latent_dim 8 -fairness_strate_embed none -fairness_strate_cluster kmodes -cuda 6
