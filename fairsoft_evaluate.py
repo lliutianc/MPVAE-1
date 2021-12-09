@@ -386,8 +386,10 @@ def evaluate_nearest_neighbor_labels(args):
             args.model_dir, 'arule', label_dist_file), 'rb'))
         target_fair_labels = retrieve_nearest_neighbor_labels(
             target_fair_label, 5, label_dist)
-
-        evaluate_over_labels(target_fair_labels, args)
+        if target_fair_labels == []:
+            print(f'Fail to retrieve nearest neighbors...')
+        else:
+            evaluate_over_labels(target_fair_labels, args)
 
 
 if __name__ == '__main__':
