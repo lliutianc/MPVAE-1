@@ -231,30 +231,6 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                     best_val_metrics['ebF1'], best_val_metrics['maF1'], \
                     best_val_metrics['miF1']
 
-                # nll_coeff: BCE coeff, lambda_1
-                # c_coeff: Ranking loss coeff, lambda_2
-                # print("********************valid********************")
-                # print(
-                #     ' & '.join([str(round(m, 4)) for m in [
-                #         acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff,
-                #         c_loss * args.c_coeff, total_loss]]))
-
-                # if eval_fairness:
-                #     valid_feat_z = np.concatenate(valid_feat_z)
-                #     assert valid_feat_z.shape[0] == len(data.valid_idx) and valid_feat_z.shape[
-                #         1] == args.latent_dim
-                #     valid_feat_z_mean = valid_feat_z.mean(0)
-                #     mean_diffs = 0.
-                #     idxs = np.arange(len(data.valid_idx))
-                #     for sensitive in np.unique(valid_sensitive, axis=0):
-                #         target_sensitive = idxs[np.all(
-                #             np.equal(valid_sensitive, sensitive), axis=1)]
-                #         feats_z_sensitive = valid_feat_z[target_sensitive]
-                #         mean_diffs += np.mean(
-                #             np.power(feats_z_sensitive.mean(0) - valid_feat_z_mean, 2))
-
-                #     best_val_metrics['fair'] = mean_diffs
-
                 if eval_fairness and label_dist is not None:
                     valid_feat_z = np.concatenate(valid_feat_z)
                     assert valid_feat_z.shape[0] == len(data.valid_idx) and \
@@ -263,62 +239,35 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                     sensitive_feat = np.unique(valid_sensitive, axis=0)
                     idxs = np.arange(len(data.valid_idx))
 
+                    mean_diffs = []
                     for target_fair_label in target_fair_labels:
                         target_label_dist = label_distances[target_fair_label]
-                        batch_distance = []
+                        weights = []
                         for label in data.labels[idxs]:
+                            label = label.astype(int)
                             distance = target_label_dist.get(
                                 ''.join(label.astype(str)), np.inf)
-                            batch_distance.append(distance)
-                        batch_distance = np.array(
-                            batch_distance).reshape(-1, 1)
-                    gamma = 1.
-                    weights = np.exp(-batch_distance * gamma)
-                    weights = np.maximum(weights, 1e-6)
-                    feat_z_weighted = np.sum(
-                        feat_z * weights, axis=0) / weights.sum()
+                            weights.append(distance)
+                        weights = np.array(weights).reshape(-1, 1)
 
-                    mean_diffs = []
-                    sensitive_centroid = np.unique(valid_sensitive, axis=0)
-                    for sensitive in sensitive_centroid:
-                        target_sensitive = np.all(
-                            np.equal(valid_sensitive, sensitive), axis=1)
-                        feat_z_sensitive = feat_z[idxs[target_sensitive]]
-                        weights_sensitive = weights[idxs[target_sensitive]]
-                        unfair_feat_z_sen = np.sum(
-                            feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
-                        mean_diffs.append(
-                            np.mean(np.power(unfair_feat_z_sen, 2)))
+                        if weights.sum() > 0:
+                            feat_z_weighted = np.sum(
+                                feat_z * weights, axis=0) / weights.sum()
+
+                            sensitive_centroid = np.unique(
+                                valid_sensitive, axis=0)
+                            for sensitive in sensitive_centroid:
+                                target_sensitive = np.all(
+                                    np.equal(valid_sensitive, sensitive), axis=1)
+                                feat_z_sensitive = feat_z[idxs[target_sensitive]]
+                                weights_sensitive = weights[idxs[target_sensitive]]
+                                if weights_sensitive.sum() > 0:
+                                    unfair_feat_z_sen = np.sum(
+                                        feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
+                                    mean_diffs.append(
+                                        np.mean(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
 
                     mean_diffs = np.mean(mean_diffs)
-
-                # if eval_fairness:
-                #     valid_feat_z = np.concatenate(valid_feat_z)
-                #     assert valid_feat_z.shape[0] == len(data.valid_idx) and \
-                #         valid_feat_z.shape[1] == args.latent_dim
-                #     mean_diffs = []
-                #     idxs = np.arange(len(data.valid_idx))
-
-                #     sensitive_centroid = np.unique(valid_sensitive, axis=0)
-                #     for label_centroid in np.unique(data.label_clusters[idxs]):
-                #         target_centroid = np.equal(
-                #             data.label_clusters[idxs], label_centroid)
-
-                #         cluster_feat_z = valid_feat_z[idxs[target_centroid]]
-                #         if len(cluster_feat_z):
-                #             for sensitive in sensitive_centroid:
-                #                 target_sensitive = np.all(
-                #                     np.equal(valid_sensitive, sensitive), axis=1)
-                #                 cluster_sensitve = np.all(
-                #                     np.stack((target_sensitive, target_centroid), axis=1), axis=1
-                #                 )
-                #                 cluster_feat_z_sensitive = valid_feat_z[idxs[cluster_sensitve]]
-                #                 if len(cluster_feat_z_sensitive):
-                #                     mean_diffs.append(np.mean(
-                #                         np.power(cluster_feat_z_sensitive.mean(0) - cluster_feat_z.mean(0), 2)))
-
-                #     mean_diffs = np.mean(mean_diffs)
-                #     best_val_metrics['fair'] = mean_diffs
 
                     # nll_coeff: BCE coeff, lambda_1
                     # c_coeff: Ranking loss coeff, lambda_2
