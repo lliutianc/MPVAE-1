@@ -341,6 +341,7 @@ def train_fair_through_regularize():
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
     target_fair_labels = [label_type[:1].astype(int)]
+    print(target_fair_labels)
     # print(target_fair_labels, count[count_sort_idx])
 
     print('start training fair mpvae...')

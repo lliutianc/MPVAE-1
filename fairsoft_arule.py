@@ -43,6 +43,7 @@ def train_mpvae_softfair_one_epoch(
         target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
     print(target_fair_labels)
+    exit(1)
 
     np.random.shuffle(data.train_idx)
     args.device = next(model.parameters()).device
@@ -346,6 +347,7 @@ def train_fair_through_regularize():
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
     target_fair_labels = [label_type[:1].astype(int)]
+    print(target_fair_labels)
     # print(target_fair_labels, count[count_sort_idx])
 
     print('start training fair mpvae...')
