@@ -41,6 +41,7 @@ def train_mpvae_softfair_one_epoch(
         target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
     print(target_fair_labels)
+    print(len(target_fair_labels[0]))
     exit(1)
 
     np.random.shuffle(data.train_idx)
@@ -309,6 +310,13 @@ def train_fair_through_regularize():
     nonsensitive_feat, sensitive_feat, labels = load_data(
         args.dataset, args.mode, True, 'onehot')
 
+    # Test fairness on some labels
+    label_type, count = np.unique(labels, axis=0, return_counts=True)
+    count_sort_idx = np.argsort(-count)
+    label_type = label_type[count_sort_idx]
+    target_fair_labels = label_type[:1].astype(int)
+    print(target_fair_labels, count[count_sort_idx])
+
     train_cnt, valid_cnt = int(
         len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
     train_idx = np.arange(train_cnt)
@@ -337,14 +345,6 @@ def train_fair_through_regularize():
 
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
-
-    # Test fairness on some labels
-    label_type, count = np.unique(labels, axis=0, return_counts=True)
-    count_sort_idx = np.argsort(-count)
-    label_type = label_type[count_sort_idx]
-    target_fair_labels = label_type[:1].astype(int)
-    print(target_fair_labels)
-    # print(target_fair_labels, count[count_sort_idx])
 
     print('start training fair mpvae...')
     for _ in range(args.max_epoch):

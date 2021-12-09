@@ -94,6 +94,12 @@ def indication_distance(args):
 
     labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
     labels_oh_str = np.unique(labels_oh_str, axis=0)
+    
+    label_type, count = np.unique(labels_oh_str, axis=0, return_counts=True)
+    count_sort_idx = np.argsort(-count)
+    label_type = label_type[count_sort_idx]
+    target_fair_labels = label_type[:1].astype(int)
+    print(target_fair_labels, count[count_sort_idx])
 
     labels_express = {}
     for label in labels_oh_str:
