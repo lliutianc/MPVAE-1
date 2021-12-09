@@ -106,12 +106,13 @@ def train_mpvae_softfair_one_epoch(
                     for label in data.labels[idx]:
                         distance = target_label_dist.get(
                             ''.join(label.astype(str)), np.inf)
-                        if ''.join(label.astype(str)) == label:
+                        if ''.join(label.astype(str)) == target_fair_label:
                             _tmp_target += 1
-                            
                         batch_distance.append(distance)
                     batch_distance = torch.tensor(
                         batch_distance).to(args.device).reshape(-1, 1)
+                    print(_tmp_target)
+                    exit(1)
                     gamma = 1.
                     weights = torch.exp(-batch_distance)
                     if weights.sum() > 0:
