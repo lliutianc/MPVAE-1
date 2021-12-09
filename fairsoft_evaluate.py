@@ -358,4 +358,4 @@ if __name__ == '__main__':
                     # print(f'start evaluating {model_file}...')
                     train, valid = evaluate_mpvae(model, data, target_fair_labels, label_dist)
 
-# python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6
+# python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6 -target_label_idx 10
