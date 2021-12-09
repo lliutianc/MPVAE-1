@@ -394,7 +394,7 @@ if __name__ == '__main__':
 
                     model = VAE(args).to(args.device)
                     model.load_state_dict(torch.load(os.path.join(
-                        args.model_dir, label_dist, model_file)))
+                        args.model_dir, model_prior, model_file)))
 
                     # print(f'start evaluating {model_file}...')
                     train, valid = evaluate_mpvae(model, data, label_dist)
