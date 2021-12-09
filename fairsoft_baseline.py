@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 from utils import build_path
-from model import VAE, compute_loss
+from mpvae import VAE, compute_loss
 from data import load_data
 from label_distance import indication_distance
 
@@ -45,8 +45,15 @@ def train_fair_through_regularize():
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
-    target_fair_labels = label_type[:1].astype(int)
-    # print(target_fair_labels, count[count_sort_idx])
+
+    for idx in [0, 10, 20, 30, 50]:
+        target_fair_labels = label_type[idx: idx + 1].astype(int)
+        print(target_fair_labels, count[count_sort_idx][idx: idx + 1])
+
+    # idx = 0
+    target_fair_labels = label_type[idx: idx + 1].astype(int)
+    # print(target_fair_labels, count[count_sort_idx][idx: idx + 1])
+    exit(1)
 
     train_cnt, valid_cnt = int(
         len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
@@ -98,4 +105,4 @@ if __name__ == '__main__':
 
     train_fair_through_regularize()
 
-# python fairsoft_baseline.py -dataset adult -latent_dim 8 -epoch 20 -cuda
+# python fairsoft_baseline.py -dataset adult -latent_dim 8 -epoch 20 -cuda 6
