@@ -12,7 +12,7 @@ from copy import deepcopy
 
 import evals
 from utils import build_path, get_label, get_feat
-from model import VAE, compute_loss
+from mpvae import VAE, compute_loss
 from fairmodel import FairCritic, compute_fair_loss
 from data import load_data
 

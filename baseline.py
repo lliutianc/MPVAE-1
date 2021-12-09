@@ -11,7 +11,7 @@ import types
 from tqdm import tqdm
 
 from utils import build_path
-from model import VAE
+from mpvae import VAE
 from data import load_data
 from train import train_mpvae_one_epoch
 

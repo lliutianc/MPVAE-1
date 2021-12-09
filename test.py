@@ -5,7 +5,7 @@ import datetime
 from copy import deepcopy
 import evals
 from utils import build_path, get_label, get_feat
-from model import VAE, compute_loss
+from mpvae import VAE, compute_loss
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 sys.path.append('./')

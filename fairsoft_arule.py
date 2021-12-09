@@ -17,7 +17,7 @@ from mlxtend.preprocessing import TransactionEncoder
 
 import evals
 from utils import build_path
-from model import VAE, compute_loss
+from mpvae import VAE, compute_loss
 from data import load_data
 from label_distance import apriori_distance
 

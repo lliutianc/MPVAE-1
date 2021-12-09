@@ -15,7 +15,7 @@ import types
 
 import evals
 from utils import build_path
-from model import VAE, compute_loss
+from mpvae import VAE, compute_loss
 from data import load_data
 from embed import CBOW
 from label_cluster import construct_label_clusters

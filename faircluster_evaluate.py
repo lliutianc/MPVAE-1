@@ -11,7 +11,7 @@ import os
 import types
 
 import evals
-from model import VAE, compute_loss
+from mpvae import VAE, compute_loss
 from data import load_data
 from faircluster_train import THRESHOLDS, METRICS
 from faircluster_train import parser

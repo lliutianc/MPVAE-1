@@ -20,7 +20,7 @@ from torch import optim
 from embed import CBOW, CBOWData
 from train import train_mpvae_one_epoch
 from data import preprocess, load_data
-from model import VAE
+from mpvae import VAE
 
 
 def construct_labels_embed(data, args):
