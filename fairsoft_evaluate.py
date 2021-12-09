@@ -380,7 +380,7 @@ if __name__ == '__main__':
         label_dist_files = search_files(
             os.path.join(args.model_dir, label_dist_metric), '.npy')
         if len(label_dist_files):
-            print(f'Evaluate fairness definition: {label_dist}...')
+            print(f'Evaluate fairness definition: {label_dist_metric}...')
             label_dist_file = label_dist_files[0]
             label_dist = pickle.load(open(os.path.join(
                 args.model_dir, label_dist_metric, label_dist_file), 'rb'))
