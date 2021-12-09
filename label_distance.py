@@ -120,6 +120,6 @@ def indication_distance(args):
                 p2_oh = labels_express.get(frozenset(p2), None)
                 if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
-                    dist_dict[lab1][lab2] = 1. if lab1 == lab2 else 0.
+                    dist_dict[lab1][lab2] = 0. if lab1 == lab2 else np.inf
 
     return dist_dict
