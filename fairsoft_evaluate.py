@@ -17,7 +17,7 @@ from faircluster_train import parser
 from label_cluster import construct_label_clusters
 
 
-IMPLEMENTED_METHODS = ['arule', 'indication_function']
+IMPLEMENTED_METHODS = ['arule', 'baseline']
 
 
 def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairness=True, eval_train=True, eval_valid=True):
@@ -128,7 +128,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                                 ''.join(label.astype(str)), np.inf)
                             weights.append(distance)
                         weights = np.array(weights).reshape(-1, 1)
-
+                        
                         if weights.sum() > 0:
                             feat_z_weighted = np.sum(
                                 train_feat_z * weights, axis=0) / weights.sum()
@@ -262,7 +262,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                         if weights.sum() > 0:
                             feat_z_weighted = np.sum(
                                 valid_feat_z * weights, axis=0) / weights.sum()
-
+                            
                             for sensitive in sensitive_centroid:
                                 target_sensitive = np.all(
                                     np.equal(valid_sensitive, sensitive), axis=1)
