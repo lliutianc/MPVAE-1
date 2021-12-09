@@ -384,7 +384,7 @@ def train_fair_through_regularize():
         label_dist = pickle.load(open(label_dist_path, 'rb'))
     else:
         label_dist = apriori_distance(args)
-        pickle.save(open(label_dist_path, 'wb'), label_dist)
+        pickle.dump(open(label_dist_path, 'wb'), label_dist)
 
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
@@ -446,3 +446,5 @@ if __name__ == '__main__':
     build_path(args.model_dir, args.summary_dir)
 
     train_fair_through_regularize()
+
+# python fairsoft_arule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -min_confidence 0.25  -cuda 
