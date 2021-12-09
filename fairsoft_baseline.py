@@ -110,8 +110,6 @@ def train_mpvae_softfair_one_epoch(
                         batch_distance).to(args.device).reshape(-1, 1)
                     gamma = 1.
                     weights = torch.exp(-batch_distance)
-                    print(weights)
-                    exit(1)
                     if weights.sum() > 0:
                         label_z_weighted = torch.sum(
                             label_z * weights, axis=0) / weights.sum()
@@ -138,9 +136,7 @@ def train_mpvae_softfair_one_epoch(
                 fairloss = args.label_z_fair_coeff * reg_label_z_unfair + \
                     args.feat_z_fair_coeff * reg_feat_z_unfair
 
-                if isinstance(fairloss, float):
-                    raise UserWarning('Fail to construct fairness regualizers')
-                else:
+                if not isinstance(fairloss, float):
                     total_loss += fairloss
                     smooth_reg_fair += fairloss.item()
 
