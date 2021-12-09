@@ -131,7 +131,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                                 ''.join(label.astype(str)), 0.)
                             weights.append(distance)
                         weights = np.array(weights).reshape(-1, 1)
-                        print(weights.sum())
+                        # print(weights.sum())
                         if weights.sum() > 0:
                             feat_z_weighted = np.sum(
                                 train_feat_z * weights, axis=0) / weights.sum()
@@ -146,7 +146,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                                         feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
                                     mean_diffs.append(
                                         np.mean(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
-                    print(mean_diffs)
+                    # print(mean_diffs)
                     mean_diffs = np.mean(mean_diffs)
 
                     # nll_coeff: BCE coeff, lambda_1
@@ -243,7 +243,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                     best_val_metrics['ebF1'], best_val_metrics['maF1'], \
                     best_val_metrics['miF1']
 
-                if eval_fairness and label_dist is not None:
+                if eval_fairness:
                     valid_feat_z = np.concatenate(valid_feat_z)
                     assert valid_feat_z.shape[0] == len(data.valid_idx) and \
                         valid_feat_z.shape[1] == args.latent_dim
