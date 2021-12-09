@@ -38,12 +38,17 @@ def allexists(*files):
 
 
 def search_files(path, prefix=None, postfix=None):
-    files = []
-    for file in os.listdir(path):
-        if prefix:
-            match_pre = True if file[:len(prefix)] == prefix else False
-        if postfix:
-            match_post = True if file[-len(postfix):] == postfix else False
-        if match_pre and match_post:
-            files.append(file)
-    return files
+	files = []
+	for file in os.listdir(path):
+		if prefix:
+			match_pre = True if file[:len(prefix)] == prefix else False
+		else:
+			match_pre = True
+		if postfix:
+			match_post = True if file[-len(postfix):] == postfix else False
+		else:
+			match_post = True
+		if match_pre and match_post:
+			files.append(file)
+			
+	return files
