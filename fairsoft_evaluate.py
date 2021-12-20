@@ -326,8 +326,10 @@ def evaluate_over_labels(target_fair_labels, args):
                 args.model_dir, label_dist_metric, label_dist_file), 'rb'))
 
             for model_prior in IMPLEMENTED_METHODS:
+                if model_prior != 'unfair':
+                    model_prior += f'_{args.target_label_idx}'
                 model_files = search_files(os.path.join(
-                    args.model_dir,  f'{model_prior}_{args.target_label_idx}'), postfix='.pkl')
+                    args.model_dir,  model_prior), postfix='.pkl')
                 if len(model_files):
                     model_file = model_files[0]
                     print(f'try loading model from: {model_file}')
@@ -404,4 +406,4 @@ if __name__ == '__main__':
     evaluate_target_labels(args)
     evaluate_nearest_neighbor_labels(args)
 
-# python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6 -target_label_idx 10
+# python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6 -target_label_idx 0
