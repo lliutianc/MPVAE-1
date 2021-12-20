@@ -404,6 +404,6 @@ if __name__ == '__main__':
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
 
     evaluate_target_labels(args)
-    evaluate_nearest_neighbor_labels(args)
+    # evaluate_nearest_neighbor_labels(args)
 
 # python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6 -target_label_idx 0
