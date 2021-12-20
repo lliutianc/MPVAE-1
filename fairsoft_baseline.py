@@ -25,6 +25,7 @@ from fairsoft_train import train_mpvae_softfair_one_epoch
 sys.path.append('./')
 
 parser.add_argument('-target_label_idx', type=int, default=0)
+parser.add_argument('-penalize_unfair', type=int, default=1)
 
 
 def train_fair_through_regularize():
@@ -84,8 +85,12 @@ def train_fair_through_regularize():
     for _ in range(args.max_epoch):
         train_mpvae_softfair_one_epoch(
             data, fair_vae, optimizer, scheduler,
-            penalize_unfair=True, target_fair_labels=target_fair_labels, label_distances=label_dist,
-            eval_after_one_epoch=True, args=args)
+            penalize_unfair=args.penalize_unfair, 
+            target_fair_labels=target_fair_labels, 
+            label_distances=label_dist,
+            eval_after_one_epoch=True, 
+            args=args)
+            
     torch.save(fair_vae.cpu().state_dict(), fair_vae_checkpoint_path)
 
 
@@ -94,7 +99,7 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
-    param_setting = f"baseline"
+    param_setting = "baseline" if args.penalize_unfair else "unfair"
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)
