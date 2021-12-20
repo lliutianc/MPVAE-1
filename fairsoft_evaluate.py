@@ -316,10 +316,11 @@ def evaluate_over_labels(target_fair_labels, args):
     args.feature_dim = data.input_feat.shape[1]
     args.label_dim = data.labels.shape[1]
 
-    for label_dist_metric in IMPLEMENTED_METHODS:
+    for label_dist_metric in [meth for meth in IMPLEMENTED_METHODS if meth != 'unfair']:
         label_dist_files = search_files(
             os.path.join(args.model_dir, label_dist_metric), postfix='.npy')
         if len(label_dist_files):
+            print('\n' * 5)
             print(f'Evaluate fairness definition: {label_dist_metric}...')
             label_dist_file = label_dist_files[0]
             label_dist = pickle.load(open(os.path.join(
@@ -340,6 +341,7 @@ def evaluate_over_labels(target_fair_labels, args):
 
                     train, valid = evaluate_mpvae(
                         model, data, target_fair_labels, label_dist)
+                print('\n' * 3)
 
 
 def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances):
@@ -354,19 +356,6 @@ def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances
     assert target_label not in neighbors and len(neighbors) == num_neighbor
 
     return neighbors
-
-
-def evaluate_target_labels(args):
-    np.random.seed(4)
-    nonsensitive_feat, sensitive_feat, labels = load_data(
-        args.dataset, args.mode, True)
-    label_type, count = np.unique(labels, axis=0, return_counts=True)
-    count_sort_idx = np.argsort(-count)
-    label_type = label_type[count_sort_idx]
-    idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
-    target_fair_labels = label_type[idx: idx + 1].astype(int)
-
-    evaluate_over_labels(target_fair_labels, args)
 
 
 def evaluate_nearest_neighbor_labels(args):
@@ -394,6 +383,19 @@ def evaluate_nearest_neighbor_labels(args):
         else:
             print(f'Evaluate on nearest neibors: {target_fair_labels}')
             evaluate_over_labels(target_fair_labels, args)
+
+
+def evaluate_target_labels(args):
+    np.random.seed(4)
+    nonsensitive_feat, sensitive_feat, labels = load_data(
+        args.dataset, args.mode, True)
+    label_type, count = np.unique(labels, axis=0, return_counts=True)
+    count_sort_idx = np.argsort(-count)
+    label_type = label_type[count_sort_idx]
+    idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
+    target_fair_labels = label_type[idx: idx + 1].astype(int)
+
+    evaluate_over_labels(target_fair_labels, args)
 
 
 if __name__ == '__main__':
