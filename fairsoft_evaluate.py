@@ -331,6 +331,8 @@ def evaluate_over_labels(target_fair_labels, args):
                     model_prior += f'_{args.target_label_idx}'
                 model_files = search_files(os.path.join(
                     args.model_dir,  model_prior), postfix='.pkl')
+                print(model_prior, model_files)
+                continue
                 if len(model_files):
                     model_file = model_files[0]
                     print(f'try loading model from: {model_file}')
