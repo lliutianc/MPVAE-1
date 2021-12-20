@@ -107,3 +107,5 @@ if __name__ == '__main__':
     train_fair_through_regularize()
 
 # python fairsoft_baseline.py -dataset adult -latent_dim 8 -epoch 20 -cuda 5 -target_label_idx 0 -penalize_unfair 0
+
+# python fairsoft_baseline.py -dataset adult -latent_dim 8 -epoch 20 -cuda 5 -target_label_idx 0
