@@ -18,7 +18,7 @@ from faircluster_train import parser
 from label_cluster import construct_label_clusters
 from utils import search_files
 
-IMPLEMENTED_METHODS = ['arule', 'baseline']
+IMPLEMENTED_METHODS = ['arule', 'baseline', 'unfair']
 
 parser.add_argument('-target_label_idx', type=int, default=0)
 
@@ -327,7 +327,7 @@ def evaluate_over_labels(target_fair_labels, args):
 
             for model_prior in IMPLEMENTED_METHODS:
                 model_files = search_files(os.path.join(
-                    args.model_dir, model_prior), postfix='.pkl')
+                    args.model_dir,  f'{model_prior}_{args.target_label_idx}'), postfix='.pkl')
                 if len(model_files):
                     model_file = model_files[0]
                     print(f'try loading model from: {model_file}')
@@ -401,7 +401,7 @@ if __name__ == '__main__':
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
 
-    # evaluate_target_labels(args)
+    evaluate_target_labels(args)
     evaluate_nearest_neighbor_labels(args)
 
 # python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6 -target_label_idx 10

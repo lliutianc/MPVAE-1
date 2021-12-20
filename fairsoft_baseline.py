@@ -90,7 +90,7 @@ def train_fair_through_regularize():
             label_distances=label_dist,
             eval_after_one_epoch=True, 
             args=args)
-            
+
     torch.save(fair_vae.cpu().state_dict(), fair_vae_checkpoint_path)
 
 
@@ -99,11 +99,11 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
-    param_setting = "baseline" if args.penalize_unfair else "unfair"
+    param_setting = f"baseline_{args.target_label_idx}" if args.penalize_unfair else "unfair_{args.target_label_idx}"
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)
 
     train_fair_through_regularize()
 
-# python fairsoft_baseline.py -dataset adult -latent_dim 8 -epoch 20 -cuda 5 -target_label_idx 10
+# python fairsoft_baseline.py -dataset adult -latent_dim 8 -epoch 20 -cuda 5 -target_label_idx 0 -penalize_unfair 0
