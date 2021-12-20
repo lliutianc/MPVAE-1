@@ -103,7 +103,7 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
-    param_setting = f"baseline_{args.target_label_idx}" if args.penalize_unfair else "unfair_{args.target_label_idx}"
+    param_setting = f"baseline_{args.target_label_idx}" if args.penalize_unfair else f"unfair"
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)
