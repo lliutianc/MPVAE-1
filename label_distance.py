@@ -32,7 +32,7 @@ def apriori_pair_dist(labelset1, labelset2, apriori_rules):
     return score
 
 
-def apriori_distance(args, gamma=1., minimum_clip=1e-6, maximum_clip=1.):
+def apriori_similarity(args, gamma=1., minimum_clip=1e-6, maximum_clip=1.):
     np.random.seed(4)
     _, _, labels = load_data(
         args.dataset, args.mode, True, None)
@@ -86,7 +86,7 @@ def apriori_distance(args, gamma=1., minimum_clip=1e-6, maximum_clip=1.):
     return dist_dict
 
 
-def indication_distance(args):
+def indication_similarity(args):
     np.random.seed(4)
     _, _, labels = load_data(
         args.dataset, args.mode, True, None)
@@ -122,5 +122,55 @@ def indication_distance(args):
                 if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
                     dist_dict[lab1][lab2] = 1.0 if lab1 == lab2 else 0.
+
+    return dist_dict
+
+
+def str_ham_similarity(str1, str2):
+    if len(str1) != len(str2):
+        raise ValueError('Incompatible string pairs: have different lengths.')
+    same = 0
+    for idx, char in enumerate(str1):
+        same += (char == str2[idx])
+    
+    return same / len(str1)
+
+
+def hamming_similarity(args):
+    np.random.seed(4)
+    _, _, labels = load_data(
+        args.dataset, args.mode, True, None)
+    labels_oh = preprocess(labels, 'onehot').astype(int)
+    labels = labels.astype(str)
+
+    labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
+    labels_oh_str = np.unique(labels_oh_str, axis=0)
+
+    labels_express = {}
+    for label in labels_oh_str:
+        label_oh = label[:-3]
+        label_str = label[-3:]
+        labels_express[frozenset(label_str)] = label_oh.astype(int)
+
+    income_level = np.unique(labels[:, 0])
+    occupation = np.unique(labels[:, 1])
+    workclass = np.unique(labels[:, 2])
+    labelsets = []
+    for income in income_level:
+        for occu in occupation:
+            for work in workclass:
+                labelsets.append(set([income, occu, work]))
+
+    dist_dict = {}
+    for p1 in labelsets:
+        p1_oh = labels_express.get(frozenset(p1), None)
+        if p1_oh is not None:
+            lab1 = ''.join(p1_oh.astype(str))
+            dist_dict[lab1] = {}
+            for p2 in labelsets:
+                p2_oh = labels_express.get(frozenset(p2), None)
+                if p2_oh is not None:
+                    lab2 = ''.join(p2_oh.astype(str))
+                    dist_dict[lab1][lab2] = str_ham_similarity(lab1, lab2)
 
     return dist_dict
