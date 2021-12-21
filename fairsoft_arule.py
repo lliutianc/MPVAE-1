@@ -27,6 +27,7 @@ from fairsoft_train import train_mpvae_softfair_one_epoch
 
 parser.add_argument('-min_support', type=float, default=None)
 parser.add_argument('-min_confidence', type=float, default=None)
+parser.add_argument('-dist_gamma', type=float, default=1.0)
 parser.add_argument('-target_label_idx', type=int, default=0)
 
 sys.path.append('./')
@@ -35,14 +36,15 @@ sys.path.append('./')
 def train_fair_through_regularize():
 
     hparams = f'min_support={args.min_support}-'\
-              f'min_confidence={args.min_confidence}'
+              f'min_confidence={args.min_confidence}-'\
+              f'gamma={args.dist_gamma}'
     label_dist_path = os.path.join(
         args.model_dir, f'label_dist-{hparams}.npy')
 
     if args.resume and os.path.exists(label_dist_path):
         label_dist = pickle.load(open(label_dist_path, 'rb'))
     else:
-        label_dist = apriori_distance(args)
+        label_dist = apriori_distance(args, args.dist_gamma)
         pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
     np.random.seed(4)
@@ -107,4 +109,4 @@ if __name__ == '__main__':
 
     train_fair_through_regularize()
 
-# python fairsoft_arule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -min_confidence 0.25  -cuda 6 -target_label_idx 10
+# python fairsoft_arule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -min_confidence 0.25  -cuda 5 -target_label_idx 0
