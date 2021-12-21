@@ -317,12 +317,10 @@ def evaluate_over_labels(target_fair_labels, args):
     args.label_dim = data.labels.shape[1]
 
     for label_dist_metric in [meth for meth in IMPLEMENTED_METHODS if meth != 'unfair']:
+        label_dist_metric = label_dist_metric + f'_{args.target_label_idx}'
         label_dist_files = search_files(
-            os.path.join(
-                args.model_dir, 
-                label_dist_metric + f'_{args.target_label_idx}'),
-            postfix='.npy')
-            
+            os.path.join(args.model_dir, label_dist_metric), postfix='.npy')
+
         if len(label_dist_files):
             print('\n' * 5)
             print(f'Evaluate fairness definition: {label_dist_metric}...')
