@@ -1,8 +1,13 @@
 from fairsoft_evaluate import evaluate_target_labels
 import torch
 
-from fairsoft_arule import parser
+from faircluster_train import parser
 from utils import build_path
+
+parser.add_argument('-min_support', type=float, default=None)
+parser.add_argument('-min_confidence', type=float, default=None)
+parser.add_argument('-dist_gamma', type=float, default=1.0)
+parser.add_argument('-target_label_idx', type=int, default=0)
 
 
 def train_fairsoft_arule(args):
@@ -54,5 +59,4 @@ if __name__ == '__main__':
         break
 
     
-
-
+# python fairsoft_trial.py -dataset adult -latent_dim 8 -cuda 5
