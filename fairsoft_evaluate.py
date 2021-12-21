@@ -327,8 +327,7 @@ def evaluate_over_labels(target_fair_labels, args):
                 args.model_dir, label_dist_metric, label_dist_file) for 
                 label_dist_file in label_dist_files]
     print('\n' * 5)
-    print(f"""Fairness definitions: 
-              {label_dist_metric_paths}""")
+    print(f"""Fairness definitions: {label_dist_metric_paths}""")
 
     model_paths = []
     for model_prior in IMPLEMENTED_METHODS:
@@ -341,8 +340,7 @@ def evaluate_over_labels(target_fair_labels, args):
                 args.model_dir, model_prior, model_file) for 
                 model_file in model_files]
     print('\n' * 5)
-    print(f"""Fair Models: 
-              {model_paths}""")
+    print(f"""Fair Models: {model_paths}""")
     
     for dist_metric in label_dist_metric_paths:
         print('\n' * 5)
@@ -352,7 +350,6 @@ def evaluate_over_labels(target_fair_labels, args):
     
         for model_stat in model_paths:
             print(f'Fair model: {model_stat}')
-            continue
             model = VAE(args).to(args.device)
             model.load_state_dict(torch.load(model_stat))
 
