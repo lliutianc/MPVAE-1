@@ -11,7 +11,7 @@ import numpy as np
 from utils import build_path
 from mpvae import VAE
 from data import load_data
-from label_distance import apriori_distance
+from label_distance import apriori_similarity
 
 from main import THRESHOLDS, METRICS
 from fairsoft_train import train_mpvae_softfair_one_epoch
@@ -28,7 +28,7 @@ def train_fair_through_regularize(args):
     if args.resume and os.path.exists(label_dist_path):
         label_dist = pickle.load(open(label_dist_path, 'rb'))
     else:
-        label_dist = apriori_distance(args, args.dist_gamma)
+        label_dist = apriori_similarity(args, args.dist_gamma)
         pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
     np.random.seed(4)

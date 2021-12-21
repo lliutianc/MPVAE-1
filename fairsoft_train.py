@@ -9,9 +9,6 @@ sys.path.append('./')
 import torch
 import torch.nn as nn
 import numpy as np
-import pandas as pd
-from mlxtend.frequent_patterns import apriori, association_rules
-from mlxtend.preprocessing import TransactionEncoder
 
 import evals
 from mpvae import VAE, compute_loss

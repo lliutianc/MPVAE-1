@@ -13,7 +13,7 @@ import pandas as pd
 from utils import build_path
 from mpvae import VAE
 from data import load_data
-from label_distance import indication_distance
+from label_distance import indication_similarity
 
 from main import THRESHOLDS, METRICS
 from fairsoft_train import train_mpvae_softfair_one_epoch
@@ -28,7 +28,7 @@ def train_fair_through_regularize(args):
     if args.resume and os.path.exists(label_dist_path):
         label_dist = pickle.load(open(label_dist_path, 'rb'))
     else:
-        label_dist = indication_distance(args)
+        label_dist = indication_similarity(args)
         pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
     np.random.seed(4)
