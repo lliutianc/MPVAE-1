@@ -3,7 +3,6 @@ import sys
 import torch
 
 from utils import build_path
-from faircluster_train import parser
 from fairsoft_evaluate import evaluate_target_labels
 
 
