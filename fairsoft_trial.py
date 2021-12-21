@@ -60,7 +60,10 @@ if __name__ == '__main__':
     args.penalize_unfair = 1
     for target_label_idx in [0, 10, 20, 50]:
         args.target_label_idx = target_label_idx
-        train_fairsoft_arule(args)
+        for dist_gamma in [0.1, 0.5, 1., 1.5, 2.]:
+            args.dist_gamma = dist_gamma
+            train_fairsoft_arule(args)
+            
         train_fairsoft_baseline(args)
         eval_fairsoft_allmodels(args)
         
