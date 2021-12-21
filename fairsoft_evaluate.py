@@ -316,36 +316,67 @@ def evaluate_over_labels(target_fair_labels, args):
     args.feature_dim = data.input_feat.shape[1]
     args.label_dim = data.labels.shape[1]
 
+    label_dist_metric_paths = []
     for label_dist_metric in [meth for meth in IMPLEMENTED_METHODS if meth != 'unfair']:
         label_dist_metric = label_dist_metric + f'_{args.target_label_idx}'
         label_dist_files = search_files(
             os.path.join(args.model_dir, label_dist_metric), postfix='.npy')
 
         if len(label_dist_files):
-            print('\n' * 5)
-            print(f'Evaluate fairness definition: {label_dist_metric}...')
-            label_dist_file = label_dist_files[0]
-            label_dist = pickle.load(open(os.path.join(
-                args.model_dir, label_dist_metric, label_dist_file), 'rb'))
+            label_dist_metric_paths += [os.path.join(
+                args.model_dir, label_dist_metric, label_dist_file) for 
+                label_dist_file in label_dist_files]
+    print('\n' * 5)
+    print(f"""Fairness definitions: 
+              {label_dist_metric_paths}""")
 
-            for model_prior in IMPLEMENTED_METHODS:
-                if model_prior != 'unfair':
-                    model_prior += f'_{args.target_label_idx}'
-                model_files = search_files(os.path.join(
-                    args.model_dir,  model_prior), postfix='.pkl')
-                print(model_prior, model_files)
-                continue
-                if len(model_files):
-                    model_file = model_files[0]
-                    print(f'try loading model from: {model_file}')
+    model_paths = []
+    for model_prior in IMPLEMENTED_METHODS:
+        if model_prior != 'unfair':
+            model_prior += f'_{args.target_label_idx}'
+        model_files = search_files(os.path.join(
+            args.model_dir,  model_prior), postfix='.pkl')
+        if len(model_files):
+            model_paths += [os.path.join(
+                args.model_dir, model_prior, model_file) for 
+                model_file in model_files]
+    print('\n' * 5)
+    print(f"""Fair Models: 
+              {model_paths}""")
+    
+    for dist_metric in label_dist_metric_paths:
+        print('\n' * 5)
+        print(f'Evaluate fairness definition: {dist_metric}...')
+        print('\n' * 3)
+        label_dist = pickle.load(open(dist_metric, 'rb'))
+    
+        for model_stat in model_paths:
+            print(f'Fair model: {model_stat}')
+            continue
+            model = VAE(args).to(args.device)
+            model.load_state_dict(torch.load(model_stat))
 
-                    model = VAE(args).to(args.device)
-                    model.load_state_dict(torch.load(os.path.join(
-                        args.model_dir, model_prior, model_file)))
+            train, valid = evaluate_mpvae(
+                model, data, target_fair_labels, label_dist)
 
-                    train, valid = evaluate_mpvae(
-                        model, data, target_fair_labels, label_dist)
-                print('\n' * 3)
+            # for model_prior in IMPLEMENTED_METHODS:
+            #     if model_prior != 'unfair':
+            #         model_prior += f'_{args.target_label_idx}'
+            #     model_files = search_files(os.path.join(
+            #         args.model_dir,  model_prior), postfix='.pkl')
+            #     print(model_prior, model_files)
+            #     continue
+            #     if len(model_files):
+            #         model_file = model_files[0]
+            #         print(f'try loading model from: {model_file}')
+
+            #         model = VAE(args).to(args.device)
+            #         model.load_state_dict(torch.load(os.path.join(
+            #             args.model_dir, model_prior, model_file)))
+
+            #         train, valid = evaluate_mpvae(
+            #             model, data, target_fair_labels, label_dist)
+            #     print('\n' * 3)
 
 
 def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances):
