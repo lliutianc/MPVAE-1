@@ -28,7 +28,7 @@ parser.add_argument('-target_label_idx', type=int, default=0)
 parser.add_argument('-penalize_unfair', type=int, default=1)
 
 
-def train_fair_through_regularize():
+def train_fair_through_regularize(args):
 
     hparams = f'indication_function'
     label_dist_path = os.path.join(
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)
 
-    train_fair_through_regularize()
+    train_fair_through_regularize(args)
 
 # python fairsoft_baseline.py -dataset adult -latent_dim 8 -epoch 20 -cuda 5 -target_label_idx 0 -penalize_unfair 0
 

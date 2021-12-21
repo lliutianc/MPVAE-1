@@ -33,7 +33,7 @@ parser.add_argument('-target_label_idx', type=int, default=0)
 sys.path.append('./')
 
 
-def train_fair_through_regularize():
+def train_fair_through_regularize(args):
 
     hparams = f'min_support={args.min_support}-'\
               f'min_confidence={args.min_confidence}-'\
@@ -107,6 +107,7 @@ if __name__ == '__main__':
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)
 
-    train_fair_through_regularize()
+    train_fair_through_regularize(args)
 
 # python fairsoft_arule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -min_confidence 0.25  -cuda 5 -target_label_idx 0
+# python fairsoft_arule.py -dataset adult -latent_dim 8 -epoch 20 -labels_embed_method none -min_confidence 0.25  -cuda 5 -target_label_idx 0 -dist_gamma 0.1
