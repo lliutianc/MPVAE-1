@@ -1,13 +1,19 @@
-from fairsoft_evaluate import evaluate_target_labels
+import sys
+import argparse
+
 import torch
 
-from faircluster_train import parser
 from utils import build_path
+from faircluster_train import parser
+from fairsoft_evaluate import evaluate_target_labels
 
 parser.add_argument('-min_support', type=float, default=None)
-parser.add_argument('-min_confidence', type=float, default=None)
+parser.add_argument('-min_confidence', type=float, default=0.25)
 parser.add_argument('-dist_gamma', type=float, default=1.0)
 parser.add_argument('-target_label_idx', type=int, default=0)
+
+sys.path.append('./')
+
 
 
 def train_fairsoft_arule(args):
