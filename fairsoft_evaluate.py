@@ -317,7 +317,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
         if len(label_dist_files):
             label_dist_metric_paths += [os.path.join(
-                args.model_dir, label_dist_metric, label_dist_file) for 
+                args.model_dir, label_dist_metric, label_dist_file) for
                 label_dist_file in label_dist_files]
     logger.logging('\n' * 5)
     logger.logging(f"""Fairness definitions: {label_dist_metric_paths}""")
@@ -330,16 +330,16 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             args.model_dir,  model_prior), postfix='.pkl')
         if len(model_files):
             model_paths += [os.path.join(
-                args.model_dir, model_prior, model_file) for 
+                args.model_dir, model_prior, model_file) for
                 model_file in model_files]
     logger.logging('\n' * 5)
     logger.logging(f"""Fair Models: {model_paths}""")
-    
+
     for dist_metric in label_dist_metric_paths:
         logger.logging(f'Evaluate fairness definition: {dist_metric}...')
         logger.logging('\n' * 3)
         label_dist = pickle.load(open(dist_metric, 'rb'))
-    
+
         for model_stat in model_paths:
             print(f'Fair model: {model_stat}')
             model = VAE(args).to(args.device)
@@ -413,11 +413,11 @@ if __name__ == '__main__':
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
     logger = Logger(os.path.join(
-        args.model_dir, f'evalution-{args.target_idx}.txt'))
+        args.model_dir, f'evalution-{args.target_label_idx}.txt'))
     evaluate_target_labels(args, logger)
 
     logger = Logger(os.path.join(
-        args.model_dir, f'evalution-{args.target_idx}-nn.txt'))
+        args.model_dir, f'evalution-{args.target_label_idx}-nn.txt'))
     # evaluate_nearest_neighbor_labels(args, logger)
 
 # python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6 -target_label_idx 0

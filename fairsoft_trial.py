@@ -1,4 +1,5 @@
-import sys, os
+import sys
+import os
 
 from joblib.logger import Logger
 
@@ -37,7 +38,7 @@ def eval_fairsoft_allmodels(args):
 
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
     logger = Logger(os.path.join(
-        args.model_dir, f'evalution-{args.target_idx}.txt'))
+        args.model_dir, f'evalution-{args.target_label_idx}.txt'))
 
     evaluate_target_labels(args, logger)
 
@@ -51,7 +52,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     args.device = torch.device(
-    f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
+        f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
     # train unfair model
     args.penalize_unfair = 0
@@ -64,11 +65,11 @@ if __name__ == '__main__':
         for dist_gamma in [.1, .5, 1.]:
             args.dist_gamma = dist_gamma
             train_fairsoft_arule(args)
-            
+
         train_fairsoft_baseline(args)
         eval_fairsoft_allmodels(args)
-        
+
         break
 
-    
+
 # python fairsoft_trial.py -dataset adult -latent_dim 8 -cuda 5
