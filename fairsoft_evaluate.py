@@ -1,3 +1,4 @@
+from joblib.logger import Logger
 from faircluster_train import parser
 from copy import deepcopy
 import os
@@ -14,11 +15,12 @@ from mpvae import VAE, compute_loss
 from data import load_data
 from faircluster_train import THRESHOLDS, METRICS
 from utils import search_files
+from logger import Logger
 
 IMPLEMENTED_METHODS = ['arule', 'baseline', 'unfair']
 
 
-def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairness=True, eval_train=True, eval_valid=True):
+def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
     if eval_fairness and target_fair_labels is None:
         target_fair_labels = list(label_distances.keys())
         raise NotImplementedError('Have not supported smooth-OD yet.')
@@ -141,21 +143,19 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
                                         feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
                                     mean_diffs.append(
                                         np.mean(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
-                    # print(mean_diffs)
+
                     mean_diffs = np.mean(mean_diffs)
 
-                    # nll_coeff: BCE coeff, lambda_1
-                    # c_coeff: Ranking loss coeff, lambda_2
-                    print("********************train********************")
-                    print(
+                    logger.logging(
+                        "********************train********************")
+                    logger.logging(
                         ' & '.join([
                             str(round(m, 4)) for m in [
                                 acc, ha, ebf1, maf1, mif1, mean_diffs]]))
                 else:
-                    # nll_coeff: BCE coeff, lambda_1
-                    # c_coeff: Ranking loss coeff, lambda_2
-                    print("********************train********************")
-                    print(
+                    logger.logging(
+                        "********************train********************")
+                    logger.logging(
                         ' & '.join(
                             [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
 
@@ -274,17 +274,15 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
 
                     mean_diffs = np.mean(mean_diffs)
 
-                    # nll_coeff: BCE coeff, lambda_1
-                    # c_coeff: Ranking loss coeff, lambda_2
-                    print("********************valid********************")
-                    print(
+                    logger.logging(
+                        "********************valid********************")
+                    logger.logging(
                         ' & '.join(
                             [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1, mean_diffs]]))
                 else:
-                    # nll_coeff: BCE coeff, lambda_1
-                    # c_coeff: Ranking loss coeff, lambda_2
-                    print("********************valid********************")
-                    print(
+                    logger.logging(
+                        "********************valid********************")
+                    logger.logging(
                         ' & '.join(
                             [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
 
@@ -295,7 +293,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairne
     return train_best_metrics, valid_best_metrics
 
 
-def evaluate_over_labels(target_fair_labels, args):
+def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
@@ -321,8 +319,8 @@ def evaluate_over_labels(target_fair_labels, args):
             label_dist_metric_paths += [os.path.join(
                 args.model_dir, label_dist_metric, label_dist_file) for 
                 label_dist_file in label_dist_files]
-    print('\n' * 5)
-    print(f"""Fairness definitions: {label_dist_metric_paths}""")
+    logger.logging('\n' * 5)
+    logger.logging(f"""Fairness definitions: {label_dist_metric_paths}""")
 
     model_paths = []
     for model_prior in IMPLEMENTED_METHODS:
@@ -334,13 +332,12 @@ def evaluate_over_labels(target_fair_labels, args):
             model_paths += [os.path.join(
                 args.model_dir, model_prior, model_file) for 
                 model_file in model_files]
-    print('\n' * 5)
-    print(f"""Fair Models: {model_paths}""")
+    logger.logging('\n' * 5)
+    logger.logging(f"""Fair Models: {model_paths}""")
     
     for dist_metric in label_dist_metric_paths:
-        print('\n' * 5)
-        print(f'Evaluate fairness definition: {dist_metric}...')
-        print('\n' * 3)
+        logger.logging(f'Evaluate fairness definition: {dist_metric}...')
+        logger.logging('\n' * 3)
         label_dist = pickle.load(open(dist_metric, 'rb'))
     
         for model_stat in model_paths:
@@ -349,26 +346,7 @@ def evaluate_over_labels(target_fair_labels, args):
             model.load_state_dict(torch.load(model_stat))
 
             train, valid = evaluate_mpvae(
-                model, data, target_fair_labels, label_dist)
-
-            # for model_prior in IMPLEMENTED_METHODS:
-            #     if model_prior != 'unfair':
-            #         model_prior += f'_{args.target_label_idx}'
-            #     model_files = search_files(os.path.join(
-            #         args.model_dir,  model_prior), postfix='.pkl')
-            #     print(model_prior, model_files)
-            #     continue
-            #     if len(model_files):
-            #         model_file = model_files[0]
-            #         print(f'try loading model from: {model_file}')
-
-            #         model = VAE(args).to(args.device)
-            #         model.load_state_dict(torch.load(os.path.join(
-            #             args.model_dir, model_prior, model_file)))
-
-            #         train, valid = evaluate_mpvae(
-            #             model, data, target_fair_labels, label_dist)
-            #     print('\n' * 3)
+                model, data, target_fair_labels, label_dist, logger)
 
 
 def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances):
@@ -385,7 +363,7 @@ def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances
     return neighbors
 
 
-def evaluate_nearest_neighbor_labels(args):
+def evaluate_nearest_neighbor_labels(args, logger=Logger()):
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
         args.dataset, args.mode, True)
@@ -406,13 +384,14 @@ def evaluate_nearest_neighbor_labels(args):
         target_fair_labels = retrieve_nearest_neighbor_labels(
             target_fair_label, 5, label_dist)
         if target_fair_labels == []:
-            print(f'Fail to retrieve nearest neighbors...')
+            logger.logging(f'Fail to retrieve nearest neighbors...')
         else:
-            print(f'Evaluate on nearest neibors: {target_fair_labels}')
-            evaluate_over_labels(target_fair_labels, args)
+            logger.logging(
+                f'Evaluate on nearest neibors: {target_fair_labels}')
+            evaluate_over_labels(target_fair_labels, args, logger)
 
 
-def evaluate_target_labels(args):
+def evaluate_target_labels(args, logger=Logger()):
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels = load_data(
         args.dataset, args.mode, True)
@@ -422,7 +401,7 @@ def evaluate_target_labels(args):
     idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
     target_fair_labels = label_type[idx: idx + 1].astype(int)
 
-    evaluate_over_labels(target_fair_labels, args)
+    evaluate_over_labels(target_fair_labels, args, logger)
 
 
 if __name__ == '__main__':
@@ -433,8 +412,12 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
+    logger = Logger(os.path.join(
+        args.model_dir, f'evalution-{args.target_idx}.txt'))
+    evaluate_target_labels(args, logger)
 
-    evaluate_target_labels(args)
-    # evaluate_nearest_neighbor_labels(args)
+    logger = Logger(os.path.join(
+        args.model_dir, f'evalution-{args.target_idx}-nn.txt'))
+    # evaluate_nearest_neighbor_labels(args, logger)
 
 # python fairsoft_evaluate.py -dataset adult -latent_dim 8 -cuda 6 -target_label_idx 0

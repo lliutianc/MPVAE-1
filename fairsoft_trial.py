@@ -1,9 +1,13 @@
-import sys
+import sys, os
+
+from joblib.logger import Logger
 
 import torch
 
 from utils import build_path
-from fairsoft_evaluate import evaluate_target_labels
+from logger import Logger
+
+sys.path.append('./')
 
 
 def train_fairsoft_arule(args):
@@ -32,8 +36,10 @@ def eval_fairsoft_allmodels(args):
     from fairsoft_evaluate import evaluate_target_labels
 
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
+    logger = Logger(os.path.join(
+        args.model_dir, f'evalution-{args.target_idx}.txt'))
 
-    evaluate_target_labels(args)
+    evaluate_target_labels(args, logger)
 
 
 if __name__ == '__main__':
@@ -42,11 +48,8 @@ if __name__ == '__main__':
     parser.add_argument('-min_confidence', type=float, default=0.25)
     parser.add_argument('-dist_gamma', type=float, default=1.0)
     parser.add_argument('-target_label_idx', type=int, default=0)
-
-    sys.path.append('./')
-
-
     args = parser.parse_args()
+
     args.device = torch.device(
     f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
@@ -59,7 +62,7 @@ if __name__ == '__main__':
         args.target_label_idx = target_label_idx
         train_fairsoft_arule(args)
         train_fairsoft_baseline(args)
-        evaluate_target_labels(args)
+        eval_fairsoft_allmodels(args)
         
         break
 
