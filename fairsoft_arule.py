@@ -1,36 +1,20 @@
 import sys
 import os
 import pickle
-import datetime
-from copy import deepcopy
 import types
 
 import torch
-import torch.nn as nn
 from torch import optim
 
-from tqdm import tqdm
 import numpy as np
-import pandas as pd
-from mlxtend.frequent_patterns import apriori, association_rules
-from mlxtend.preprocessing import TransactionEncoder
 
-import evals
 from utils import build_path
-from mpvae import VAE, compute_loss
+from mpvae import VAE
 from data import load_data
 from label_distance import apriori_distance
 
 from main import THRESHOLDS, METRICS
-from faircluster_train import parser
 from fairsoft_train import train_mpvae_softfair_one_epoch
-
-parser.add_argument('-min_support', type=float, default=None)
-parser.add_argument('-min_confidence', type=float, default=None)
-parser.add_argument('-dist_gamma', type=float, default=1.0)
-parser.add_argument('-target_label_idx', type=int, default=0)
-
-sys.path.append('./')
 
 
 def train_fair_through_regularize(args):
@@ -98,6 +82,15 @@ def train_fair_through_regularize(args):
 
 
 if __name__ == '__main__':
+    from faircluster_train import parser
+
+    parser.add_argument('-min_support', type=float, default=None)
+    parser.add_argument('-min_confidence', type=float, default=None)
+    parser.add_argument('-dist_gamma', type=float, default=1.0)
+    parser.add_argument('-target_label_idx', type=int, default=0)
+    
+    sys.path.append('./')
+
     args = parser.parse_args()
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")

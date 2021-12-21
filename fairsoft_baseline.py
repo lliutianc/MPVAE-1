@@ -2,19 +2,16 @@ import sys
 import os
 import pickle
 import datetime
-from copy import deepcopy
 import types
 
 import torch
-import torch.nn as nn
 from torch import optim
 
-from tqdm import tqdm
 import numpy as np
 import pandas as pd
 
 from utils import build_path
-from mpvae import VAE, compute_loss
+from mpvae import VAE
 from data import load_data
 from label_distance import indication_distance
 
@@ -99,6 +96,13 @@ def train_fair_through_regularize(args):
 
 
 if __name__ == '__main__':
+    from faircluster_train import parser
+    parser.add_argument('-target_label_idx', type=int, default=0)
+    parser.add_argument('-penalize_unfair', type=int, default=1)
+
+    sys.path.append('./')
+
+
     args = parser.parse_args()
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")

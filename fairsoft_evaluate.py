@@ -1,11 +1,10 @@
+from faircluster_train import parser
 from copy import deepcopy
 import os
-from sys import prefix
 import types
 import pickle
 
 import torch
-import torch.nn as nn
 
 import numpy as np
 from tqdm import tqdm
@@ -14,13 +13,9 @@ import evals
 from mpvae import VAE, compute_loss
 from data import load_data
 from faircluster_train import THRESHOLDS, METRICS
-from faircluster_train import parser
-from label_cluster import construct_label_clusters
 from utils import search_files
 
 IMPLEMENTED_METHODS = ['arule', 'baseline', 'unfair']
-
-parser.add_argument('-target_label_idx', type=int, default=0)
 
 
 def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairness=True, eval_train=True, eval_valid=True):
@@ -431,7 +426,9 @@ def evaluate_target_labels(args):
 
 
 if __name__ == '__main__':
+    from faircluster_train import parser
 
+    parser.add_argument('-target_label_idx', type=int, default=0)
     args = parser.parse_args()
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
