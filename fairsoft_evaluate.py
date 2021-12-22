@@ -20,7 +20,7 @@ from logger import Logger
 IMPLEMENTED_METHODS = ['arule', 'baseline', 'unfair']
 
 
-def evaluate_mpvae(model, data, target_fair_labels, label_distances, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
+def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
     if eval_fairness and target_fair_labels is None:
         target_fair_labels = list(label_distances.keys())
         raise NotImplementedError('Have not supported smooth-OD yet.')
@@ -346,7 +346,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             model.load_state_dict(torch.load(model_stat))
 
             train, valid = evaluate_mpvae(
-                model, data, target_fair_labels, label_dist, logger)
+                model, data, target_fair_labels, label_dist, args, logger=logger)
 
 
 def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances):
