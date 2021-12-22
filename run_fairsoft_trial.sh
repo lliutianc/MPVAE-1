@@ -11,4 +11,4 @@
 module load Conda/3
 conda activate fairmlc
 
-python fairsoft_trial.py -dataset adult -latent_dim 8 
+python fairsoft_trial.py -dataset adult -latent_dim 8 -train_new 0

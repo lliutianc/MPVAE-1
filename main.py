@@ -42,6 +42,7 @@ parser.add_argument('-write_to_test_sh', "--write_to_test_sh", action='store_tru
 parser.add_argument('-mode', "--mode", type=str, help='training/test mode', default='train')
 parser.add_argument('-r_sigma', "--residue_sigma", default='', type=str, help='what sigma r to use')
 
+parser.add_argument('-train_new', type=int, default=0)
 parser.add_argument('-cuda', type=int, default=0)
 
 
