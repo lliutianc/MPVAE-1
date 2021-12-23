@@ -50,6 +50,8 @@ def retrieve_target_label_idx(args, target_label):
     if len(target_label) > 1 and isinstance(target_label, str) == False:
         raise NotImplementedError(
             'cannot handle multiple target labels yet...')
+
+    np.random.seed(4)
     _, _, labels = load_data(
         args.dataset, args.mode, True, 'onehot')
 
