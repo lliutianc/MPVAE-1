@@ -47,8 +47,9 @@ def eval_fairsoft_allmodels(args):
 def retrieve_target_label_idx(args, target_label):
     from data import load_data
 
-    if len(target_label) > 1:
-        raise NotImplementedError('cannot handle multiple target labels yet...')
+    if len(target_label) > 1 and isinstance(target_label, str) == False:
+        raise NotImplementedError(
+            'cannot handle multiple target labels yet...')
     _, _, labels = load_data(
         args.dataset, args.mode, True, 'onehot')
 
