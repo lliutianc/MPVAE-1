@@ -82,9 +82,10 @@ if __name__ == '__main__':
     args.penalize_unfair = 1
 
     # args.target_label = '0000000000000001000100000'
+    print(args.target_label)
     if args.target_label is not None: 
-        target_label_idx = retrieve_target_label_idx(args, args.target_label)
-        args.target_label_idx = target_label_idx
+        args.target_label_idx = retrieve_target_label_idx(
+            args, args.target_label)
         for dist_gamma in [.1, .5, 1., 1.5, 2.]:
             args.dist_gamma = dist_gamma
             train_fairsoft_arule(args)
