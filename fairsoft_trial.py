@@ -59,6 +59,7 @@ def retrieve_target_label_idx(args, target_label):
     for idx, lab in enumerate(label_type):
         if ''.join(lab.astype(int).astype(str)) == target_label:
             return idx 
+    print(label_type[135])
     
     return None
 
