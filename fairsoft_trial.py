@@ -57,8 +57,11 @@ def retrieve_target_label_idx(args, target_label):
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
     for idx, lab in enumerate(label_type):
-        if ''.join(lab.astype(int).astype(str)) == target_label:
+        lab_str = ''.join(lab.astype(int).astype(str))
+        if lab_str == target_label:
             return idx 
+        if idx == 135:
+            print(lab_str)
     print(label_type[135])
     
     return None
@@ -97,12 +100,13 @@ if __name__ == '__main__':
         eval_fairsoft_allmodels(args)
     else:
         # train unfair model
-        args.penalize_unfair = 0
-        train_fairsoft_baseline(args)
-
-        args.penalize_unfair = 1
         for target_label_idx in [0, 10, 20, 50]:
             args.target_label_idx = target_label_idx
+
+            args.penalize_unfair = 0
+            train_fairsoft_baseline(args)
+
+            args.penalize_unfair = 1
             for dist_gamma in [.1, .5, 1., 1.5, 2.]:
                 args.dist_gamma = dist_gamma
                 train_fairsoft_arule(args)
