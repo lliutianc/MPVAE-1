@@ -75,17 +75,18 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
-    # train unfair model
-    args.penalize_unfair = 0
-    train_fairsoft_baseline(args)
-
-    args.penalize_unfair = 1
 
     # args.target_label = '0000000000000001000100000'
-    print(args.target_label)
+    # print(args.target_label)
     if args.target_label is not None: 
         args.target_label_idx = retrieve_target_label_idx(
             args, args.target_label)
+        
+        # train unfair model
+        args.penalize_unfair = 0
+        train_fairsoft_baseline(args)
+
+        args.penalize_unfair = 1        
         for dist_gamma in [.1, .5, 1., 1.5, 2.]:
             args.dist_gamma = dist_gamma
             train_fairsoft_arule(args)
@@ -93,6 +94,11 @@ if __name__ == '__main__':
         train_fairsoft_baseline(args)
         eval_fairsoft_allmodels(args)
     else:
+        # train unfair model
+        args.penalize_unfair = 0
+        train_fairsoft_baseline(args)
+
+        args.penalize_unfair = 1
         for target_label_idx in [0, 10, 20, 50]:
             args.target_label_idx = target_label_idx
             for dist_gamma in [.1, .5, 1., 1.5, 2.]:
