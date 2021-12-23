@@ -82,6 +82,7 @@ if __name__ == '__main__':
         args.target_label_idx = retrieve_target_label_idx(
             args, args.target_label)
         
+        print(args.target_label)
         # train unfair model
         args.penalize_unfair = 0
         train_fairsoft_baseline(args)
