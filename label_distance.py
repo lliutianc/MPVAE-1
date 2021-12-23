@@ -126,6 +126,46 @@ def indication_similarity(args):
     return dist_dict
 
 
+def constant_similarity(args):
+    np.random.seed(4)
+    _, _, labels = load_data(
+        args.dataset, args.mode, True, None)
+    labels_oh = preprocess(labels, 'onehot').astype(int)
+    labels = labels.astype(str)
+
+    labels_oh_str = np.concatenate([labels_oh.astype(str), labels], axis=1)
+    labels_oh_str = np.unique(labels_oh_str, axis=0)
+
+    labels_express = {}
+    for label in labels_oh_str:
+        label_oh = label[:-3]
+        label_str = label[-3:]
+        labels_express[frozenset(label_str)] = label_oh.astype(int)
+
+    income_level = np.unique(labels[:, 0])
+    occupation = np.unique(labels[:, 1])
+    workclass = np.unique(labels[:, 2])
+    labelsets = []
+    for income in income_level:
+        for occu in occupation:
+            for work in workclass:
+                labelsets.append(set([income, occu, work]))
+
+    dist_dict = {}
+    for p1 in labelsets:
+        p1_oh = labels_express.get(frozenset(p1), None)
+        if p1_oh is not None:
+            lab1 = ''.join(p1_oh.astype(str))
+            dist_dict[lab1] = {}
+            for p2 in labelsets:
+                p2_oh = labels_express.get(frozenset(p2), None)
+                if p2_oh is not None:
+                    lab2 = ''.join(p2_oh.astype(str))
+                    dist_dict[lab1][lab2] = 1.0
+
+    return dist_dict
+
+
 def str_ham_similarity(str1, str2):
     if len(str1) != len(str2):
         raise ValueError('Incompatible string pairs: have different lengths.')
