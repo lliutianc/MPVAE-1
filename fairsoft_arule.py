@@ -25,7 +25,7 @@ def train_fair_through_regularize(args):
     label_dist_path = os.path.join(
         args.model_dir, f'label_dist-{hparams}.npy')
 
-    if args.resume and os.path.exists(label_dist_path):
+    if args.train_new == 0 and os.path.exists(label_dist_path):
         label_dist = pickle.load(open(label_dist_path, 'rb'))
     else:
         label_dist = apriori_similarity(args, args.dist_gamma)
@@ -60,25 +60,28 @@ def train_fair_through_regularize(args):
 
     fair_vae_checkpoint_path = os.path.join(
         args.model_dir, f'fair_vae_prior-{hparams}.pkl')
-    if args.resume and os.path.exists(fair_vae_checkpoint_path):
-        print('use a trained fair mpvae...')
-        fair_vae.load_state_dict(torch.load(fair_vae_checkpoint_path))
+    if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
+        print('find trained mpvae...')
     else:
-        print('train a new fair mpvae...')
+        print('train a new mpvae...')
 
-    optimizer = optim.Adam(fair_vae.parameters(),
-                           lr=args.learning_rate, weight_decay=1e-5)
+        optimizer = optim.Adam(fair_vae.parameters(),
+                               lr=args.learning_rate, weight_decay=1e-5)
 
-    scheduler = torch.optim.lr_scheduler.StepLR(
-        optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
-    print('start training fair mpvae...')
-    for _ in range(args.max_epoch):
-        train_mpvae_softfair_one_epoch(
-            data, fair_vae, optimizer, scheduler,
-            penalize_unfair=True, target_fair_labels=target_fair_labels, label_distances=label_dist,
-            eval_after_one_epoch=True, args=args)
-    torch.save(fair_vae.cpu().state_dict(), fair_vae_checkpoint_path)
+        print('start training fair mpvae...')
+        for _ in range(args.max_epoch):
+            train_mpvae_softfair_one_epoch(
+                data, fair_vae, optimizer, scheduler,
+                penalize_unfair=args.penalize_unfair,
+                target_fair_labels=target_fair_labels,
+                label_distances=label_dist,
+                eval_after_one_epoch=True,
+                args=args)
+
+        torch.save(fair_vae.cpu().state_dict(), fair_vae_checkpoint_path)
 
 
 if __name__ == '__main__':
