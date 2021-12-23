@@ -61,11 +61,8 @@ def retrieve_target_label_idx(args, target_label):
     for idx, lab in enumerate(label_type):
         lab_str = ''.join(lab.astype(int).astype(str))
         if lab_str == target_label:
-            return idx 
-        if idx == 135:
-            print(lab_str)
-    print(label_type[135])
-    
+            return idx
+
     return None
 
 
@@ -81,19 +78,19 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
-
     # args.target_label = '0000000000000001000100000'
     # print(args.target_label)
-    if args.target_label is not None: 
+    if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
             args, args.target_label)
-        
+
         print(args.target_label)
+        exit(1)
         # train unfair model
         args.penalize_unfair = 0
         train_fairsoft_baseline(args)
 
-        args.penalize_unfair = 1        
+        args.penalize_unfair = 1
         for dist_gamma in [.1, .5, 1., 1.5, 2.]:
             args.dist_gamma = dist_gamma
             train_fairsoft_arule(args)
