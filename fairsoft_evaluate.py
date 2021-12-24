@@ -416,7 +416,7 @@ def evaluate_target_labels(args, logger=Logger()):
     idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
     target_fair_labels = label_type[idx: idx + 1].astype(int)
 
-    evaluate_over_labels(target_fair_labels, args, logger)
+    return evaluate_over_labels(target_fair_labels, args, logger)
 
 
 if __name__ == '__main__':
