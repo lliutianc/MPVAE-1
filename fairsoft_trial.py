@@ -41,8 +41,23 @@ def eval_fairsoft_allmodels(args):
     logger = Logger(os.path.join(
         args.model_dir, f'evalution-{args.target_label_idx}.txt'))
 
-    evaluate_target_labels(args, logger)
-
+    results = evaluate_target_labels(args, logger)
+    
+    fair_metrics = list(results.keys())
+    fair_metrics.sort()
+    colnames = ' & '.join(fair_metrics)
+    logger.logging(colnames + '\\\\')
+    logger.logging('\\midrule')
+    for met in fair_metrics:
+        result = []
+        for mod in fair_metrics:
+            result.append(results[met][mod])
+        result.append(results[met]['unfair'])
+        
+        resultrow = ' & '.join(result)
+        logger.logging(resultrow + '\\\\')
+    logger.logging('\\buttomrule')
+    
 
 def retrieve_target_label_idx(args, target_label):
     from data import load_data
@@ -78,8 +93,6 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
-    # args.target_label = '0000000000000001000100000'
-    # print(args.target_label)
     if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
             args, args.target_label)

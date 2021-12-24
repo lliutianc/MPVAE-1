@@ -152,6 +152,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                         ' & '.join([
                             str(round(m, 4)) for m in [
                                 acc, ha, ebf1, maf1, mif1, mean_diffs]]))
+                    best_val_metrics['fair_mean_diff'] = mean_diffs
                 else:
                     logger.logging(
                         "********************train********************")
@@ -279,6 +280,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                     logger.logging(
                         ' & '.join(
                             [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1, mean_diffs]]))
+                    best_val_metrics['fair_mean_diff'] = mean_diffs
                 else:
                     logger.logging(
                         "********************valid********************")
@@ -335,19 +337,32 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
     logger.logging('\n' * 5)
     logger.logging(f"""Fair Models: {model_paths}""")
 
+    fair_results = {}
     for dist_metric in label_dist_metric_paths:
         logger.logging(f'Evaluate fairness definition: {dist_metric}...')
         logger.logging('\n' * 3)
         label_dist = pickle.load(open(dist_metric, 'rb'))
-
+        
+        dist_metric = dist_metric.replace('.npy', '').split('/')[-1].split('-')[1:]
+        dist_metric = '-'.join(dist_metric)
+        fair_results[dist_metric] = {}
         for model_stat in model_paths:
             print(f'Fair model: {model_stat}')
             model = VAE(args).to(args.device)
             model.load_state_dict(torch.load(model_stat))
-
             train, valid = evaluate_mpvae(
                 model, data, target_fair_labels, label_dist, args, logger=logger)
 
+            model_trained = model_stat.replace(
+                '.pkl', '').split('/')[-1]
+            if 'unfair' in model_trained:
+                model_trained = 'unfair'
+            else:
+                model_trained = '-'.join(model_trained.split('-')[1:])
+            fair_results[dist_metric][
+                model_trained] = f"{train['fair_mean_diff']}~({valid['fair_mean_diff']})"
+    
+    return fair_results
 
 def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances):
     target_label = ''.join(target_label.astype(str))
