@@ -360,7 +360,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             else:
                 model_trained = '-'.join(model_trained.split('-')[1:])
             fair_results[dist_metric][
-                model_trained] = f"{train['fair_mean_diff']}~({valid['fair_mean_diff']})"
+                model_trained] = f"{round(train['fair_mean_diff'], 5)}~({round(valid['fair_mean_diff'], 5)})"
     
     return fair_results
 
