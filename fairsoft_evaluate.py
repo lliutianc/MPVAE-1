@@ -318,6 +318,9 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
     label_dist_metric_paths = []
     for label_dist_metric in [meth for meth in IMPLEMENTED_METHODS if meth != 'unfair']:
         label_dist_metric = label_dist_metric + f'_{args.target_label_idx}'
+        if args.mask_target_idx:
+            label_dist_metric += 'masked'
+            
         label_dist_files = search_files(
             os.path.join(args.model_dir, label_dist_metric), postfix='.npy')
 

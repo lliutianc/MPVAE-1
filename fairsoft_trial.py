@@ -55,9 +55,12 @@ def eval_fairsoft_allmodels(args):
     from fairsoft_evaluate import evaluate_target_labels
 
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
-    logger = Logger(os.path.join(
-        args.model_dir, f'evalution-{args.target_label_idx}.txt'))
-
+    if args.mask_target_label:
+        logger = Logger(os.path.join(
+            args.model_dir, f'evalution-{args.target_label_idx}masked.txt'))
+    else:
+        logger = Logger(os.path.join(
+            args.model_dir, f'evalution-{args.target_label_idx}.txt'))
     results = evaluate_target_labels(args, logger)
 
     fair_metrics = list(results.keys())
