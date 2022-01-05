@@ -12,7 +12,7 @@ import pandas as pd
 
 from utils import build_path
 from mpvae import VAE
-from data import load_data
+from data import load_data, load_data_masked
 from label_distance import indication_similarity, constant_similarity
 
 from main import THRESHOLDS, METRICS
@@ -36,8 +36,12 @@ def train_fair_demparity_through_regularize(args):
         pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
     np.random.seed(4)
-    nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
-        args.dataset, args.mode, True, 'onehot')
+    if args.mask_target_label:
+        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
+            args.dataset, args.mode, True, 'onehot')
+    else:
+        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
+            args.dataset, args.mode, True, 'onehot')
 
     # Test fairness on some labels
     label_type, count = np.unique(labels, axis=0, return_counts=True)
@@ -104,8 +108,12 @@ def train_fair_equalodds_through_regularize(args):
         pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
     np.random.seed(4)
-    nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
-        args.dataset, args.mode, True, 'onehot')
+    if args.mask_target_label:
+        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
+            args.dataset, args.mode, True, 'onehot')
+    else:
+        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
+            args.dataset, args.mode, True, 'onehot')
 
     # Test fairness on some labels
     label_type, count = np.unique(labels, axis=0, return_counts=True)
@@ -159,6 +167,7 @@ if __name__ == '__main__':
     from faircluster_train import parser
     parser.add_argument('-target_label_idx', type=int, default=0)
     parser.add_argument('-penalize_unfair', type=int, default=1)
+    parser.add_argument('-mask_target_label', type=int, default=0)
 
     sys.path.append('./')
 
@@ -168,6 +177,8 @@ if __name__ == '__main__':
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
     param_setting = f"baseline_{args.target_label_idx}" if args.penalize_unfair else f"unfair"
+    if args.mask_target_label:
+        param_setting += 'masked'
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)

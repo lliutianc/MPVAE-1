@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 import evals
 from mpvae import VAE, compute_loss
-from data import load_data
+from data import load_data, load_data_masked
 from faircluster_train import THRESHOLDS, METRICS
 from utils import search_files
 from logger import Logger
@@ -298,8 +298,12 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
 def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
     np.random.seed(4)
-    nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
-        args.dataset, args.mode, True)
+    if args.mask_target_label:
+        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
+            args.dataset, args.mode, True, 'onehot')
+    else:
+        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
+            args.dataset, args.mode, True, 'onehot')
     # train_cnt, valid_cnt = int(
     #     len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
     # train_idx = np.arange(train_cnt)
@@ -380,8 +384,7 @@ def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances
 
 def evaluate_nearest_neighbor_labels(args, logger=Logger()):
     np.random.seed(4)
-    nonsensitive_feat, sensitive_feat, labels, _, _ = load_data(
-        args.dataset, args.mode, True)
+    _, _, labels, _, _ = load_data(args.dataset, args.mode, True)
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
@@ -408,8 +411,7 @@ def evaluate_nearest_neighbor_labels(args, logger=Logger()):
 
 def evaluate_target_labels(args, logger=Logger()):
     np.random.seed(4)
-    nonsensitive_feat, sensitive_feat, labels, _, _ = load_data(
-        args.dataset, args.mode, True)
+    _, _, labels, _, _ = load_data(args.dataset, args.mode, True)
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]

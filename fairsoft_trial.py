@@ -16,6 +16,8 @@ def train_fairsoft_arule(args):
     from fairsoft_arule import train_fair_through_regularize
 
     param_setting = f"arule_{args.target_label_idx}"
+    if args.mask_target_label:
+        param_setting += 'masked'
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)
@@ -27,6 +29,8 @@ def train_fairsoft_baseline(args):
     from fairsoft_baseline import train_fair_through_regularize
 
     param_setting = f"baseline_{args.target_label_idx}" if args.penalize_unfair else f"unfair"
+    if args.mask_target_label:
+        param_setting += 'masked'
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)
@@ -37,6 +41,8 @@ def train_fairsoft_hamming(args):
     from fairsoft_hamming import train_fair_through_regularize
 
     param_setting = f"hamming_{args.target_label_idx}"
+    if args.mask_target_label:
+        param_setting += 'masked'
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)
@@ -97,6 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('-dist_gamma', type=float, default=1.0)
     parser.add_argument('-target_label_idx', type=int, default=None)
     parser.add_argument('-target_label', type=str, default=None)
+    parser.add_argument('-mask_target_label', type=int, default=0)
     args = parser.parse_args()
 
     args.device = torch.device(
