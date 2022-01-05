@@ -33,6 +33,15 @@ def train_fairsoft_baseline(args):
 
     train_fair_through_regularize(args)
 
+def train_fairsoft_hamming(args):
+    from fairsoft_hamming import train_fair_through_regularize
+
+    param_setting = f"hamming_{args.target_label_idx}"
+    args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
+    args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
+    build_path(args.model_dir, args.summary_dir)
+
+    train_fair_through_regularize(args)
 
 def eval_fairsoft_allmodels(args):
     from fairsoft_evaluate import evaluate_target_labels
@@ -54,7 +63,7 @@ def eval_fairsoft_allmodels(args):
             result.append(results[met][mod])
         result.append(results[met]['unfair'])
         
-        resultrow = met + ' & '.join(result)
+        resultrow = met + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
     logger.logging('\\buttomrule')
     
@@ -100,12 +109,13 @@ if __name__ == '__main__':
         # train unfair model
         args.penalize_unfair = 0
         train_fairsoft_baseline(args)
-
+        
         args.penalize_unfair = 1
         for dist_gamma in [.1, .5, 1., 1.5, 2.]:
             args.dist_gamma = dist_gamma
             train_fairsoft_arule(args)
 
+        train_fairsoft_hamming(args)
         train_fairsoft_baseline(args)
         eval_fairsoft_allmodels(args)
     else:
