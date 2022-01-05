@@ -128,8 +128,20 @@ if __name__ == '__main__':
         train_fairsoft_hamming(args)
         train_fairsoft_baseline(args)
         eval_fairsoft_allmodels(args)
-    elif args.target_label_idx is None:
-        # train unfair model
+    elif args.target_label_idx is not None:
+        args.penalize_unfair = 0
+        train_fairsoft_baseline(args)
+
+        args.penalize_unfair = 1
+        # for dist_gamma in [.1, .5, 1., 1.5, 2.]:
+        for dist_gamma in [1.]:
+                args.dist_gamma = dist_gamma
+                train_fairsoft_arule(args)
+
+        train_fairsoft_hamming(args)
+        train_fairsoft_baseline(args)
+        eval_fairsoft_allmodels(args)
+    else:
         for target_label_idx in [0, 10, 20, 50]:
             args.target_label_idx = target_label_idx
 
@@ -148,19 +160,7 @@ if __name__ == '__main__':
 
             # TODO: remove this break after developement
             break
-    else:
-        args.penalize_unfair = 0
-        train_fairsoft_baseline(args)
-
-        args.penalize_unfair = 1
-        # for dist_gamma in [.1, .5, 1., 1.5, 2.]:
-        for dist_gamma in [1.]:
-            args.dist_gamma = dist_gamma
-            train_fairsoft_arule(args)
-
-        train_fairsoft_hamming(args)
-        train_fairsoft_baseline(args)
-        eval_fairsoft_allmodels(args)
+        
 
 
 
