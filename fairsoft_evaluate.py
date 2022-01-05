@@ -335,6 +335,8 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
     for model_prior in IMPLEMENTED_METHODS:
         if model_prior != 'unfair':
             model_prior += f'_{args.target_label_idx}'
+            if args.mask_target_label:
+                model_prior += 'masked'
         model_files = search_files(os.path.join(
             args.model_dir,  model_prior), postfix='.pkl')
         if len(model_files):
