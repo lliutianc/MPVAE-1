@@ -267,7 +267,52 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
     nonsensitive_feat = cast_to_float(nonsensitive_feat)
     labels = cast_to_float(labels)
 
+    train_cnt, valid_cnt = int(len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .3)
+    train_idx = np.arange(train_cnt)
+    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+
     if separate_sensitive:
-        return nonsensitive_feat, sensitive_feat, labels
+        return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx
     else:
-        return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels
+        return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels, train_idx, valid_idx
+
+
+def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode='onehot', masked_label=None, unmasked_sensitive=None):
+    if dataset not in ['adult']:
+        raise NotImplementedError('cannot masked datasets when `dataset=adult`...')
+    if not separate_sensitive:
+        raise ValueError('can only create masked dataset when `separate_sensitive=True`...')
+    nonsensitive_feat, sensitive_feat, labels = load_data(dataset, mode, separate_sensitive, categorical_encode)
+
+    if masked_label is None:
+        label, cnt = np.unique(labels, axis=0, return_counts=True)
+        count_sort_idx = np.argsort(-cnt)
+        label = label[count_sort_idx]
+        masked_label = label[0]
+    if unmasked_sensitive is None:
+        sen, cnt = np.unique(sensitive_feat, axis=0, return_counts=True)
+        count_sort_idx = np.argsort(-cnt)
+        sen = sen[count_sort_idx]
+        unmasked_sensitive = sen[0]
+
+    sensitive_mask = (~np.all(
+    np.equal(unmasked_sensitive, sensitive_feat), axis=1))
+    label_mask = np.all(np.equal(masked_label, labels), axis=1)
+
+    unmasked_idx = np.arange(len(nonsensitive_feat))[
+        ~np.all([sensitive_mask, label_mask], axis=0)]
+    masked_idx = np.arange(len(nonsensitive_feat))[
+        np.all([sensitive_mask, label_mask], axis=0)]
+
+    train_cnt, valid_cnt = int(
+        len(unmasked_idx) * 0.7), int(len(unmasked_idx) * .3)
+    train_idx = unmasked_idx[:train_cnt]
+    valid_idx = np.concatenate([
+        unmasked_idx[train_cnt: (train_cnt + valid_cnt)], 
+        masked_idx], axis=0)
+    
+    if separate_sensitive:
+        return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx
+    else:
+        return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels, train_idx, valid_idx
+    
