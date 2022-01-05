@@ -84,6 +84,7 @@ def train_fair_through_regularize(args):
 if __name__ == '__main__':
     from faircluster_train import parser
     parser.add_argument('-target_label_idx', type=int, default=0)
+    parser.add_argument('-penalize_unfair', type=int, default=1)
 
     sys.path.append('./')
 

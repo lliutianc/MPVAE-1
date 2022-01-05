@@ -91,7 +91,8 @@ if __name__ == '__main__':
     parser.add_argument('-min_confidence', type=float, default=None)
     parser.add_argument('-dist_gamma', type=float, default=1.0)
     parser.add_argument('-target_label_idx', type=int, default=0)
-    
+    parser.add_argument('-penalize_unfair', type=int, default=1)
+
     sys.path.append('./')
 
     args = parser.parse_args()
