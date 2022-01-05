@@ -34,7 +34,7 @@ def apriori_pair_dist(labelset1, labelset2, apriori_rules):
 
 def apriori_similarity(args, gamma=1., minimum_clip=1e-6, maximum_clip=1.):
     np.random.seed(4)
-    _, _, labels = load_data(
+    _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)
     labels = labels.astype(str)
@@ -88,7 +88,7 @@ def apriori_similarity(args, gamma=1., minimum_clip=1e-6, maximum_clip=1.):
 
 def indication_similarity(args):
     np.random.seed(4)
-    _, _, labels = load_data(
+    _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)
     labels = labels.astype(str)
@@ -128,7 +128,7 @@ def indication_similarity(args):
 
 def constant_similarity(args):
     np.random.seed(4)
-    _, _, labels = load_data(
+    _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)
     labels = labels.astype(str)
@@ -178,7 +178,7 @@ def str_ham_similarity(str1, str2):
 
 def hamming_similarity(args):
     np.random.seed(4)
-    _, _, labels = load_data(
+    _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)
     labels = labels.astype(str)

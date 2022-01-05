@@ -32,7 +32,7 @@ def train_fair_through_regularize(args):
         pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
     np.random.seed(4)
-    nonsensitive_feat, sensitive_feat, labels = load_data(
+    nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
         args.dataset, args.mode, True, 'onehot')
 
     # Test fairness on some labels
@@ -43,10 +43,10 @@ def train_fair_through_regularize(args):
     target_fair_labels = label_type[idx: idx + 1].astype(int)
     # print(target_fair_labels)
 
-    train_cnt, valid_cnt = int(
-        len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
-    train_idx = np.arange(train_cnt)
-    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+    # train_cnt, valid_cnt = int(
+    #     len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
+    # train_idx = np.arange(train_cnt)
+    # valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
     one_epoch_iter = np.ceil(len(train_idx) / args.batch_size)
 
     data = types.SimpleNamespace(

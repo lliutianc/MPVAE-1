@@ -67,7 +67,7 @@ def retrieve_target_label_idx(args, target_label):
             'cannot handle multiple target labels yet...')
 
     np.random.seed(4)
-    _, _, labels = load_data(
+    _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, 'onehot')
 
     label_type, count = np.unique(labels, axis=0, return_counts=True)
