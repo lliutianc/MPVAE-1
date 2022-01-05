@@ -1,3 +1,5 @@
+from main import THRESHOLDS, METRICS
+from data import load_data
 from tqdm import tqdm
 from torch import optim
 
@@ -12,7 +14,6 @@ import numpy as np
 
 import evals
 from mpvae import VAE, compute_loss
-from main import THRESHOLDS, METRICS
 
 
 def train_mpvae_softfair_one_epoch(
@@ -267,3 +268,4 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
     return nll_loss, best_val_metrics
 
 
+    
