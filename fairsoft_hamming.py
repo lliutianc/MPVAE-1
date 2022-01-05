@@ -25,7 +25,7 @@ def train_fair_through_regularize(args):
     if args.train_new == 0 and os.path.exists(label_dist_path):
         label_dist = pickle.load(open(label_dist_path, 'rb'))
     else:
-        label_dist = hamming_similarity(args, args.dist_gamma)
+        label_dist = hamming_similarity(args)
         pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
     np.random.seed(4)
@@ -83,7 +83,6 @@ def train_fair_through_regularize(args):
 
 if __name__ == '__main__':
     from faircluster_train import parser
-    parser.add_argument('-dist_gamma', type=float, default=1.0)
     parser.add_argument('-target_label_idx', type=int, default=0)
 
     sys.path.append('./')
