@@ -45,7 +45,7 @@ def eval_fairsoft_allmodels(args):
     
     fair_metrics = list(results.keys())
     fair_metrics.sort()
-    colnames = ' & '.join(fair_metrics)
+    colnames = ' & ' + ' & '.join(fair_metrics)
     logger.logging(colnames + '\\\\')
     logger.logging('\\midrule')
     for met in fair_metrics:
@@ -54,7 +54,7 @@ def eval_fairsoft_allmodels(args):
             result.append(results[met][mod])
         result.append(results[met]['unfair'])
         
-        resultrow = ' & '.join(result)
+        resultrow = met + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
     logger.logging('\\buttomrule')
     
