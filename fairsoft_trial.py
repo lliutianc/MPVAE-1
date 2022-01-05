@@ -37,6 +37,7 @@ def train_fairsoft_baseline(args):
 
     train_fair_through_regularize(args)
 
+
 def train_fairsoft_hamming(args):
     from fairsoft_hamming import train_fair_through_regularize
 
@@ -49,6 +50,7 @@ def train_fairsoft_hamming(args):
 
     train_fair_through_regularize(args)
 
+
 def eval_fairsoft_allmodels(args):
     from fairsoft_evaluate import evaluate_target_labels
 
@@ -57,7 +59,7 @@ def eval_fairsoft_allmodels(args):
         args.model_dir, f'evalution-{args.target_label_idx}.txt'))
 
     results = evaluate_target_labels(args, logger)
-    
+
     fair_metrics = list(results.keys())
     fair_metrics.sort()
     colnames = ' & ' + ' & '.join(fair_metrics)
@@ -68,11 +70,11 @@ def eval_fairsoft_allmodels(args):
         for mod in fair_metrics:
             result.append(results[met][mod])
         result.append(results[met]['unfair'])
-        
+
         resultrow = met + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
     logger.logging('\\buttomrule')
-    
+
 
 def retrieve_target_label_idx(args, target_label):
     from data import load_data
@@ -116,9 +118,10 @@ if __name__ == '__main__':
         # train unfair model
         args.penalize_unfair = 0
         train_fairsoft_baseline(args)
-        
+
         args.penalize_unfair = 1
-        for dist_gamma in [.1, .5, 1., 1.5, 2.]:
+        # for dist_gamma in [.1, .5, 1., 1.5, 2.]:
+        for dist_gamma in [1.]:
             args.dist_gamma = dist_gamma
             train_fairsoft_arule(args)
 
@@ -134,7 +137,8 @@ if __name__ == '__main__':
             train_fairsoft_baseline(args)
 
             args.penalize_unfair = 1
-            for dist_gamma in [.1, .5, 1., 1.5, 2.]:
+            # for dist_gamma in [.1, .5, 1., 1.5, 2.]:
+            for dist_gamma in [1.]:
                 args.dist_gamma = dist_gamma
                 train_fairsoft_arule(args)
 
