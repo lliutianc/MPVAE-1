@@ -282,7 +282,7 @@ def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode
         raise NotImplementedError('cannot masked datasets when `dataset=adult`...')
     if not separate_sensitive:
         raise ValueError('can only create masked dataset when `separate_sensitive=True`...')
-    nonsensitive_feat, sensitive_feat, labels = load_data(dataset, mode, separate_sensitive, categorical_encode)
+    nonsensitive_feat, sensitive_feat, labels, _, _ = load_data(dataset, mode, separate_sensitive, categorical_encode)
 
     if masked_label is None:
         label, cnt = np.unique(labels, axis=0, return_counts=True)
