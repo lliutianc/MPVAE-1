@@ -121,7 +121,7 @@ def indication_similarity(args):
                 p2_oh = labels_express.get(frozenset(p2), None)
                 if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
-                    dist_dict[lab1][lab2] = 1.0 if lab1 == lab2 else 0.
+                    dist_dict[lab1][lab2] = 1.0 if lab1 == lab2 else 1e-6
 
     return dist_dict
 
@@ -214,6 +214,6 @@ def hamming_similarity(args):
                 p2_oh = labels_express.get(frozenset(p2), None)
                 if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
-                    dist_dict[lab1][lab2] = str_ham_similarity(lab1, lab2)
+                    dist_dict[lab1][lab2] = np.clip(str_ham_similarity(lab1, lab2), 1e-6, 1.)
 
     return dist_dict
