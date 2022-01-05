@@ -131,6 +131,7 @@ if __name__ == '__main__':
                 args.dist_gamma = dist_gamma
                 train_fairsoft_arule(args)
 
+            train_fairsoft_hamming(args)
             train_fairsoft_baseline(args)
             eval_fairsoft_allmodels(args)
 
