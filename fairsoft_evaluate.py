@@ -17,7 +17,7 @@ from faircluster_train import THRESHOLDS, METRICS
 from utils import search_files
 from logger import Logger
 
-IMPLEMENTED_METHODS = ['arule', 'baseline', 'unfair']
+IMPLEMENTED_METHODS = ['arule', 'baseline', 'unfair', 'hamming']
 
 
 def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
