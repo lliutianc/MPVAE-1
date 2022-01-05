@@ -170,10 +170,12 @@ def str_ham_similarity(str1, str2):
     if len(str1) != len(str2):
         raise ValueError('Incompatible string pairs: have different lengths.')
     same = 0
+    active = 0
     for idx, char in enumerate(str1):
         same += (char == str2[idx])
+        active += (char == '1')
     
-    return same / len(str1)
+    return same / active
 
 
 def hamming_similarity(args):
