@@ -172,8 +172,9 @@ def str_ham_similarity(str1, str2):
     same = 0
     active = 0
     for idx, char in enumerate(str1):
-        same += (char == str2[idx])
-        active += (char == '1')
+        if char == '1':
+            same += (char == str2[idx])
+            active += (char == '1')
     
     return same / active
 
