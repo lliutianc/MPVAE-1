@@ -298,12 +298,14 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
 def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
     np.random.seed(4)
-    if args.mask_target_label:
-        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
-            args.dataset, args.mode, True, 'onehot')
-    else:
-        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
-            args.dataset, args.mode, True, 'onehot')
+    nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
+        args.dataset, args.mode, True, 'onehot')
+    # if args.mask_target_label:
+    #     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
+    #         args.dataset, args.mode, True, 'onehot')
+    # else:
+    #     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
+    #         args.dataset, args.mode, True, 'onehot')
     # train_cnt, valid_cnt = int(
     #     len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
     # train_idx = np.arange(train_cnt)
