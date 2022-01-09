@@ -17,7 +17,7 @@ def train_fairsoft_arule(args):
 
     param_setting = f"arule_{args.target_label_idx}"
     if args.mask_target_label:
-        param_setting += 'masked'
+        param_setting += '_masked'
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)
@@ -30,7 +30,7 @@ def train_fairsoft_baseline(args):
 
     param_setting = f"baseline_{args.target_label_idx}" if args.penalize_unfair else f"unfair"
     if args.mask_target_label:
-        param_setting += 'masked'
+        param_setting += '_masked'
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)
@@ -43,7 +43,7 @@ def train_fairsoft_hamming(args):
 
     param_setting = f"hamming_{args.target_label_idx}"
     if args.mask_target_label:
-        param_setting += 'masked'
+        param_setting += '_masked'
     args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
     args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
     build_path(args.model_dir, args.summary_dir)

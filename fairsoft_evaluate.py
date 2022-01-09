@@ -300,7 +300,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
         args.dataset, args.mode, True, 'onehot')
-    # if args.mask_target_label:
+    # if args.mask_target_label: 
     #     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
     #         args.dataset, args.mode, True, 'onehot')
     # else:
@@ -321,7 +321,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
     for label_dist_metric in [meth for meth in IMPLEMENTED_METHODS if meth != 'unfair']:
         label_dist_metric = label_dist_metric + f'_{args.target_label_idx}'
         if args.mask_target_label:
-            label_dist_metric += 'masked'
+            label_dist_metric += '_masked'
 
         label_dist_files = search_files(
             os.path.join(args.model_dir, label_dist_metric), postfix='.npy')
