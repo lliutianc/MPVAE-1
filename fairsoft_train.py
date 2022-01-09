@@ -42,6 +42,7 @@ def train_mpvae_softfair_one_epoch(
     smooth_micro_f1 = 0.0  # micro_f1 score
     smooth_reg_fair = 0.
 
+    contributed_reg_fair_sample = 0
     with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='Train VAE') as t:
         for i in t:
             optimizer.zero_grad()
@@ -92,6 +93,8 @@ def train_mpvae_softfair_one_epoch(
                         distance = target_label_dist.get(
                             ''.join(label.astype(str)), 0.)
                         weights.append(distance)
+                        if distance > 0:
+                            contributed_reg_fair_sample += 1
                     weights = torch.tensor(weights).to(args.device).reshape(-1, 1)
 
                     if weights.sum() > 0:
@@ -154,7 +157,10 @@ def train_mpvae_softfair_one_epoch(
                                }
             if penalize_unfair:
                 running_postfix['fair_loss'] = smooth_reg_fair / float(i + 1)
+                running_postfix['contributed_sample'] = contributed_reg_fair_sample
             t.set_postfix(running_postfix)
+    
+    print(f'contributed samples: {contributed_reg_fair_sample}')
 
     if eval_after_one_epoch:
         nll_loss = smooth_nll_loss / float(i + 1)
