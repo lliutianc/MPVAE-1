@@ -166,17 +166,29 @@ def constant_similarity(args):
     return dist_dict
 
 
+# def str_ham_similarity(str1, str2):
+#     if len(str1) != len(str2):
+#         raise ValueError('Incompatible string pairs: have different lengths.')
+#     same = 0
+#     active = 0
+#     for idx, char in enumerate(str1):
+#         if char == '1':
+#             same += (char == str2[idx])
+#             active += (char == '1')
+    
+#     return same / active
+
+
 def str_ham_similarity(str1, str2):
     if len(str1) != len(str2):
         raise ValueError('Incompatible string pairs: have different lengths.')
     same = 0
     active = 0
     for idx, char in enumerate(str1):
-        if char == '1':
-            same += (char == str2[idx])
-            active += (char == '1')
-    
-    return same / active
+        same += (char == str2[idx])
+
+    return same / len(str1)
+
 
 
 def hamming_similarity(args):
