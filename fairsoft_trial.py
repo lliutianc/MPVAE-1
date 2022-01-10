@@ -51,6 +51,19 @@ def train_fairsoft_hamming(args):
     train_fair_through_regularize(args)
 
 
+def train_fairsoft_jaccard(args):
+    from fairsoft_jaccard import train_fair_through_regularize
+
+    param_setting = f"jaccard_{args.target_label_idx}"
+    if args.mask_target_label:
+        param_setting += '_masked'
+    args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
+    args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
+    build_path(args.model_dir, args.summary_dir)
+
+    train_fair_through_regularize(args)
+
+
 def eval_fairsoft_allmodels(args):
     from fairsoft_evaluate import evaluate_target_labels
 
@@ -117,33 +130,33 @@ if __name__ == '__main__':
     if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
             args, args.target_label)
-
-        # train unfair model
         args.penalize_unfair = 0
         train_fairsoft_baseline(args)
 
         args.penalize_unfair = 1
-        # for dist_gamma in [.1, .5, 1., 1.5, 2.]:
         for dist_gamma in [1.]:
             args.dist_gamma = dist_gamma
-            train_fairsoft_arule(args)  # 20308
+            train_fairsoft_arule(args)
 
-        train_fairsoft_hamming(args)  # 21587
+        train_fairsoft_hamming(args)
+        train_fairsoft_jaccard(args)
         train_fairsoft_baseline(args)
         eval_fairsoft_allmodels(args)
+
     elif args.target_label_idx is not None:
         args.penalize_unfair = 0
-        train_fairsoft_baseline(args) # unfair model
+        train_fairsoft_baseline(args)
 
         args.penalize_unfair = 1
-        # for dist_gamma in [.1, .5, 1., 1.5, 2.]:
         for dist_gamma in [1.]:
-                args.dist_gamma = dist_gamma
-                train_fairsoft_arule(args)  # 20308 samples
+            args.dist_gamma = dist_gamma
+            train_fairsoft_arule(args)  # 20308 samples
 
         train_fairsoft_hamming(args)  # 21587 samples
+        train_fairsoft_jaccard(args)
         train_fairsoft_baseline(args)  # eo: 641 samples, dp: 21587 samples
         eval_fairsoft_allmodels(args)
+
     else:
         for target_label_idx in [0, 10, 20, 50]:
             args.target_label_idx = target_label_idx
@@ -152,17 +165,14 @@ if __name__ == '__main__':
             train_fairsoft_baseline(args)
 
             args.penalize_unfair = 1
-            # for dist_gamma in [.1, .5, 1., 1.5, 2.]:
             for dist_gamma in [1.]:
                 args.dist_gamma = dist_gamma
                 train_fairsoft_arule(args)
 
-            train_fairsoft_hamming(args) 
-            train_fairsoft_baseline(args)  
+            train_fairsoft_hamming(args)
+            train_fairsoft_jaccard(args)
+            train_fairsoft_baseline(args)
             eval_fairsoft_allmodels(args)
 
-            # TODO: remove this break after developement
-            break
-        
 
 # python fairsoft_trial.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -cuda 5
