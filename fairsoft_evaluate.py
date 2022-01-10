@@ -300,16 +300,13 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
     np.random.seed(4)
     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
         args.dataset, args.mode, True, 'onehot')
-    # if args.mask_target_label: 
+    # if args.mask_target_label:
     #     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
     #         args.dataset, args.mode, True, 'onehot')
     # else:
     #     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
     #         args.dataset, args.mode, True, 'onehot')
-    # train_cnt, valid_cnt = int(
-    #     len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
-    # train_idx = np.arange(train_cnt)
-    # valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+
     data = types.SimpleNamespace(
         input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx,
         valid_idx=valid_idx, batch_size=args.batch_size, label_clusters=None,
@@ -338,7 +335,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
         if model_prior != 'unfair':
             model_prior += f'_{args.target_label_idx}'
             if args.mask_target_label:
-                model_prior += 'masked'
+                model_prior += '_masked'
         model_files = search_files(os.path.join(
             args.model_dir,  model_prior), postfix='.pkl')
         if len(model_files):
@@ -353,8 +350,9 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
         logger.logging(f'Evaluate fairness definition: {dist_metric}...')
         logger.logging('\n' * 3)
         label_dist = pickle.load(open(dist_metric, 'rb'))
-        
-        dist_metric = dist_metric.replace('.npy', '').split('/')[-1].split('-')[1:]
+
+        dist_metric = dist_metric.replace(
+            '.npy', '').split('/')[-1].split('-')[1:]
         dist_metric = '-'.join(dist_metric)
         fair_results[dist_metric] = {}
         for model_stat in model_paths:
@@ -372,8 +370,9 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
                 model_trained = '-'.join(model_trained.split('-')[1:])
             fair_results[dist_metric][
                 model_trained] = f"{round(train['fair_mean_diff'], 5)}~({round(valid['fair_mean_diff'], 5)})"
-    
+
     return fair_results
+
 
 def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances):
     target_label = ''.join(target_label.astype(str))
