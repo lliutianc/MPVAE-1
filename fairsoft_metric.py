@@ -4,6 +4,8 @@ import os
 import pickle
 import types
 
+from numpy.core.fromnumeric import sort
+
 import torch
 
 import numpy as np
@@ -125,6 +127,7 @@ def evaluate_models_over_label_distances(args):
     models = list(results.keys())
     fair_metrics = [k for k in results[models[0]].keys()
                     if 'function' not in k]
+    fair_metrics = sorted(fair_metrics, key=lambda met: float(met.split('_')[-1]))
     fair_metrics.sort()
     fair_metrics = ['constant_function'] + \
         fair_metrics + ['indication_function']
@@ -135,7 +138,7 @@ def evaluate_models_over_label_distances(args):
         result = []
         for met in fair_metrics:
             result.append(results[mod][met])
-        resultrow = mod + ' & ' + ' & '.join(result)
+        resultrow = mod + ' & ' + ' & '.join(result) + '\\\\'
         logger.logging(resultrow)
     logger.logging('\\buttomrule')
 
