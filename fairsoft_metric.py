@@ -127,8 +127,8 @@ def evaluate_models_over_label_distances(args):
     models = list(results.keys())
     fair_metrics = [k for k in results[models[0]].keys()
                     if 'function' not in k]
-    fair_metrics = sorted(fair_metrics, key=lambda met: float(met.split('_')[-1]))
-    fair_metrics.sort()
+    fair_metrics = sorted(
+        fair_metrics, key=lambda met: float(met.split('_')[-1]))
     fair_metrics = ['constant_function'] + \
         fair_metrics + ['indication_function']
     colnames = ' & ' + ' & '.join(fair_metrics)
@@ -181,7 +181,6 @@ if __name__ == '__main__':
     else:
         raise ValueError(
             f'unrecognized `args.eval_distance` value: {args.distance}')
-
 
     if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
