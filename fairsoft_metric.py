@@ -23,24 +23,6 @@ sys.path.append('./')
 
 
 def evaluate_models_over_label_distances(args):
-    if args.eval_models == []:
-        args.eval_models = IMPLEMENTED_METHODS
-
-    if args.eval_distance in ['ham', 'hamming']:
-        similarity = hamming_nonlinear_similarity
-        hparam_distance = 'hamming'
-
-    elif args.eval_distance in ['jac', 'jaccard']:
-        similarity = jaccard_nonlinear_similarity
-        hparam_distance = 'jaccard'
-
-    elif args.eval_distance in ['apriori' 'arule']:
-        similarity = apriori_similarity
-        hparam_distance = 'arule'
-    else:
-        raise ValueError(
-            f'unrecognized `args.eval_distance` value: {args.distance}')
-
     np.random.seed(4)
     _, _, labels, _, _ = load_data(args.dataset, args.mode, True)
     label_type, count = np.unique(labels, axis=0, return_counts=True)
@@ -178,6 +160,25 @@ if __name__ == '__main__':
 
     build_path(
         args.model_dir, os.path.join(args.model_dir, 'sim_evaluation'))
+
+    if args.eval_models == []:
+        args.eval_models = IMPLEMENTED_METHODS
+
+    if args.eval_distance in ['ham', 'hamming']:
+        similarity = hamming_nonlinear_similarity
+        hparam_distance = 'hamming'
+
+    elif args.eval_distance in ['jac', 'jaccard']:
+        similarity = jaccard_nonlinear_similarity
+        hparam_distance = 'jaccard'
+
+    elif args.eval_distance in ['apriori' 'arule']:
+        similarity = apriori_similarity
+        hparam_distance = 'arule'
+    else:
+        raise ValueError(
+            f'unrecognized `args.eval_distance` value: {args.distance}')
+
 
     if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
