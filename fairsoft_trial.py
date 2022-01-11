@@ -90,7 +90,7 @@ def eval_fairsoft_allmodels(args):
 
         resultrow = met + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
-    logger.logging('\\buttomrule')
+    logger.logging('\\bottomrule')
 
 
 if __name__ == '__main__':

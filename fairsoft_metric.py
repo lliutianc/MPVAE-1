@@ -140,7 +140,7 @@ def evaluate_models_over_label_distances(args):
             result.append(results[mod][met])
         resultrow = mod + ' & ' + ' & '.join(result) + '\\\\'
         logger.logging(resultrow)
-    logger.logging('\\buttomrule')
+    logger.logging('\\bottomrule')
 
 
 if __name__ == '__main__':
