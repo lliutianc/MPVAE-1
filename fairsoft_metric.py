@@ -77,7 +77,7 @@ def evaluate_models_over_label_distances(args):
             args.model_dir, model), postfix='.pkl')
         if len(model_files):
             model_paths += [os.path.join(
-                args.model_dir, model) for model in model_files]
+                args.model_dir, model, mod) for mod in model_files]
     logger.logging('\n' * 5)
     logger.logging(f"""Fair Models to evaluate: {model_paths}""")
 
