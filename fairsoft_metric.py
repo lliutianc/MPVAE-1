@@ -21,7 +21,7 @@ from main import THRESHOLDS, METRICS
 
 sys.path.append('./')
 
-    
+
 def evaluate_models_over_label_distances(args):
     if args.eval_models == []:
         args.eval_models = IMPLEMENTED_METHODS
@@ -33,19 +33,20 @@ def evaluate_models_over_label_distances(args):
     elif args.eval_distance in ['jac', 'jaccard']:
         similarity = jaccard_nonlinear_similarity
         hparam_distance = 'jaccard'
-        
+
     elif args.eval_distance in ['apriori' 'arule']:
         similarity = apriori_similarity
         hparam_distance = 'arule'
     else:
-        raise ValueError(f'unrecognized `args.eval_distance` value: {args.distance}')
-    
+        raise ValueError(
+            f'unrecognized `args.eval_distance` value: {args.distance}')
+
     np.random.seed(4)
     _, _, labels, _, _ = load_data(args.dataset, args.mode, True)
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
-    idx = args.target_label_idx  
+    idx = args.target_label_idx
     target_fair_labels = label_type[idx: idx + 1].astype(int)
 
     np.random.seed(4)
@@ -61,10 +62,10 @@ def evaluate_models_over_label_distances(args):
 
     if args.mask_target_label:
         logger = Logger(os.path.join(
-            args.model_dir, f'evaluation-{args.target_label_idx}_masked-fairmetrics.txt'))
+            args.model_dir, f'sim_evaluation-{args.target_label_idx}_masked.txt'))
     else:
         logger = Logger(os.path.join(
-            args.model_dir, f'evaluation-{args.target_label_idx}_masked-fairmetrics.txt'))
+            args.model_dir, f'sim_evaluation-{args.target_label_idx}.txt'))
 
     model_paths = []
     for model in args.eval_models:
@@ -73,17 +74,15 @@ def evaluate_models_over_label_distances(args):
             if args.mask_target_label:
                 model += '_masked'
         model_files = search_files(os.path.join(
-            f'fair_through_distance/model/{args.dataset}',
-            model), postfix='.pkl')
+            args.model_dir, model), postfix='.pkl')
         if len(model_files):
             model_paths += [os.path.join(
-                f'fair_through_distance/model/{args.dataset}', 
-                model) for model in model_files]
+                args.model_dir, model) for model in model_files]
     logger.logging('\n' * 5)
     logger.logging(f"""Fair Models to evaluate: {model_paths}""")
 
     results = {}
-    for model_stat in model_paths:            
+    for model_stat in model_paths:
         print(f'Fair model: {model_stat}')
         model = VAE(args).to(args.device)
         model.load_state_dict(torch.load(model_stat))
@@ -98,7 +97,7 @@ def evaluate_models_over_label_distances(args):
         for gamma in [.05, .1, .2, .5, 1., 1.5, 2., 5.]:
             dist_metric = f'{hparam_distance}_{gamma}'
             label_dist_path = os.path.join(
-                f'fair_through_distance/model/{args.dataset}/sim_evaluation'
+                args.model_dir, 'sim_evaluation',
                 f'label_dist-{dist_metric}.npy')
 
             if args.train_new == 0 and os.path.exists(label_dist_path):
@@ -114,7 +113,7 @@ def evaluate_models_over_label_distances(args):
         # run two baseline methods: EO and DP.
         dist_metric = f'indication_function'
         label_dist_path = os.path.join(
-            f'fair_through_distance/model/{args.dataset}/sim_evaluation'
+            args.model_dir, 'sim_evaluation',
             f'label_dist-{dist_metric}.npy')
         if args.train_new == 0 and os.path.exists(label_dist_path):
             label_dist = pickle.load(open(label_dist_path, 'rb'))
@@ -128,7 +127,7 @@ def evaluate_models_over_label_distances(args):
 
         dist_metric = f'constant_function'
         label_dist_path = os.path.join(
-            f'fair_through_distance/model/{args.dataset}/sim_evaluation'
+            args.model_dir, 'sim_evaluation',
             f'label_dist-{dist_metric}.npy')
         if args.train_new == 0 and os.path.exists(label_dist_path):
             label_dist = pickle.load(open(label_dist_path, 'rb'))
@@ -144,9 +143,11 @@ def evaluate_models_over_label_distances(args):
         break
 
     models = list(results.keys())
-    fair_metrics = [k for k in results[models[0]].keys() if 'function' not in k]
+    fair_metrics = [k for k in results[models[0]].keys()
+                    if 'function' not in k]
     fair_metrics.sort()
-    fair_metrics = ['constant_function'] + fair_metrics + ['indication_function']
+    fair_metrics = ['constant_function'] + \
+        fair_metrics + ['indication_function']
     colnames = ' & ' + ' & '.join(fair_metrics)
     logger.logging(colnames + '\\\\')
     logger.logging('\\midrule')
@@ -161,7 +162,8 @@ def evaluate_models_over_label_distances(args):
 
 if __name__ == '__main__':
     from faircluster_train import parser
-    parser.add_argument('-eval_models', type=str, nargs='+', default=['unfair'])
+    parser.add_argument('-eval_models', type=str,
+                        nargs='+', default=['unfair'])
     parser.add_argument('-eval_distance', type=str, default='jac')
     parser.add_argument('-min_support', type=float, default=None)
     parser.add_argument('-min_confidence', type=float, default=0.25)
@@ -174,6 +176,7 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
+    args.model_dir = f'fair_through_distance/model/{args.dataset}'
     if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
             args, args.target_label)
@@ -186,3 +189,6 @@ if __name__ == '__main__':
         for target_label_idx in [0, 10, 20, 50]:
             args.target_label_idx = target_label_idx
             evaluate_models_over_label_distances(args)
+
+
+# python fairsoft_metric.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -cuda 5
