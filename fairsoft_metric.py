@@ -95,7 +95,7 @@ def evaluate_models_over_label_distances(args):
             model_trained = '-'.join(model_trained.split('-')[1:])
         results[model_trained] = {}
 
-        for gamma in [.05, .1, .2, .5, 1., 1.5, 2., 5.]:
+        for gamma in [.01, .1, .5, 1., 1.5,  2., 5., 10.]:
             dist_metric = f'{hparam_distance}_{gamma}'
             label_dist_path = os.path.join(
                 args.model_dir, 'sim_evaluation',
@@ -139,9 +139,6 @@ def evaluate_models_over_label_distances(args):
         train, valid = evaluate_mpvae(
             model, data, target_fair_labels, label_dist, args, logger=logger)
         results[model_trained][dist_metric] = f"{round(train['fair_mean_diff'], 5)}~({round(valid['fair_mean_diff'], 5)})"
-
-        # TODO: remove this break after developement.
-        # break
 
     models = list(results.keys())
     fair_metrics = [k for k in results[models[0]].keys()
