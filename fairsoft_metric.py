@@ -93,6 +93,7 @@ def evaluate_models_over_label_distances(args):
             model_trained = 'unfair'
         else:
             model_trained = '-'.join(model_trained.split('-')[1:])
+        results[model_trained] = {}
 
         for gamma in [.05, .1, .2, .5, 1., 1.5, 2., 5.]:
             dist_metric = f'{hparam_distance}_{gamma}'
