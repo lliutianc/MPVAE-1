@@ -177,8 +177,9 @@ if __name__ == '__main__':
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
-    build_path(args.model_dir, args.summary_dir,
-               os.path.join(args.model_dir, 'sim_evaluation'))
+
+    build_path(
+        args.model_dir, os.path.join(args.model_dir, 'sim_evaluation'))
 
     if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
