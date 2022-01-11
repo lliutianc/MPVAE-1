@@ -8,6 +8,7 @@ import numpy as np
 
 from utils import build_path
 from logger import Logger
+from fairsoft_utils import retrieve_target_label_idx
 
 sys.path.append('./')
 
@@ -92,28 +93,6 @@ def eval_fairsoft_allmodels(args):
     logger.logging('\\buttomrule')
 
 
-def retrieve_target_label_idx(args, target_label):
-    from data import load_data
-
-    if len(target_label) > 1 and isinstance(target_label, str) == False:
-        raise NotImplementedError(
-            'cannot handle multiple target labels yet...')
-
-    np.random.seed(4)
-    _, _, labels, _, _ = load_data(
-        args.dataset, args.mode, True, 'onehot')
-
-    label_type, count = np.unique(labels, axis=0, return_counts=True)
-    count_sort_idx = np.argsort(-count)
-    label_type = label_type[count_sort_idx]
-    for idx, lab in enumerate(label_type):
-        lab_str = ''.join(lab.astype(int).astype(str))
-        if lab_str == target_label:
-            return idx
-
-    return None
-
-
 if __name__ == '__main__':
     from faircluster_train import parser
     parser.add_argument('-min_support', type=float, default=None)
@@ -153,7 +132,7 @@ if __name__ == '__main__':
             train_fairsoft_arule(args)  # 20308 samples
 
         train_fairsoft_hamming(args)  # 21587 samples
-        train_fairsoft_jaccard(args)
+        train_fairsoft_jaccard(args)  # 19604 samples
         train_fairsoft_baseline(args)  # eo: 641 samples, dp: 21587 samples
         eval_fairsoft_allmodels(args)
 
