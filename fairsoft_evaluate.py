@@ -17,7 +17,7 @@ from faircluster_train import THRESHOLDS, METRICS
 from utils import search_files
 from logger import Logger
 
-IMPLEMENTED_METHODS = ['arule', 'baseline', 'unfair', 'hamming']
+IMPLEMENTED_METHODS = ['arule', 'baseline', 'unfair', 'hamming', 'jaccard']
 
 
 def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
@@ -128,7 +128,6 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                                 ''.join(label.astype(str)), 0.)
                             weights.append(distance)
                         weights = np.array(weights).reshape(-1, 1)
-                        # print(weights.sum())
                         if weights.sum() > 0:
                             feat_z_weighted = np.sum(
                                 train_feat_z * weights, axis=0) / weights.sum()
