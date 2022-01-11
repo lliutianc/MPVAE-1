@@ -8,7 +8,7 @@ import torch
 
 import numpy as np
 
-from utils import search_files
+from utils import search_files, build_path
 from mpvae import VAE
 from data import load_data
 from logger import Logger
@@ -177,6 +177,9 @@ if __name__ == '__main__':
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
+    build_path(args.model_dir, args.summary_dir,
+               os.path.join(args.model_dir, 'sim_evaluation'))
+
     if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
             args, args.target_label)
