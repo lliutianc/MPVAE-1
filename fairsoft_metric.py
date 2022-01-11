@@ -141,7 +141,7 @@ def evaluate_models_over_label_distances(args):
         results[model_trained][dist_metric] = f"{round(train['fair_mean_diff'], 5)}~({round(valid['fair_mean_diff'], 5)})"
 
         # TODO: remove this break after developement.
-        break
+        # break
 
     models = list(results.keys())
     fair_metrics = [k for k in results[models[0]].keys()
