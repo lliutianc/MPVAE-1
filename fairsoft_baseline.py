@@ -67,14 +67,14 @@ def train_fair_demparity_through_regularize(args):
     else:
         fair_vae_checkpoint_path = os.path.join(
             args.model_dir, 'unfair_vae_prior.pkl')
-    
+
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
         print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
     else:
         print(f'train a new mpvaeL: {fair_vae_checkpoint_path}...')
 
         optimizer = optim.Adam(fair_vae.parameters(),
-                            lr=args.learning_rate, weight_decay=1e-5)
+                               lr=args.learning_rate, weight_decay=1e-5)
 
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
@@ -136,12 +136,12 @@ def train_fair_equalodds_through_regularize(args):
             args.model_dir, 'unfair_vae_prior.pkl')
 
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
-        print('find trained mpvae...')
+            print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
     else:
-        print('train a new mpvae...')
+        print(f'train a new mpvaeL: {fair_vae_checkpoint_path}...')
 
         optimizer = optim.Adam(fair_vae.parameters(),
-                            lr=args.learning_rate, weight_decay=1e-5)
+                               lr=args.learning_rate, weight_decay=1e-5)
 
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
@@ -166,7 +166,6 @@ if __name__ == '__main__':
     parser.add_argument('-mask_target_label', type=int, default=0)
 
     sys.path.append('./')
-
 
     args = parser.parse_args()
     args.device = torch.device(
