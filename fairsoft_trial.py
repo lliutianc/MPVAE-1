@@ -82,7 +82,7 @@ def eval_fairsoft_allmodels(args):
     should_add_eo = False
     for met in fair_metrics:
         if met not in ['constant_function', 'indication_function']:
-            fair_metrics_sorted.append(fair_metrics_sorted)
+            fair_metrics_sorted.append(met)
         elif met == 'constant_function':
             fair_metrics_sorted = ['constant_function'] + fair_metrics_sorted
         elif met == 'indication_function':
