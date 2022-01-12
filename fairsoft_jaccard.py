@@ -56,9 +56,9 @@ def train_fair_through_regularize(args):
     fair_vae_checkpoint_path = os.path.join(
         args.model_dir, f'fair_vae_prior-{hparams}.pkl')
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
-        print('find trained mpvae...')
+        print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
     else:
-        print('train a new mpvae...')
+        print(f'train a new mpvaeL: {fair_vae_checkpoint_path}...')
 
         optimizer = optim.Adam(fair_vae.parameters(),
                                lr=args.learning_rate, weight_decay=1e-5)

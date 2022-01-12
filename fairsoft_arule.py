@@ -45,12 +45,7 @@ def train_fair_through_regularize(args):
     label_type = label_type[count_sort_idx]
     idx = args.target_label_idx  # idx choices: 0, 10, 20, 50
     target_fair_labels = label_type[idx: idx + 1].astype(int)
-    # print(target_fair_labels)
 
-    # train_cnt, valid_cnt = int(
-    #     len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
-    # train_idx = np.arange(train_cnt)
-    # valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
     one_epoch_iter = np.ceil(len(train_idx) / args.batch_size)
 
     data = types.SimpleNamespace(
@@ -65,9 +60,9 @@ def train_fair_through_regularize(args):
     fair_vae_checkpoint_path = os.path.join(
         args.model_dir, f'fair_vae_prior-{hparams}.pkl')
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
-        print('find trained mpvae...')
+        print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
     else:
-        print('train a new mpvae...')
+        print(f'train a new mpvaeL: {fair_vae_checkpoint_path}...')
 
         optimizer = optim.Adam(fair_vae.parameters(),
                                lr=args.learning_rate, weight_decay=1e-5)
