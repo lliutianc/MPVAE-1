@@ -75,18 +75,52 @@ def eval_fairsoft_allmodels(args):
     else:
         logger = Logger(os.path.join(
             args.model_dir, f'evalution-{args.target_label_idx}.txt'))
-    results = evaluate_target_labels(args, logger)
+    fair_results, perform_results = evaluate_target_labels(args, logger)
 
-    fair_metrics = list(results.keys())
+    fair_metrics = list(fair_results.keys())
     fair_metrics.sort()
+
     colnames = ' & ' + ' & '.join(fair_metrics)
     logger.logging(colnames + '\\\\')
     logger.logging('\\midrule')
     for met in fair_metrics:
         result = []
         for mod in fair_metrics:
-            result.append(results[met][mod])
-        result.append(results[met]['unfair'])
+            result.append(fair_results[met][mod])
+        result.append(fair_results[met]['unfair'])
+
+        resultrow = met + ' & ' + ' & '.join(result)
+        logger.logging(resultrow + '\\\\')
+    
+    result = []
+    for mod in fair_metrics + ['unfair']:
+        result.append(perform_results[mod])
+    resultrow = args.perform_metric + ' & ' + ' & '.join(result)
+    logger.logging(resultrow + '\\\\')
+    logger.logging('\\bottomrule')
+
+    fair_metrics = list(fair_results.keys())
+    fair_metrics_sorted = []
+    should_add_eo = False
+    for met in fair_metrics:
+        if met not in ['constant_function', 'indication_function']:
+            fair_metrics_sorted.append(fair_metrics_sorted)
+        elif met == 'constant_function':
+            fair_metrics_sorted = ['constant_function'] + fair_metrics_sorted
+        elif met == 'indication_function':
+            should_add_eo = True
+    if should_add_eo:
+        fair_metrics_sorted.append('indication_function')
+    fair_metrics = fair_metrics_sorted
+
+    colnames = ' & ' + ' & '.join(fair_metrics)
+    logger.logging(colnames + '\\\\')
+    logger.logging('\\midrule')
+    for met in fair_metrics:
+        result = []
+        for mod in fair_metrics:
+            result.append(fair_results[met][mod])
+        result.append(fair_results[met]['unfair'])
 
         resultrow = met + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
@@ -101,6 +135,8 @@ if __name__ == '__main__':
     parser.add_argument('-target_label_idx', type=int, default=None)
     parser.add_argument('-target_label', type=str, default=None)
     parser.add_argument('-mask_target_label', type=int, default=0)
+    parser.add_argument('-perform_metric', type=str, default='HA',
+                        choices=['ACC', 'HA', 'ebF1', 'maF1', 'miF1'])
     args = parser.parse_args()
 
     args.device = torch.device(
