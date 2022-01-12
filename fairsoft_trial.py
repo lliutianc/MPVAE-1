@@ -78,28 +78,6 @@ def eval_fairsoft_allmodels(args):
     fair_results, perform_results = evaluate_target_labels(args, logger)
 
     fair_metrics = list(fair_results.keys())
-    fair_metrics.sort()
-
-    colnames = ' & ' + ' & '.join(fair_metrics)
-    logger.logging(colnames + '\\\\')
-    logger.logging('\\midrule')
-    for met in fair_metrics:
-        result = []
-        for mod in fair_metrics:
-            result.append(fair_results[met][mod])
-        result.append(fair_results[met]['unfair'])
-
-        resultrow = met + ' & ' + ' & '.join(result)
-        logger.logging(resultrow + '\\\\')
-    
-    result = []
-    for mod in fair_metrics + ['unfair']:
-        result.append(perform_results[mod])
-    resultrow = args.perform_metric + ' & ' + ' & '.join(result)
-    logger.logging(resultrow + '\\\\')
-    logger.logging('\\bottomrule')
-
-    fair_metrics = list(fair_results.keys())
     fair_metrics_sorted = []
     should_add_eo = False
     for met in fair_metrics:
@@ -124,7 +102,15 @@ def eval_fairsoft_allmodels(args):
 
         resultrow = met + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
+    
+    result = []
+    for mod in fair_metrics + ['unfair']:
+        result.append(perform_results[mod])
+    resultrow = args.perform_metric + ' & ' + ' & '.join(result)
+    logger.logging(resultrow + '\\\\')
     logger.logging('\\bottomrule')
+
+    fair_metrics = list(fair_results.keys())
 
 
 if __name__ == '__main__':
