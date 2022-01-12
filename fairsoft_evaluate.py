@@ -345,6 +345,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
     logger.logging(f"""Fair Models: {model_paths}""")
 
     fair_results = {}
+    perform_result = {}
     for dist_metric in label_dist_metric_paths:
         logger.logging(f'Evaluate fairness definition: {dist_metric}...')
         logger.logging('\n' * 3)
@@ -354,6 +355,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             '.npy', '').split('/')[-1].split('-')[1:]
         dist_metric = '-'.join(dist_metric)
         fair_results[dist_metric] = {}
+        met_perform = []
         for model_stat in model_paths:
             print(f'Fair model: {model_stat}')
             model = VAE(args).to(args.device)
@@ -367,10 +369,20 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
                 model_trained = 'unfair'
             else:
                 model_trained = '-'.join(model_trained.split('-')[1:])
+            
             fair_results[dist_metric][
                 model_trained] = f"{round(train['fair_mean_diff'], 5)}~({round(valid['fair_mean_diff'], 5)})"
 
-    return fair_results
+            if model_trained not in perform_result:
+                perform_result[model_trained] = []
+            perform_result[model_trained].append(
+                [train[args.perform_metric], valid[args.perform_metric]])
+    
+    for model_trained in perform_result:
+        met_perform = np.mean(perform_result[model_trained], axis=0)
+    perform_result[model_trained] = f"{round(met_perform[0], 5)}~({round(met_perform[1], 5)})"
+
+    return fair_results, perform_result
 
 
 def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances):
@@ -430,6 +442,8 @@ if __name__ == '__main__':
     from faircluster_train import parser
 
     parser.add_argument('-target_label_idx', type=int, default=0)
+    parser.add_argument('-perform_metric', type=str, default='HA',
+                        choices=['ACC', 'HA', 'ebF1', 'maF1', 'miF1'])
     args = parser.parse_args()
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
