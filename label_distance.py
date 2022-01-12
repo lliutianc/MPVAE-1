@@ -32,7 +32,7 @@ def apriori_pair_dist(labelset1, labelset2, apriori_rules):
     return score
 
 
-def apriori_similarity(args, gamma=1., minimum_clip=1e-6, maximum_clip=1.):
+def apriori_similarity(args, gamma=1., minimum_clip=0., maximum_clip=1.):
     np.random.seed(4)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
