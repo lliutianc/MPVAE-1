@@ -369,7 +369,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
                 model_trained = 'unfair'
             else:
                 model_trained = '-'.join(model_trained.split('-')[1:])
-            
+
             fair_results[dist_metric][
                 model_trained] = f"{round(train['fair_mean_diff'], 5)}~({round(valid['fair_mean_diff'], 5)})"
 
@@ -377,10 +377,10 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
                 perform_result[model_trained] = []
             perform_result[model_trained].append(
                 [train[args.perform_metric], valid[args.perform_metric]])
-    
+
     for model_trained in perform_result:
         met_perform = np.mean(perform_result[model_trained], axis=0)
-    perform_result[model_trained] = f"{round(met_perform[0], 5)}~({round(met_perform[1], 5)})"
+        perform_result[model_trained] = f"{round(met_perform[0], 5)}~({round(met_perform[1], 5)})"
 
     return fair_results, perform_result
 
