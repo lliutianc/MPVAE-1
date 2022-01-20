@@ -86,8 +86,9 @@ def eval_fairsoft_allmodels(args):
     should_add_eo = False
     for met_hparam in fair_metrics:
         met = met_hparam.split('-')[0]
-        fair_metrics_nested[met] = fair_metrics_nested.get(
-            met, []).append(met_hparam)
+        if met not in fair_metrics_nested:
+            fair_metrics_nested[met] = []
+        fair_metrics_nested[met].append(met_hparam)
 
     # for met in ['constant_function', 'jaccard', 'hamming', 'arule', 'indication_function']:
     for met in ['constant_function', 'jaccard', 'indication_function']:
@@ -200,3 +201,6 @@ if __name__ == '__main__':
 
 
 # python fairsoft_trial.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -cuda 5
+
+
+# python fairsoft_trial.py -dataset donor -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -cuda 5
