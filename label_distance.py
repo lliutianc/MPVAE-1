@@ -257,7 +257,7 @@ def _jaccard_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
                 if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
                     sim = str_jac_similarity(lab1, lab2)
-                    weight = np.exp(args.gamma * (sim - 1))
+                    weight = np.exp(args.dist_gamma * (sim - 1))
                     dist_dict[lab1][lab2] = np.clip(
                         weight, minimum_clip, maximum_clip)
 
@@ -357,7 +357,7 @@ def _hamming_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
                 if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
                     sim = str_ham_similarity(lab1, lab2)
-                    weight = np.exp(args.gamma * (sim - 1))
+                    weight = np.exp(args.dist_gamma * (sim - 1))
                     dist_dict[lab1][lab2] = np.clip(
                         weight, minimum_clip, maximum_clip)
 
