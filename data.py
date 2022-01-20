@@ -151,6 +151,11 @@ def load_donor(subset):
 
     labels = _load_donor_label(subset)
     feat, sensitive = _load_donor_projects(subset)
+    feat = pd.merge(
+        feat, labels[['projectid']], how='inner', on='projectid')
+    labels = pd.merge(
+        labels, feat[['projectid']], how='inner', on='projectid')
+
     # resource_cost  = _load_donor_resource_cost(subset)
     # feat = pd.merge(feat, resource_cost, how='inner', on='projectid')
 
@@ -199,7 +204,7 @@ def preprocess(df, categorical_encode, show_categorcial_idx=False):
     else:
         return npy, npy_str_idx
 
-    
+
 def onehot(col):
     col = col.astype(str)
     unique_val = np.array(list(set(col)))
@@ -221,6 +226,7 @@ def cast_to_float(df):
 def load_data(dataset, mode, separate_sensitive=False, categorical_encode='onehot'):
     if categorical_encode not in ['onehot', 'categorical', None]:
         raise ValueError('Unrecognized categorical_encode')
+
     if dataset not in ['adult', 'donor']:
         raise NotImplementedError()
 
@@ -231,7 +237,7 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
         datapath, f'nonsensitive_{categorical_encode}.npy')
     labelfile = os.path.join(
         datapath, f'label_{categorical_encode}.npy')
-    
+
     if not allexists(sensitive_featfile, nonsensitive_featfile, labelfile):
         print(f'prepare dataset: {dataset}...')
         if dataset == 'adult':
@@ -267,7 +273,8 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
     nonsensitive_feat = cast_to_float(nonsensitive_feat)
     labels = cast_to_float(labels)
 
-    train_cnt, valid_cnt = int(len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .3)
+    train_cnt, valid_cnt = int(
+        len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .3)
     train_idx = np.arange(train_cnt)
     valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
 
@@ -278,11 +285,14 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
 
 
 def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode='onehot', masked_label=None, unmasked_sensitive=None):
-    if dataset not in ['adult']:
-        raise NotImplementedError('cannot masked datasets when `dataset=adult`...')
+    if dataset not in ['adult', 'donor']:
+        raise NotImplementedError(
+            'cannot masked datasets when `dataset=adult`...')
     if not separate_sensitive:
-        raise ValueError('can only create masked dataset when `separate_sensitive=True`...')
-    nonsensitive_feat, sensitive_feat, labels, _, _ = load_data(dataset, mode, separate_sensitive, categorical_encode)
+        raise ValueError(
+            'can only create masked dataset when `separate_sensitive=True`...')
+    nonsensitive_feat, sensitive_feat, labels, _, _ = load_data(
+        dataset, mode, separate_sensitive, categorical_encode)
 
     if masked_label is None:
         label, cnt = np.unique(labels, axis=0, return_counts=True)
@@ -296,7 +306,7 @@ def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode
         unmasked_sensitive = sen[0]
 
     sensitive_mask = (~np.all(
-    np.equal(unmasked_sensitive, sensitive_feat), axis=1))
+        np.equal(unmasked_sensitive, sensitive_feat), axis=1))
     label_mask = np.all(np.equal(masked_label, labels), axis=1)
 
     unmasked_idx = np.arange(len(nonsensitive_feat))[
@@ -308,11 +318,10 @@ def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode
         len(unmasked_idx) * 0.7), int(len(unmasked_idx) * .3)
     train_idx = unmasked_idx[:train_cnt]
     valid_idx = np.concatenate([
-        unmasked_idx[train_cnt: (train_cnt + valid_cnt)], 
+        unmasked_idx[train_cnt: (train_cnt + valid_cnt)],
         masked_idx], axis=0)
-    
+
     if separate_sensitive:
         return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx
     else:
         return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels, train_idx, valid_idx
-    
