@@ -161,6 +161,9 @@ if __name__ == '__main__':
         eval_fairsoft_allmodels(args)
 
     else:
+        args.penalize_unfair = 0
+        train_fairsoft_baseline(args)
+
         for target_label_idx in [0, 10, 20, 50]:
             args.target_label_idx = target_label_idx
 
