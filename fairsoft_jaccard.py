@@ -11,7 +11,7 @@ import numpy as np
 from utils import build_path
 from mpvae import VAE
 from data import load_data, load_data_masked
-from label_distance import jaccard_similarity
+from label_distance_obs import jaccard_similarity
 
 from main import THRESHOLDS, METRICS
 from fairsoft_train import train_mpvae_softfair_one_epoch

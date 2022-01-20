@@ -15,7 +15,7 @@ from mpvae import VAE
 from data import load_data
 from logger import Logger
 
-from label_distance import hamming_nonlinear_similarity, hamming_similarity, jaccard_nonlinear_similarity, apriori_similarity, indication_similarity, constant_similarity, jaccard_similarity
+from label_distance_obs import indication_similarity, constant_similarity, jaccard_similarity, hamming_similarity
 from fairsoft_evaluate import IMPLEMENTED_METHODS, evaluate_mpvae
 from fairsoft_utils import retrieve_target_label_idx
 
