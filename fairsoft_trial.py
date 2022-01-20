@@ -78,9 +78,24 @@ def eval_fairsoft_allmodels(args):
     fair_results, perform_results = evaluate_target_labels(args, logger)
 
     fair_metrics = list(fair_results.keys())
+    fair_metrics_nested = {}
     fair_metrics_sorted = []
     should_add_eo = False
-    for met in fair_metrics:
+    for met_hparam in fair_metrics:
+        met = met_hparam.split('-')[0]
+        fair_metrics_nested[met] = fair_metrics_nested.get(
+            met, []).append(met_hparam)
+
+    # for met in ['constant_function', 'jaccard', 'hamming', 'arule', 'indication_function']:
+    for met in ['constant_function', 'jaccard', 'indication_function']:
+        if met in fair_metrics_nested:
+            if len(fair_metrics_nested[met]) > 1:
+                met_sorted = sorted(
+                    fair_metrics_nested[met], key=lambda met: float(met.split('_')[-1]))
+            else:
+                met_sorted = fair_metrics_nested[met]
+            fair_metrics_sorted += met_sorted
+
         if met not in ['constant_function', 'indication_function']:
             fair_metrics_sorted.append(met)
         elif met == 'constant_function':
