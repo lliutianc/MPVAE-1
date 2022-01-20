@@ -167,6 +167,13 @@ def constant_similarity(args):
     return dist_dict
 
 
+def jaccard_similarity(args):
+    if args.dist_gamma is None:
+        return _jaccard_similarity(args)
+    else:
+        return _jaccard_nonlinear_similarity(args)
+
+
 def str_jac_similarity(str1, str2):
     if len(str1) != len(str2):
         raise ValueError('Incompatible string pairs: have different lengths.')
@@ -264,11 +271,11 @@ def _jaccard_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
     return dist_dict
 
 
-def jaccard_similarity(args):
+def hamming_similarity(args):
     if args.dist_gamma is None:
-        return _jaccard_similarity(args)
+        return _hamming_similarity(args)
     else:
-        return _jaccard_nonlinear_similarity(args)
+        return _hamming_nonlinear_similarity(args)
 
 
 def str_ham_similarity(str1, str2):
@@ -363,9 +370,3 @@ def _hamming_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
 
     return dist_dict
 
-
-def hamming_similarity(args):
-    if args.dist_gamma is None:
-        return _hamming_similarity(args)
-    else:
-        return _hamming_nonlinear_similarity(args)
