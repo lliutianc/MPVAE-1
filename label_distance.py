@@ -181,7 +181,7 @@ def str_jac_similarity(str1, str2):
     return same / total
 
 
-def jaccard_similarity(args):
+def _jaccard_similarity(args):
     np.random.seed(4)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
@@ -221,7 +221,7 @@ def jaccard_similarity(args):
     return dist_dict
 
 
-def jaccard_nonlinear_similarity(args, gamma=1., minimum_clip=0., maximum_clip=1.):
+def _jaccard_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
     np.random.seed(4)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
@@ -257,11 +257,18 @@ def jaccard_nonlinear_similarity(args, gamma=1., minimum_clip=0., maximum_clip=1
                 if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
                     sim = str_jac_similarity(lab1, lab2)
-                    weight = np.exp(gamma * (sim - 1))
+                    weight = np.exp(args.gamma * (sim - 1))
                     dist_dict[lab1][lab2] = np.clip(
                         weight, minimum_clip, maximum_clip)
 
     return dist_dict
+
+
+def jaccard_similarity(args):
+    if args.dist_gamma is None:
+        return _jaccard_similarity(args)
+    else:
+        return _jaccard_nonlinear_similarity(args)
 
 
 def str_ham_similarity(str1, str2):
@@ -274,7 +281,7 @@ def str_ham_similarity(str1, str2):
     return same / len(str1)
 
 
-def hamming_similarity(args):
+def _hamming_similarity(args):
     np.random.seed(4)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
@@ -314,7 +321,7 @@ def hamming_similarity(args):
     return dist_dict
 
 
-def hamming_nonlinear_similarity(args, gamma=1., minimum_clip=0., maximum_clip=1.):
+def _hamming_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
     np.random.seed(4)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
@@ -350,8 +357,15 @@ def hamming_nonlinear_similarity(args, gamma=1., minimum_clip=0., maximum_clip=1
                 if p2_oh is not None:
                     lab2 = ''.join(p2_oh.astype(str))
                     sim = str_ham_similarity(lab1, lab2)
-                    weight = np.exp(gamma * (sim - 1))
+                    weight = np.exp(args.gamma * (sim - 1))
                     dist_dict[lab1][lab2] = np.clip(
                         weight, minimum_clip, maximum_clip)
 
     return dist_dict
+
+
+def hamming_similarity(args):
+    if args.dist_gamma is None:
+        return _hamming_similarity(args)
+    else:
+        return _hamming_nonlinear_similarity(args)
