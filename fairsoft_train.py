@@ -43,6 +43,7 @@ def train_mpvae_softfair_one_epoch(
     smooth_reg_fair = 0.
 
     contributed_reg_fair_sample = 0
+    print(data.batch_size)
     with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='Train VAE') as t:
         for i in t:
             optimizer.zero_grad()
@@ -57,7 +58,8 @@ def train_mpvae_softfair_one_epoch(
                 data.labels[idx]).float().to(args.device)
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                 input_label, input_feat)
-
+            
+            # print(feat_out.shape, feat_out.shape
             if args.residue_sigma == "random":
                 r_sqrt_sigma = torch.from_numpy(
                     np.random.uniform(
@@ -128,10 +130,11 @@ def train_mpvae_softfair_one_epoch(
                     smooth_reg_fair += fairloss.item()
 
             total_loss.backward()
-            nn.utils.clip_grad_norm_(model.parameters(), 10.)
-            optimizer.step()
-            if scheduler:
-                scheduler.step()
+            if has_finite_grad(model):
+                nn.utils.clip_grad_norm_(model.parameters(), 10.)
+                optimizer.step()
+                if scheduler:
+                    scheduler.step()
 
             # evaluation
             train_metrics = evals.compute_metrics(
@@ -183,6 +186,16 @@ def train_mpvae_softfair_one_epoch(
 
         current_loss, val_metrics = validate_mpvae(
             model, data.input_feat, data.labels, data.valid_idx, args)
+
+def has_finite_grad(model):
+    finite_grad = True
+    for param in model.parameters():
+        if param.grad is not None:
+            valid_gradients = not (torch.isnan(param.grad).any() or torch.isinf(param.grad).any())
+            finite_grad = finite_grad and valid_gradients
+    
+    return finite_grad
+
 
 
 def validate_mpvae(model, feat, labels, valid_idx, args):
