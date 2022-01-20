@@ -7,7 +7,7 @@
 
 #SBATCH --time=10:00:00
 #SBATCH --output=sbatch-logs/%x-%j.SLURM
-#SBATCH --array=0-4
+#SBATCH --array=1
 
 module load Conda/3
 conda activate fairmlc
