@@ -13,7 +13,7 @@ from fairsoft_utils import retrieve_target_label_idx
 sys.path.append('./')
 
 # IMPLEMENTED_METHODS = ['arule', 'baseline', 'unfair', 'hamming', 'jaccard']
-IMPLEMENTED_METHODS = ['arule', 'baseline', 'unfair', 'jaccard']
+IMPLEMENTED_METHODS = ['baseline', 'unfair', 'jaccard']
 
 
 def train_fairsoft_arule(args):
