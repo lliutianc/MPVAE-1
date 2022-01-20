@@ -102,7 +102,7 @@ def eval_fairsoft_allmodels(args):
 
         resultrow = met + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
-    
+
     result = []
     for mod in fair_metrics + ['unfair']:
         result.append(perform_results[mod])
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     from faircluster_train import parser
     parser.add_argument('-min_support', type=float, default=None)
     parser.add_argument('-min_confidence', type=float, default=0.25)
-    parser.add_argument('-dist_gamma', type=float, default=1.0)
+    parser.add_argument('-dist_gamma', type=float, default=None)
     parser.add_argument('-target_label_idx', type=int, default=None)
     parser.add_argument('-target_label', type=str, default=None)
     parser.add_argument('-mask_target_label', type=int, default=0)
@@ -135,12 +135,12 @@ if __name__ == '__main__':
         train_fairsoft_baseline(args)
 
         args.penalize_unfair = 1
-        for dist_gamma in [1.]:
+        for dist_gamma in [.01, 1., 5., 10.]:
             args.dist_gamma = dist_gamma
-            train_fairsoft_arule(args)
+            train_fairsoft_jaccard(args)
+            # train_fairsoft_arule(args)
 
-        train_fairsoft_hamming(args)
-        train_fairsoft_jaccard(args)
+        # train_fairsoft_hamming(args)
         train_fairsoft_baseline(args)
         eval_fairsoft_allmodels(args)
 
@@ -149,12 +149,14 @@ if __name__ == '__main__':
         train_fairsoft_baseline(args)
 
         args.penalize_unfair = 1
-        for dist_gamma in [1.]:
+        for dist_gamma in [.01, 1., 5., 10.]:
             args.dist_gamma = dist_gamma
-            train_fairsoft_arule(args)  # 20308 samples
+            train_fairsoft_jaccard(args)
 
-        train_fairsoft_hamming(args)  # 21587 samples
-        train_fairsoft_jaccard(args)  # 19604 samples
+            # train_fairsoft_arule(args)  # 20308 samples
+
+        # train_fairsoft_hamming(args)  # 21587 samples
+        # train_fairsoft_jaccard(args)  # 19604 samples
         train_fairsoft_baseline(args)  # eo: 641 samples, dp: 21587 samples
         eval_fairsoft_allmodels(args)
 
@@ -166,12 +168,12 @@ if __name__ == '__main__':
             train_fairsoft_baseline(args)
 
             args.penalize_unfair = 1
-            for dist_gamma in [1.]:
+            for dist_gamma in [.01, 1., 5., 10.]:
                 args.dist_gamma = dist_gamma
-                train_fairsoft_arule(args)
+                train_fairsoft_jaccard(args)
+                # train_fairsoft_arule(args)
 
-            train_fairsoft_hamming(args)
-            train_fairsoft_jaccard(args)
+            # train_fairsoft_hamming(args)
             train_fairsoft_baseline(args)
             eval_fairsoft_allmodels(args)
 
