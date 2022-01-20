@@ -96,7 +96,7 @@ def eval_fairsoft_allmodels(args):
         if met in fair_metrics_nested:
             if len(fair_metrics_nested[met]) > 1:
                 met_sorted = sorted(
-                    fair_metrics_nested[met], key=lambda met: float(met.split('_')[-1]))
+                    fair_metrics_nested[met], key=lambda met: float(met.split('-')[-1]))
             else:
                 met_sorted = fair_metrics_nested[met]
             fair_metrics_sorted += met_sorted
