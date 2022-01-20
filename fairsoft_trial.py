@@ -92,7 +92,7 @@ def eval_fairsoft_allmodels(args):
 
     print(fair_metrics_nested)
     # for met in ['constant_function', 'jaccard', 'hamming', 'arule', 'indication_function']:
-    for met in ['constant_function', 'jaccard', 'indication_function']:
+    for met in ['constant_function', 'jaccard_distance', 'indication_function']:
         if met in fair_metrics_nested:
             if len(fair_metrics_nested[met]) > 1:
                 met_sorted = sorted(
