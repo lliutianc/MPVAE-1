@@ -197,7 +197,7 @@ def preprocess(df, categorical_encode, show_categorcial_idx=False):
         if len(col.shape) == 1:
             col = col[:, np.newaxis]
         npy_cast.append(col)
-    npy = np.concatenate(npy_cast, axis=1).astype(int)
+    npy = np.concatenate(npy_cast, axis=1)
 
     if not show_categorcial_idx:
         return npy
