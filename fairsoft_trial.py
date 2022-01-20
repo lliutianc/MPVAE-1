@@ -90,6 +90,7 @@ def eval_fairsoft_allmodels(args):
             fair_metrics_nested[met] = []
         fair_metrics_nested[met].append(met_hparam)
 
+    print(fair_metrics_nested)
     # for met in ['constant_function', 'jaccard', 'hamming', 'arule', 'indication_function']:
     for met in ['constant_function', 'jaccard', 'indication_function']:
         if met in fair_metrics_nested:
