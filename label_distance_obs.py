@@ -18,7 +18,7 @@ def indication_similarity(args):
     for lab1 in label_oh_sets:
         lab1 = ''.join(lab1)
         for lab2 in label_oh_sets:
-            lab2 = ''.joiin(lab2)
+            lab2 = ''.join(lab2)
             dist_dict[lab1][lab2] = 1.0 if lab1 == lab2 else 0.
 
     return dist_dict
@@ -36,7 +36,7 @@ def constant_similarity(args):
     for lab1 in label_oh_sets:
         lab1 = ''.join(lab1)
         for lab2 in label_oh_sets:
-            lab2 = ''.joiin(lab2)
+            lab2 = ''.join(lab2)
             dist_dict[lab1][lab2] = 1.0
 
     return dist_dict
