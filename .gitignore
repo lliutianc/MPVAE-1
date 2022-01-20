@@ -144,3 +144,6 @@ dataset/
 *Untitled*
 *dev*
 *.ipynb
+*.npy
+*.pkl
+*.png
