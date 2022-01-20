@@ -15,7 +15,7 @@ from mpvae import VAE
 from data import load_data
 from logger import Logger
 
-from label_distance import hamming_nonlinear_similarity, jaccard_nonlinear_similarity, apriori_similarity, indication_similarity, constant_similarity
+from label_distance import hamming_nonlinear_similarity, hamming_similarity, jaccard_nonlinear_similarity, apriori_similarity, indication_similarity, constant_similarity, jaccard_similarity
 from fairsoft_evaluate import IMPLEMENTED_METHODS, evaluate_mpvae
 from fairsoft_utils import retrieve_target_label_idx
 
@@ -80,6 +80,7 @@ def evaluate_models_over_label_distances(args):
         results[model_trained] = {}
 
         for gamma in [.01, .1, .5, 1., 1.5,  2., 5., 10.]:
+            args.gamma = gamma
             dist_metric = f'{hparam_distance}_{gamma}'
             label_dist_path = os.path.join(
                 args.model_dir, 'sim_evaluation',
@@ -88,7 +89,7 @@ def evaluate_models_over_label_distances(args):
             if args.train_new == 0 and os.path.exists(label_dist_path):
                 label_dist = pickle.load(open(label_dist_path, 'rb'))
             else:
-                label_dist = similarity(args, gamma)
+                label_dist = similarity(args)
                 pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
             train, valid = evaluate_mpvae(
@@ -168,11 +169,11 @@ if __name__ == '__main__':
         args.eval_models = IMPLEMENTED_METHODS
 
     if args.eval_distance in ['ham', 'hamming']:
-        similarity = hamming_nonlinear_similarity
+        similarity = hamming_similarity
         hparam_distance = 'hamming'
 
     elif args.eval_distance in ['jac', 'jaccard']:
-        similarity = jaccard_nonlinear_similarity
+        similarity = jaccard_similarity
         hparam_distance = 'jaccard'
 
     elif args.eval_distance in ['apriori' 'arule']:
@@ -194,6 +195,7 @@ if __name__ == '__main__':
         for target_label_idx in [0, 10, 20, 50]:
             args.target_label_idx = target_label_idx
             evaluate_models_over_label_distances(args)
+            break
 
 
-# python fairsoft_metric.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -cuda 5
+# python fairsoft_metric.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -cuda 5 -eval_distance ham
