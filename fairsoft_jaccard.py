@@ -18,7 +18,7 @@ from fairsoft_train import train_mpvae_softfair_one_epoch
 
 
 def train_fair_through_regularize(args):
-    hparams = f'jaccard_distance'
+    hparams = f'jaccard_distance-{args.dist_gamma}'
     label_dist_path = os.path.join(
         args.model_dir, f'label_dist-{hparams}.npy')
 
