@@ -99,15 +99,6 @@ def eval_fairsoft_allmodels(args):
             else:
                 met_sorted = fair_metrics_nested[met]
             fair_metrics_sorted += met_sorted
-
-        if met not in ['constant_function', 'indication_function']:
-            fair_metrics_sorted.append(met)
-        elif met == 'constant_function':
-            fair_metrics_sorted = ['constant_function'] + fair_metrics_sorted
-        elif met == 'indication_function':
-            should_add_eo = True
-    if should_add_eo:
-        fair_metrics_sorted.append('indication_function')
     fair_metrics = fair_metrics_sorted
 
     colnames = ' & ' + ' & '.join(fair_metrics)
