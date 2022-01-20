@@ -17,6 +17,7 @@ def indication_similarity(args):
     dist_dict = {}
     for lab1 in label_oh_sets:
         lab1 = ''.join(lab1)
+        dist_dict[lab1] = {}
         for lab2 in label_oh_sets:
             lab2 = ''.join(lab2)
             dist_dict[lab1][lab2] = 1.0 if lab1 == lab2 else 0.
@@ -35,6 +36,7 @@ def constant_similarity(args):
     dist_dict = {}
     for lab1 in label_oh_sets:
         lab1 = ''.join(lab1)
+        dist_dict[lab1] = {}
         for lab2 in label_oh_sets:
             lab2 = ''.join(lab2)
             dist_dict[lab1][lab2] = 1.0
@@ -74,6 +76,7 @@ def _jaccard_similarity(args):
     dist_dict = {}
     for lab1 in label_oh_sets:
         lab1 = ''.join(lab1)
+        dist_dict[lab1] = {}
         for lab2 in label_oh_sets:
             lab2 = ''.joiin(lab2)
             dist_dict[lab1][lab2] = str_jac_similarity(lab1, lab2)
@@ -92,6 +95,7 @@ def _jaccard_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
     dist_dict = {}
     for lab1 in label_oh_sets:
         lab1 = ''.join(lab1)
+        dist_dict[lab1] = {}
         for lab2 in label_oh_sets:
             lab2 = ''.joiin(lab2)
             sim = str_jac_similarity(lab1, lab2)
@@ -131,6 +135,7 @@ def _hamming_similarity(args):
     dist_dict = {}
     for lab1 in label_oh_sets:
         lab1 = ''.join(lab1)
+        dist_dict[lab1] = {}
         for lab2 in label_oh_sets:
             lab2 = ''.joiin(lab2)
             dist_dict[lab1][lab2] = str_ham_similarity()(lab1, lab2)
@@ -148,6 +153,7 @@ def _hamming_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
     dist_dict = {}
     for lab1 in label_oh_sets:
         lab1 = ''.join(lab1)
+        dist_dict[lab1] = {}
         for lab2 in label_oh_sets:
             lab2 = ''.joiin(lab2)
             sim = str_ham_similarity(lab1, lab2)
