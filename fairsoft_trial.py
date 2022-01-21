@@ -142,8 +142,6 @@ def eval_fairsoft_allmodels(args):
     logger.logging(resultrow + '\\\\')
     logger.logging('\\bottomrule')
 
-    fair_metrics = list(fair_results.keys())
-
 
 if __name__ == '__main__':
     from faircluster_train import parser
