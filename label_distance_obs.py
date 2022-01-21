@@ -56,6 +56,10 @@ def str_jac_similarity(str1, str2):
         raise ValueError('Incompatible string pairs: have different lengths.')
     same = 0
     total = 0
+
+    if str1 == str2:
+        return 1. 
+        
     for idx, char in enumerate(str1):
         if char == '1':
             same += (char == str2[idx])
