@@ -35,7 +35,7 @@ def train_fair_demparity_through_regularize(args):
         label_dist = constant_similarity(args)
         pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
-    np.random.seed(4)
+    np.random.seed(args.seed)
     if args.mask_target_label:
         nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
             args.dataset, args.mode, True, 'onehot')
@@ -63,10 +63,10 @@ def train_fair_demparity_through_regularize(args):
 
     if args.penalize_unfair:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, f'fair_vae_prior-{hparams}.pkl')
+            args.model_dir, f'fair_vae_prior-{hparams}-{args.seed:04d}.pkl')
     else:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, 'unfair_vae_prior.pkl')
+            args.model_dir, 'unfair_vae_prior-{args.seed:04d}.pkl')
 
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
         print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
@@ -103,7 +103,7 @@ def train_fair_equalodds_through_regularize(args):
         label_dist = indication_similarity(args)
         pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
-    np.random.seed(4)
+    np.random.seed(args.seed)
     if args.mask_target_label:
         nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
             args.dataset, args.mode, True, 'onehot')
@@ -136,7 +136,7 @@ def train_fair_equalodds_through_regularize(args):
             args.model_dir, 'unfair_vae_prior.pkl')
 
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
-            print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
+        print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
     else:
         print(f'train a new mpvaeL: {fair_vae_checkpoint_path}...')
 

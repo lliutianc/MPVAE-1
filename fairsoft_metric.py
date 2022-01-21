@@ -25,7 +25,7 @@ sys.path.append('./')
 
 
 def evaluate_models_over_label_distances(args):
-    np.random.seed(4)
+    np.random.seed(args.seed)
     _, _, labels, _, _ = load_data(args.dataset, args.mode, True)
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
@@ -33,7 +33,7 @@ def evaluate_models_over_label_distances(args):
     idx = args.target_label_idx
     target_fair_labels = label_type[idx: idx + 1].astype(int)
 
-    np.random.seed(4)
+    np.random.seed(args.seed)
     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
         args.dataset, args.mode, True, 'onehot')
 

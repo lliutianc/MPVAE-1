@@ -7,7 +7,7 @@ from data import load_data, preprocess
 
 
 def indication_similarity(args):
-    np.random.seed(4)
+    np.random.seed(args.seed)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)
@@ -26,7 +26,7 @@ def indication_similarity(args):
 
 
 def constant_similarity(args):
-    np.random.seed(4)
+    np.random.seed(args.seed)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)
@@ -70,7 +70,7 @@ def str_jac_similarity(str1, str2):
 
 
 def _jaccard_similarity(args):
-    np.random.seed(4)
+    np.random.seed(args.seed)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)
@@ -89,7 +89,7 @@ def _jaccard_similarity(args):
 
 
 def _jaccard_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
-    np.random.seed(4)
+    np.random.seed(args.seed)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)
@@ -128,7 +128,7 @@ def str_ham_similarity(str1, str2):
 
 
 def _hamming_similarity(args):
-    np.random.seed(4)
+    np.random.seed(args.seed)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)
@@ -147,7 +147,7 @@ def _hamming_similarity(args):
 
 
 def _hamming_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
-    np.random.seed(4)
+    np.random.seed(args.seed)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, None)
     labels_oh = preprocess(labels, 'onehot').astype(int)

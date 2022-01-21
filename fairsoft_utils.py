@@ -6,7 +6,7 @@ def retrieve_target_label_idx(args, target_label):
         raise NotImplementedError(
             'cannot handle multiple target labels yet...')
 
-    np.random.seed(4)
+    np.random.seed(args.seed)
     _, _, labels, _, _ = load_data(
         args.dataset, args.mode, True, 'onehot')
 

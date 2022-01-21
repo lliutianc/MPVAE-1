@@ -74,6 +74,8 @@ parser.add_argument('-r_sigma', "--residue_sigma", default='',
                     type=str, help='what sigma r to use')
 
 parser.add_argument('-train_new', type=int, default=0)
+
+parser.add_argument('-seed', type=int, default=4)
 parser.add_argument('-cuda', type=int, default=0)
 
 

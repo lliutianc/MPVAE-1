@@ -1,12 +1,11 @@
 import sys
 import os
-
-from joblib.logger import Logger
+import pickle
 
 import torch
 import numpy as np
 
-from utils import build_path
+from utils import allexists, build_path
 from logger import Logger
 from fairsoft_utils import retrieve_target_label_idx
 
@@ -75,10 +74,26 @@ def eval_fairsoft_allmodels(args):
     if args.mask_target_label:
         logger = Logger(os.path.join(
             args.model_dir, f'evalution-{args.target_label_idx}_masked.txt'))
+        eval_results_path = os.path.join(
+            args.model_dir, f'evaluation-{args.target_label_idx}_masked')
     else:
         logger = Logger(os.path.join(
             args.model_dir, f'evalution-{args.target_label_idx}.txt'))
-    fair_results, perform_results = evaluate_target_labels(args, logger)
+        eval_results_path = os.path.join(
+            args.model_dir, f'evaluation-{args.target_label_idx}')
+    os.makedirs(eval_results_path)
+    fair_results_path = os.path.join(
+        eval_results_path, f'fair_eval_{args.seed:04d}.pkl')
+    perform_results_path = os.path.join(
+        eval_results_path, f'perform_eval_{args.seed:04d}.pkl')
+
+    if allexists(fair_results_path, perform_results_path) and args.train_new is False:
+        fair_results = pickle.load(open(fair_results_path, 'rb'))
+        perform_results = pickle.load(open(perform_results_path, 'rb'))
+    else:
+        fair_results, perform_results = evaluate_target_labels(args, logger)
+        pickle.dump(fair_results, open(fair_results_path, 'wb'))
+        pickle.dump(perform_results, open(perform_results_path, 'wb'))
 
     fair_metrics = list(fair_results.keys())
     fair_metrics_nested = {}
@@ -90,7 +105,6 @@ def eval_fairsoft_allmodels(args):
             fair_metrics_nested[met] = []
         fair_metrics_nested[met].append(met_hparam)
 
-    print(fair_metrics_nested)
     # for met in ['constant_function', 'jaccard', 'hamming', 'arule', 'indication_function']:
     for met in ['constant_function', 'jaccard_distance', 'indication_function']:
         if met in fair_metrics_nested:
@@ -108,9 +122,11 @@ def eval_fairsoft_allmodels(args):
     for met in fair_metrics:
         result = []
         for mod in fair_metrics:
-            result.append(fair_results[met][mod])
-        result.append(fair_results[met]['unfair'])
-
+            train, valid = fair_results[met][mod]
+            result.append(f"{round(train, 5)}~({round(valid, 5)})")
+        
+        train, valid = fair_results[met]['unfair']
+        result.append(f"{round(train, 5)}~({round(valid, 5)})")
         resultrow = met + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
 

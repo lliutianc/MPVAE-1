@@ -295,15 +295,9 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
 
 def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
-    np.random.seed(4)
+    np.random.seed(args.seed)
     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
         args.dataset, args.mode, True, 'onehot')
-    # if args.mask_target_label:
-    #     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
-    #         args.dataset, args.mode, True, 'onehot')
-    # else:
-    #     nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
-    #         args.dataset, args.mode, True, 'onehot')
 
     data = types.SimpleNamespace(
         input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx,
@@ -335,7 +329,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             if args.mask_target_label:
                 model_prior += '_masked'
         model_files = search_files(os.path.join(
-            args.model_dir,  model_prior), postfix='.pkl')
+            args.model_dir,  model_prior), postfix=f'_{args.seed:04d}.pkl')
         if len(model_files):
             model_paths += [os.path.join(
                 args.model_dir, model_prior, model_file) for
@@ -363,23 +357,16 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
                 model, data, target_fair_labels, label_dist, args, logger=logger)
 
             model_trained = model_stat.replace(
-                '.pkl', '').split('/')[-1]
+                f'_{args.seed:04d}.pkl', '').split('/')[-1]
             if 'unfair' in model_trained:
                 model_trained = 'unfair'
             else:
                 model_trained = '-'.join(model_trained.split('-')[1:])
 
             fair_results[dist_metric][
-                model_trained] = f"{round(train['fair_mean_diff'], 5)}~({round(valid['fair_mean_diff'], 5)})"
-
-            if model_trained not in perform_result:
-                perform_result[model_trained] = []
-            perform_result[model_trained].append(
-                [train[args.perform_metric], valid[args.perform_metric]])
-
-    for model_trained in perform_result:
-        met_perform = np.mean(perform_result[model_trained], axis=0)
-        perform_result[model_trained] = f"{round(met_perform[0], 5)}~({round(met_perform[1], 5)})"
+                model_trained] = [train['fair_mean_diff'], valid['fair_mean_diff']]
+            perform_result[model_trained] = [
+                train[args.perform_metric], valid[args.perform_metric]]
 
     return fair_results, perform_result
 
@@ -399,7 +386,7 @@ def retrieve_nearest_neighbor_labels(target_label, num_neighbor, label_distances
 
 
 def evaluate_nearest_neighbor_labels(args, logger=Logger()):
-    np.random.seed(4)
+    np.random.seed(args.seed)
     _, _, labels, _, _ = load_data(args.dataset, args.mode, True)
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
@@ -426,7 +413,7 @@ def evaluate_nearest_neighbor_labels(args, logger=Logger()):
 
 
 def evaluate_target_labels(args, logger=Logger()):
-    np.random.seed(4)
+    np.random.seed(args.seed)
     _, _, labels, _, _ = load_data(args.dataset, args.mode, True)
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
@@ -435,6 +422,61 @@ def evaluate_target_labels(args, logger=Logger()):
     target_fair_labels = label_type[idx: idx + 1].astype(int)
 
     return evaluate_over_labels(target_fair_labels, args, logger)
+
+
+def eval_fairsoft_allmodels_20replications(args):
+    from logger import Logger
+    args.model_dir = f'fair_through_distance/model/{args.dataset}'
+    if args.mask_target_label:
+        logger = Logger(os.path.join(
+            args.model_dir, f'avg_evalution-{args.target_label_idx}_masked.txt'))
+    else:
+        logger = Logger(os.path.join(
+            args.model_dir, f'avg_evalution-{args.target_label_idx}.txt'))
+
+    fair_results, perform_results = evaluate_target_labels(args, logger)
+
+    fair_metrics = list(fair_results.keys())
+    fair_metrics_nested = {}
+    fair_metrics_sorted = []
+    should_add_eo = False
+    for met_hparam in fair_metrics:
+        met = met_hparam.split('-')[0]
+        if met not in fair_metrics_nested:
+            fair_metrics_nested[met] = []
+        fair_metrics_nested[met].append(met_hparam)
+
+    # for met in ['constant_function', 'jaccard', 'hamming', 'arule', 'indication_function']:
+    for met in ['constant_function', 'jaccard_distance', 'indication_function']:
+        if met in fair_metrics_nested:
+            if len(fair_metrics_nested[met]) > 1:
+                met_sorted = sorted(
+                    fair_metrics_nested[met], key=lambda met: float(met.split('-')[-1]))
+            else:
+                met_sorted = fair_metrics_nested[met]
+            fair_metrics_sorted += met_sorted
+    fair_metrics = fair_metrics_sorted
+
+    colnames = ' & ' + ' & '.join(fair_metrics)
+    logger.logging(colnames + '\\\\')
+    logger.logging('\\midrule')
+    for met in fair_metrics:
+        result = []
+        for mod in fair_metrics:
+            result.append(fair_results[met][mod])
+        result.append(fair_results[met]['unfair'])
+
+        resultrow = met + ' & ' + ' & '.join(result)
+        logger.logging(resultrow + '\\\\')
+
+    result = []
+    for mod in fair_metrics + ['unfair']:
+        result.append(perform_results[mod])
+    resultrow = args.perform_metric + ' & ' + ' & '.join(result)
+    logger.logging(resultrow + '\\\\')
+    logger.logging('\\bottomrule')
+
+    fair_metrics = list(fair_results.keys())
 
 
 if __name__ == '__main__':

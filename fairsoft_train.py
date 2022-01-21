@@ -59,7 +59,6 @@ def train_mpvae_softfair_one_epoch(
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                 input_label, input_feat)
             
-            # print(feat_out.shape, feat_out.shape
             if args.residue_sigma == "random":
                 r_sqrt_sigma = torch.from_numpy(
                     np.random.uniform(
