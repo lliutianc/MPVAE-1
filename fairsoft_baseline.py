@@ -130,10 +130,10 @@ def train_fair_equalodds_through_regularize(args):
 
     if args.penalize_unfair:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, f'fair_vae_prior-{hparams}.pkl')
+            args.model_dir, f'fair_vae_prior-{hparams}-{args.seed:04d}.pkl')
     else:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, 'unfair_vae_prior.pkl')
+            args.model_dir, f'unfair_vae_prior-{args.seed:04d}.pkl')
 
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
         print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
