@@ -182,7 +182,7 @@ def str_jac_similarity(str1, str2):
     for idx, char in enumerate(str1):
         if char == '1':
             same += (char == str2[idx])
-        if char == '1' or str2[idx] == 1:
+        if char == '1' or str2[idx] == '1':
             total += 1
 
     return same / total
@@ -369,4 +369,3 @@ def _hamming_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
                         weight, minimum_clip, maximum_clip)
 
     return dist_dict
-
