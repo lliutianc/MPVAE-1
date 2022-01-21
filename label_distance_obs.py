@@ -63,11 +63,9 @@ def str_jac_similarity(str1, str2):
     for idx, char in enumerate(str1):
         if char == '1':
             same += (char == str2[idx])
-        if char == '1' or str2[idx] == 1:
+        if char == '1' or str2[idx] == '1':
             total += 1
 
-    if total == 0:
-        print(str1, str2)
     return same / total
 
 
