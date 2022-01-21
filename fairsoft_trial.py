@@ -88,9 +88,13 @@ def eval_fairsoft_allmodels(args):
         eval_results_path, f'perform_eval_{args.seed:04d}.pkl')
 
     if allexists(fair_results_path, perform_results_path) and args.train_new is False:
+        print(
+            f'find evaluation results: {fair_results_path}, {perform_results_path}')
         fair_results = pickle.load(open(fair_results_path, 'rb'))
         perform_results = pickle.load(open(perform_results_path, 'rb'))
     else:
+        print(
+            f'create new evalution results: {fair_results_path}, {perform_results_path}')
         fair_results, perform_results = evaluate_target_labels(args, logger)
         pickle.dump(fair_results, open(fair_results_path, 'wb'))
         pickle.dump(perform_results, open(perform_results_path, 'wb'))
