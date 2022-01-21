@@ -81,7 +81,7 @@ def eval_fairsoft_allmodels(args):
             args.model_dir, f'evalution-{args.target_label_idx}.txt'))
         eval_results_path = os.path.join(
             args.model_dir, f'evaluation-{args.target_label_idx}')
-    os.makedirs(eval_results_path)
+    build_path(eval_results_path)
     fair_results_path = os.path.join(
         eval_results_path, f'fair_eval_{args.seed:04d}.pkl')
     perform_results_path = os.path.join(
