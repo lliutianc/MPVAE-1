@@ -357,7 +357,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
                 model, data, target_fair_labels, label_dist, args, logger=logger)
 
             model_trained = model_stat.replace(
-                f'_{args.seed:04d}.pkl', '').split('/')[-1]
+                f'-{args.seed:04d}.pkl', '').split('/')[-1]
             if 'unfair' in model_trained:
                 model_trained = 'unfair'
             else:
