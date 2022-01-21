@@ -225,30 +225,6 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                     best_val_metrics['ebF1'], best_val_metrics['maF1'], \
                     best_val_metrics['miF1']
 
-                # nll_coeff: BCE coeff, lambda_1
-                # c_coeff: Ranking loss coeff, lambda_2
-                # print("********************valid********************")
-                # print(
-                #     ' & '.join([str(round(m, 4)) for m in [
-                #         acc, ha, ebf1, maf1, mif1, nll_loss * args.nll_coeff,
-                #         c_loss * args.c_coeff, total_loss]]))
-
-                # if eval_fairness:
-                #     valid_feat_z = np.concatenate(valid_feat_z)
-                #     assert valid_feat_z.shape[0] == len(data.valid_idx) and valid_feat_z.shape[
-                #         1] == args.latent_dim
-                #     valid_feat_z_mean = valid_feat_z.mean(0)
-                #     mean_diffs = 0.
-                #     idxs = np.arange(len(data.valid_idx))
-                #     for sensitive in np.unique(valid_sensitive, axis=0):
-                #         target_sensitive = idxs[np.all(
-                #             np.equal(valid_sensitive, sensitive), axis=1)]
-                #         feats_z_sensitive = valid_feat_z[target_sensitive]
-                #         mean_diffs += np.mean(
-                #             np.power(feats_z_sensitive.mean(0) - valid_feat_z_mean, 2))
-
-                #     best_val_metrics['fair'] = mean_diffs
-
                 if eval_fairness:
                     valid_feat_z = np.concatenate(valid_feat_z)
                     assert valid_feat_z.shape[0] == len(data.valid_idx) and \
@@ -296,6 +272,8 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
             valid_best_metrics = None
 
     return train_best_metrics, valid_best_metrics
+
+
 
 
 if __name__ == '__main__':
