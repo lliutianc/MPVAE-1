@@ -87,7 +87,7 @@ def eval_fairsoft_allmodels(args):
     perform_results_path = os.path.join(
         eval_results_path, f'perform_eval_{args.seed:04d}.pkl')
 
-    if allexists(fair_results_path, perform_results_path) and args.train_new is False:
+    if allexists(fair_results_path, perform_results_path) and bool(args.train_new) is False:
         print(
             f'find evaluation results: {fair_results_path}, {perform_results_path}')
         fair_results = pickle.load(open(fair_results_path, 'rb'))
