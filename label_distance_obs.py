@@ -78,7 +78,7 @@ def _jaccard_similarity(args):
         lab1 = ''.join(lab1)
         dist_dict[lab1] = {}
         for lab2 in label_oh_sets:
-            lab2 = ''.joiin(lab2)
+            lab2 = ''.join(lab2)
             dist_dict[lab1][lab2] = str_jac_similarity(lab1, lab2)
 
     return dist_dict
@@ -97,14 +97,13 @@ def _jaccard_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
         lab1 = ''.join(lab1)
         dist_dict[lab1] = {}
         for lab2 in label_oh_sets:
-            lab2 = ''.joiin(lab2)
+            lab2 = ''.join(lab2)
             sim = str_jac_similarity(lab1, lab2)
             weight = np.exp(args.dist_gamma * (sim - 1))
             dist_dict[lab1][lab2] = np.clip(
                 weight, minimum_clip, maximum_clip)
 
     return dist_dict
-
 
 
 def hamming_similarity(args):
@@ -137,10 +136,11 @@ def _hamming_similarity(args):
         lab1 = ''.join(lab1)
         dist_dict[lab1] = {}
         for lab2 in label_oh_sets:
-            lab2 = ''.joiin(lab2)
+            lab2 = ''.join(lab2)
             dist_dict[lab1][lab2] = str_ham_similarity()(lab1, lab2)
 
     return dist_dict
+
 
 def _hamming_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
     np.random.seed(4)
@@ -155,7 +155,7 @@ def _hamming_nonlinear_similarity(args, minimum_clip=0., maximum_clip=1.):
         lab1 = ''.join(lab1)
         dist_dict[lab1] = {}
         for lab2 in label_oh_sets:
-            lab2 = ''.joiin(lab2)
+            lab2 = ''.join(lab2)
             sim = str_ham_similarity(lab1, lab2)
             weight = np.exp(args.dist_gamma * (sim - 1))
             dist_dict[lab1][lab2] = np.clip(
