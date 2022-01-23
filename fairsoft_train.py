@@ -1,3 +1,8 @@
+from mpvae import VAE, compute_loss
+import evals
+import numpy as np
+import torch.nn as nn
+import torch
 from main import THRESHOLDS, METRICS
 from data import load_data
 from tqdm import tqdm
@@ -7,13 +12,6 @@ import sys
 import datetime
 from copy import deepcopy
 sys.path.append('./')
-
-import torch
-import torch.nn as nn
-import numpy as np
-
-import evals
-from mpvae import VAE, compute_loss
 
 
 def train_mpvae_softfair_one_epoch(
@@ -43,7 +41,7 @@ def train_mpvae_softfair_one_epoch(
     smooth_reg_fair = 0.
 
     contributed_reg_fair_sample = 0
-    succses_updates = 0 
+    succses_updates = 0
     print(data.batch_size)
     with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='Train VAE') as t:
         for i in t:
@@ -59,7 +57,7 @@ def train_mpvae_softfair_one_epoch(
                 data.labels[idx]).float().to(args.device)
             label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                 input_label, input_feat)
-            
+
             if args.residue_sigma == "random":
                 r_sqrt_sigma = torch.from_numpy(
                     np.random.uniform(
@@ -76,8 +74,10 @@ def train_mpvae_softfair_one_epoch(
                     model.r_sqrt_sigma, args)
 
             if penalize_unfair:
-                label_z = model.label_reparameterize(label_mu, label_logvar)
-                feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
+                # label_z = model.label_reparameterize(label_mu, label_logvar)
+                # feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
+                label_z = feat_out
+                feat_z = label_out
 
                 sensitive_feat = torch.from_numpy(
                     data.sensitive_feat[idx]).to(args.device)
@@ -97,7 +97,8 @@ def train_mpvae_softfair_one_epoch(
                         weights.append(distance)
                         if distance > 0:
                             contributed_reg_fair_sample += 1
-                    weights = torch.tensor(weights).to(args.device).reshape(-1, 1)
+                    weights = torch.tensor(weights).to(
+                        args.device).reshape(-1, 1)
 
                     if weights.sum() > 0:
                         label_z_weighted = torch.sum(
@@ -112,7 +113,7 @@ def train_mpvae_softfair_one_epoch(
                             feat_z_sensitive = feat_z[idx_tensor[target_sensitive]]
                             weight_sensitive = weights[idx_tensor[target_sensitive]]
 
-                            if weight_sensitive.sum() > 0: 
+                            if weight_sensitive.sum() > 0:
                                 reg_label_z_sen = torch.sum(
                                     label_z_sensitive * weight_sensitive, 0) / weight_sensitive.sum()
                                 reg_feat_z_sen = torch.sum(
@@ -124,7 +125,7 @@ def train_mpvae_softfair_one_epoch(
 
                 fairloss = args.label_z_fair_coeff * reg_label_z_unfair + \
                     args.feat_z_fair_coeff * reg_feat_z_unfair
-                
+
                 if not isinstance(fairloss, float):
                     total_loss += fairloss
                     smooth_reg_fair += fairloss.item()
@@ -164,7 +165,7 @@ def train_mpvae_softfair_one_epoch(
                 running_postfix['fair_loss'] = smooth_reg_fair / float(i + 1)
                 running_postfix['contributed_sample'] = contributed_reg_fair_sample
             t.set_postfix(running_postfix)
-    
+
     print(f'contributed samples: {contributed_reg_fair_sample}')
 
     if eval_after_one_epoch:
@@ -189,15 +190,16 @@ def train_mpvae_softfair_one_epoch(
         current_loss, val_metrics = validate_mpvae(
             model, data.input_feat, data.labels, data.valid_idx, args)
 
+
 def has_finite_grad(model):
     finite_grad = True
     for param in model.parameters():
         if param.grad is not None:
-            valid_gradients = not (torch.isnan(param.grad).any() or torch.isinf(param.grad).any())
+            valid_gradients = not (torch.isnan(
+                param.grad).any() or torch.isinf(param.grad).any())
             finite_grad = finite_grad and valid_gradients
-    
-    return finite_grad
 
+    return finite_grad
 
 
 def validate_mpvae(model, feat, labels, valid_idx, args):
@@ -287,6 +289,3 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
     model.train()
 
     return nll_loss, best_val_metrics
-
-
-    
