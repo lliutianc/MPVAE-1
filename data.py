@@ -44,6 +44,33 @@ def load_adult(subset):
     return feat, labels, sensitive
 
 
+def load_credit(unused_subset):
+    _header = [
+        'stat_exist_check_account', 'duration', 'cred_hist', 'purpose', 'cred_amt', 'sav_bonds', 'present_employment', 
+        'install_rate', 'gender_marriage', 'guarantor', 'residence_dura', 'property', 'age', 'other_install', 'housing',
+        'cred_num', 'job', 'people_provide_maintain', 'has_telephone', 'is_foreign', 'is_good'
+    ]
+    dfpath = DATASETPATH + 'credit/german.data'
+    df = pd.read_csv(dfpath, header=None, sep=' ')
+    df.columns = _header
+    df['is_good'] = (df['is_good'] == 1)
+
+    label_cols = ['job', 'present_employment', 'is_good']
+    labels = df[label_cols]
+    feat = df.drop(label_cols, axis=1)
+
+    feat['duration'] = (feat['duration'] - feat['duration'].min()) / \
+                        (feat['duration'].max() -
+                        feat['duration'].min())
+    feat['cred_amt'] = (feat['cred_amt'] - feat['cred_amt'].min()) / \
+                        (feat['cred_amt'].max() -
+                        feat['cred_amt'].min())
+    feat['age'] = np.ceil(feat['age'] / 20).astype(int).astype(str)
+
+    sensitive = ['gender_marriage', 'age']
+    return feat, labels, sensitive
+
+
 def _load_donor_label(subset=None):
     label_cols = [
         'projectid',
@@ -227,7 +254,7 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
     if categorical_encode not in ['onehot', 'categorical', None]:
         raise ValueError('Unrecognized categorical_encode')
 
-    if dataset not in ['adult', 'donor']:
+    if dataset not in ['adult', 'donor', 'credit']:
         raise NotImplementedError()
 
     datapath = DATASETPATH + dataset
@@ -244,6 +271,8 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
             feat, labels, sensitive = load_adult(mode)
         elif dataset == 'donor':
             feat, labels, sensitive = load_donor(mode)
+        elif dataset == 'credit':
+            feat, labels, sensitive = load_credit(mode)
         else:
             raise NotImplementedError()
 
@@ -285,9 +314,9 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
 
 
 def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode='onehot', masked_label=None, unmasked_sensitive=None):
-    if dataset not in ['adult', 'donor']:
+    if dataset not in ['adult', 'donor', 'credit']:
         raise NotImplementedError(
-            'cannot masked datasets when `dataset=adult`...')
+            f'cannot masked dataset {dataset}...')
     if not separate_sensitive:
         raise ValueError(
             'can only create masked dataset when `separate_sensitive=True`...')
