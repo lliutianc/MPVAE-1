@@ -43,6 +43,7 @@ def train_mpvae_softfair_one_epoch(
     smooth_reg_fair = 0.
 
     contributed_reg_fair_sample = 0
+    succses_updates = 0 
     print(data.batch_size)
     with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='Train VAE') as t:
         for i in t:
@@ -134,6 +135,7 @@ def train_mpvae_softfair_one_epoch(
                 optimizer.step()
                 if scheduler:
                     scheduler.step()
+                succses_updates += 1
 
             # evaluation
             train_metrics = evals.compute_metrics(
@@ -156,6 +158,7 @@ def train_mpvae_softfair_one_epoch(
             running_postfix = {'total_loss': smooth_total_loss / float(i + 1),
                                'nll_loss_label': smooth_nll_loss / float(i + 1),
                                'nll_loss_feat': smooth_nll_loss_x / float(i + 1),
+                               'success_updates': succses_updates,
                                }
             if penalize_unfair:
                 running_postfix['fair_loss'] = smooth_reg_fair / float(i + 1)
