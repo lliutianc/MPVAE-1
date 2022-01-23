@@ -49,10 +49,10 @@ def _load_donor_label(subset=None):
         'projectid',
         'fully_funded',
         'at_least_1_teacher_referred_donor',
-        'great_chat',
+        # 'great_chat',
         'at_least_1_green_donation',
-        'three_or_more_non_teacher_referred_donors',
-        'one_non_teacher_referred_donor_giving_100_plus',
+        # 'three_or_more_non_teacher_referred_donors',
+        # 'one_non_teacher_referred_donor_giving_100_plus',
         'donation_from_thoughtful_donor',
     ]
     df = pd.read_csv(DATASETPATH + 'donor/outcomes.csv')
