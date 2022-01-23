@@ -7,7 +7,7 @@
 
 #SBATCH --time=20:00:00
 #SBATCH --output=sbatch-logs/%x-%j.SLURM
-#SBATCH --array=1
+#SBATCH --array=1-10
 
 module load Conda/3
 conda activate fairmlc
@@ -16,5 +16,10 @@ conda activate fairmlc
 # python fairsoft_trial.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID
 # python fairsoft_trial.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -seed $SLURM_ARRAY_TASK_ID
 
-python fairsoft_trial.py -dataset donor -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID -label_z_fair_coeff 5. -feat_z_fair_coeff 5.
-python fairsoft_trial.py -dataset donor -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -seed $SLURM_ARRAY_TASK_ID -label_z_fair_coeff 5. -feat_z_fair_coeff 5.
+
+python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID -epoch 50 -bs 16
+python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -seed $SLURM_ARRAY_TASK_ID -epoch 50 -bs 16
+
+
+# python fairsoft_trial.py -dataset donor -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID -label_z_fair_coeff 5. -feat_z_fair_coeff 5.
+# python fairsoft_trial.py -dataset donor -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -seed $SLURM_ARRAY_TASK_ID -label_z_fair_coeff 5. -feat_z_fair_coeff 5.
