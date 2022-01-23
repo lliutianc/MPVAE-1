@@ -130,8 +130,8 @@ def train_mpvae_softfair_one_epoch(
                     smooth_reg_fair += fairloss.item()
 
             total_loss.backward()
+            nn.utils.clip_grad(model.parameters(), 10.)
             if has_finite_grad(model):
-                nn.utils.clip_grad_norm_(model.parameters(), 10.)
                 optimizer.step()
                 if scheduler:
                     scheduler.step()
