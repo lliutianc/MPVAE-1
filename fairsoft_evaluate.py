@@ -114,7 +114,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                     train_feat_z = np.concatenate(train_feat_z)
                     assert train_feat_z.shape[0] == len(data.train_idx) and \
                         train_feat_z.shape[1] == data.labels.shape[1]
-                        # train_feat_z.shape[1] = args.latent_dim
+                    # train_feat_z.shape[1] = args.latent_dim
 
                     sensitive_centroid = np.unique(train_sensitive, axis=0)
                     idxs = np.arange(len(data.train_idx))
@@ -144,9 +144,9 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                                     mean_diffs.append(
                                         np.mean(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
 
-                    # mean_diffs = np.mean(mean_diffs)
-                    mean_diffs = np.max(mean_diffs) / \
-                        (np.min(mean_diffs) + 1e-6)
+                    mean_diffs = np.mean(mean_diffs)
+                    # mean_diffs = np.max(mean_diffs) / \
+                    #     (np.min(mean_diffs) + 1e-6)
 
                     logger.logging(
                         "********************train********************")
@@ -246,8 +246,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                     valid_feat_z = np.concatenate(valid_feat_z)
                     assert valid_feat_z.shape[0] == len(data.valid_idx) and \
                         valid_feat_z.shape[1] == data.labels.shape[1]
-                        # valid_feat_z.shape[1] == args.latent_dim
-
+                    # valid_feat_z.shape[1] == args.latent_dim
 
                     sensitive_centroid = np.unique(valid_sensitive, axis=0)
                     idxs = np.arange(len(data.valid_idx))
@@ -278,9 +277,9 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                                     mean_diffs.append(
                                         np.mean(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
 
-                    # mean_diffs = np.mean(mean_diffs)
-                    mean_diffs = np.max(mean_diffs) / \
-                        (np.min(mean_diffs) + 1e-6)
+                    mean_diffs = np.mean(mean_diffs)
+                    # mean_diffs = np.max(mean_diffs) / \
+                    #     (np.min(mean_diffs) + 1e-6)
 
                     logger.logging(
                         "********************valid********************")
