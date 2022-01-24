@@ -81,7 +81,7 @@ def evaluate_models_over_label_distances(args):
             model_trained = '-'.join(model_trained.split('-')[1:])
         results[model_trained] = {}
 
-        for gamma in [.01, .1, .5, 1., 1.5,  2., 5., 10.]:
+        for gamma in [.01, .1, .5, 1., 1.5,  2., 5., 10., 15.]:
             args.gamma = gamma
             dist_metric = f'{hparam_distance}_{gamma}'
             label_dist_path = os.path.join(
@@ -200,4 +200,4 @@ if __name__ == '__main__':
             break
 
 
-# python fairsoft_metric.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -cuda 5 -eval_distance ham
+# python fairsoft_metric.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -cuda 5 -eval_distance jac
