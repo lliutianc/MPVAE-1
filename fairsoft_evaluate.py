@@ -78,7 +78,6 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                     if eval_fairness:
                         # feat_z = model.feat_reparameterize(
                         #     feat_mu, feat_logvar)
-
                         feat_z = feat_out
                         train_feat_z.append(feat_z.cpu().data.numpy())
 
@@ -145,7 +144,9 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                                     mean_diffs.append(
                                         np.mean(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
 
-                    mean_diffs = np.mean(mean_diffs)
+                    # mean_diffs = np.mean(mean_diffs)
+                    mean_diffs = np.max(mean_diffs) / \
+                        (np.min(mean_diffs) + 1e-6)
 
                     logger.logging(
                         "********************train********************")
@@ -277,7 +278,9 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                                     mean_diffs.append(
                                         np.mean(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
 
-                    mean_diffs = np.mean(mean_diffs)
+                    # mean_diffs = np.mean(mean_diffs)
+                    mean_diffs = np.max(mean_diffs) / \
+                        (np.min(mean_diffs) + 1e-6)
 
                     logger.logging(
                         "********************valid********************")
