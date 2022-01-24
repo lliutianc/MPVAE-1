@@ -74,10 +74,10 @@ def train_mpvae_softfair_one_epoch(
                     model.r_sqrt_sigma, args)
 
             if penalize_unfair:
-                label_z = model.label_reparameterize(label_mu, label_logvar)
+                # label_z = model.label_reparameterize(label_mu, label_logvar)
                 # feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
-                label_z = feat_out
-                feat_z = label_out
+                label_z = label_out
+                feat_z = feat_out
 
                 sensitive_feat = torch.from_numpy(
                     data.sensitive_feat[idx]).to(args.device)
@@ -131,7 +131,7 @@ def train_mpvae_softfair_one_epoch(
                     smooth_reg_fair += fairloss.item()
 
             total_loss.backward()
-            nn.utils.clip_grad_value_(model.parameters(), 10.)
+            nn.utils.clip_grad_norm_(model.parameters(), 10.)
             if has_finite_grad(model):
                 optimizer.step()
                 if scheduler:
