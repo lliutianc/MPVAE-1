@@ -28,4 +28,4 @@ python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 1 -mask
 
 
 
-python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed 1 -epoch 50 -bs 16
+# python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed 1 -epoch 50 -bs 16
