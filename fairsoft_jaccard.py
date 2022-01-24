@@ -54,7 +54,7 @@ def train_fair_through_regularize(args):
     fair_vae.train()
 
     fair_vae_checkpoint_path = os.path.join(
-        args.model_dir, f'fair_vae_prior-{hparams}-{args.seed:04d}.pkl')
+        args.model_dir, f'fair_vae_prior-{hparams}-{args.gamma:.2f}-{args.seed:04d}.pkl')
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
         print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
     else:

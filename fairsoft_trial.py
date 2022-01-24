@@ -83,9 +83,9 @@ def eval_fairsoft_allmodels(args):
             args.model_dir, f'evaluation-{args.target_label_idx}')
     build_path(eval_results_path)
     fair_results_path = os.path.join(
-        eval_results_path, f'fair_eval_{args.seed:04d}.pkl')
+        eval_results_path, f'fair_eval_gamma={args.gamma:.2f}_seed{args.seed:04d}.pkl')
     perform_results_path = os.path.join(
-        eval_results_path, f'perform_eval_{args.seed:04d}.pkl')
+        eval_results_path, f'perform_eval_gamma={args.gamma:.2f}_seed{args.seed:04d}.pkl')
 
     if allexists(fair_results_path, perform_results_path) and bool(args.train_new) is False:
         print(
@@ -214,4 +214,4 @@ if __name__ == '__main__':
 # python fairsoft_trial.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -cuda 5
 
 
-# python fairsoft_trial.py -dataset donor -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -cuda 5
+# python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed 1 -epoch 50 -bs 16 -label_z_fair_coeff 1.
