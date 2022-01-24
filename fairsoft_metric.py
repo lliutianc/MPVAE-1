@@ -147,7 +147,7 @@ def evaluate_models_over_label_distances(args):
 if __name__ == '__main__':
     from faircluster_train import parser
     parser.add_argument('-eval_models', type=str,
-                        nargs='+', default=['unfair', 'arule', 'jaccard', 'hamming'])
+                        nargs='+', default=['unfair'])
     parser.add_argument('-eval_distance', type=str, default='jac')
     parser.add_argument('-min_support', type=float, default=None)
     parser.add_argument('-min_confidence', type=float, default=0.25)
