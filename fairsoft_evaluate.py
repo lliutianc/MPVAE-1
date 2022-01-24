@@ -338,7 +338,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             if args.mask_target_label:
                 model_prior += '_masked'
         model_files = search_files(os.path.join(
-            args.model_dir,  model_prior), postfix=f'-{args.dist_gamma:.2f}-{args.seed:04d}.pkl')
+            args.model_dir,  model_prior), postfix=f'-{args.label_z_fair_coeff:.2f}-{args.seed:04d}.pkl')
         if len(model_files):
             model_paths += [os.path.join(
                 args.model_dir, model_prior, model_file) for
