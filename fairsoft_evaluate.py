@@ -113,10 +113,9 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
 
                 if eval_fairness:
                     train_feat_z = np.concatenate(train_feat_z)
-                    print(train_feat_z.shape)
-                    print(len(data.train_idx))
                     assert train_feat_z.shape[0] == len(data.train_idx) and \
-                        train_feat_z.shape[1] == args.latent_dim
+                        train_feat_z.shape[1] == data.labels.shape[1]
+                        # train_feat_z.shape[1] = args.latent_dim
 
                     sensitive_centroid = np.unique(train_sensitive, axis=0)
                     idxs = np.arange(len(data.train_idx))
@@ -245,7 +244,9 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                 if eval_fairness:
                     valid_feat_z = np.concatenate(valid_feat_z)
                     assert valid_feat_z.shape[0] == len(data.valid_idx) and \
-                        valid_feat_z.shape[1] == args.latent_dim
+                        valid_feat_z.shape[1] == data.labels.shape[1]
+                        # valid_feat_z.shape[1] == args.latent_dim
+
 
                     sensitive_centroid = np.unique(valid_sensitive, axis=0)
                     idxs = np.arange(len(data.valid_idx))
