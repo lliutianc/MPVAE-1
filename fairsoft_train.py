@@ -74,7 +74,10 @@ def train_mpvae_softfair_one_epoch(
                     model.r_sqrt_sigma, args)
 
             if penalize_unfair:
-                # label_z = model.label_reparameterize(label_mu, label_logvar)
+                label_z = model.label_reparameterize(label_mu, label_logvar)
+                print(label_z.shape)
+                print(feat_out.shape)
+                exit(1)
                 # feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
                 label_z = feat_out
                 feat_z = label_out
