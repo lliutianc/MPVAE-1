@@ -76,8 +76,10 @@ def train_mpvae_softfair_one_epoch(
             if penalize_unfair:
                 # label_z = model.label_reparameterize(label_mu, label_logvar)
                 # feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
-                label_z = label_out
-                feat_z = feat_out
+                # label_z = label_out
+                # feat_z = feat_out
+                label_z = indiv_prob
+                feat_z = indiv_prob
 
                 sensitive_feat = torch.from_numpy(
                     data.sensitive_feat[idx]).to(args.device)
