@@ -125,8 +125,10 @@ def train_mpvae_softfair_one_epoch(
                                 reg_feat_z_unfair += torch.mean(
                                     torch.pow(reg_feat_z_sen - feat_z_weighted, 2))
 
-                fairloss = args.label_z_fair_coeff * reg_label_z_unfair + \
-                    args.feat_z_fair_coeff * reg_feat_z_unfair
+                # fairloss = args.label_z_fair_coeff * reg_label_z_unfair + \
+                #     args.feat_z_fair_coeff * reg_feat_z_unfair
+
+                fairloss = args.label_z_fair_coeff * reg_label_z_unfair
 
                 if not isinstance(fairloss, float):
                     total_loss += fairloss
