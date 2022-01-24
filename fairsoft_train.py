@@ -115,6 +115,9 @@ def train_mpvae_softfair_one_epoch(
                             feat_z_sensitive = feat_z[idx_tensor[target_sensitive]]
                             weight_sensitive = weights[idx_tensor[target_sensitive]]
 
+                            print(weight_sensitive.shape)
+                            print(label_z_sensitive.shape)
+                            exit(1)
                             if weight_sensitive.sum() > 0:
                                 reg_label_z_sen = torch.sum(
                                     label_z_sensitive * weight_sensitive, 0) / weight_sensitive.sum()
