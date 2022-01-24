@@ -58,7 +58,7 @@ def evaluate_models_over_label_distances(args):
             if args.mask_target_label:
                 model += '_masked'
         model_files = search_files(os.path.join(
-            args.model_dir, model), postfix='.pkl')
+            args.model_dir, model), postfix='-0001.pkl')
         if len(model_files):
             model_paths += [os.path.join(
                 args.model_dir, model, mod) for mod in model_files]
