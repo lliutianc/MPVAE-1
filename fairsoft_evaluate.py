@@ -76,11 +76,9 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                         train_label.append(j)
 
                     if eval_fairness:
-                        feat_z = model.feat_reparameterize(
-                            feat_mu, feat_logvar)
-                        print(feat_z.shape)
-                        print(feat_out.shape)
-                        exit(1)
+                        # feat_z = model.feat_reparameterize(
+                        #     feat_mu, feat_logvar)
+
                         feat_z = feat_out
                         train_feat_z.append(feat_z.cpu().data.numpy())
 
@@ -115,6 +113,8 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
 
                 if eval_fairness:
                     train_feat_z = np.concatenate(train_feat_z)
+                    print(train_feat_z.shape)
+                    print(len(data.train_idx))
                     assert train_feat_z.shape[0] == len(data.train_idx) and \
                         train_feat_z.shape[1] == args.latent_dim
 
