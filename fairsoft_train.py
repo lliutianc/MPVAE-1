@@ -115,17 +115,14 @@ def train_mpvae_softfair_one_epoch(
                             feat_z_sensitive = feat_z[idx_tensor[target_sensitive]]
                             weight_sensitive = weights[idx_tensor[target_sensitive]]
 
-                            print(weight_sensitive.shape)
-                            print(label_z_sensitive.shape)
-                            exit(1)
                             if weight_sensitive.sum() > 0:
                                 reg_label_z_sen = torch.sum(
                                     label_z_sensitive * weight_sensitive, 0) / weight_sensitive.sum()
                                 reg_feat_z_sen = torch.sum(
                                     feat_z_sensitive * weight_sensitive, 0) / weight_sensitive.sum()
-                                reg_label_z_unfair += torch.mean(
+                                reg_label_z_unfair += torch.sum(
                                     torch.pow(reg_label_z_sen - label_z_weighted, 2))
-                                reg_feat_z_unfair += torch.mean(
+                                reg_feat_z_unfair += torch.sum(
                                     torch.pow(reg_feat_z_sen - feat_z_weighted, 2))
 
                 # fairloss = args.label_z_fair_coeff * reg_label_z_unfair + \
