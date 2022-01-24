@@ -26,6 +26,7 @@ python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask
 python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID -epoch 200 -bs 32 -label_z_fair_coeff 100
 python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID -epoch 200 -bs 32 -label_z_fair_coeff 500
 python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID -epoch 200 -bs 32 -label_z_fair_coeff 1000
+python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID -epoch 200 -bs 32 -label_z_fair_coeff 5000
 
 # python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -seed $SLURM_ARRAY_TASK_ID -epoch 200 -bs 32 -label_z_fair_coeff 500.
 
