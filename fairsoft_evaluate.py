@@ -76,8 +76,11 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                         train_label.append(j)
 
                     if eval_fairness:
-                        # feat_z = model.feat_reparameterize(
-                        #     feat_mu, feat_logvar)
+                        feat_z = model.feat_reparameterize(
+                            feat_mu, feat_logvar)
+                        print(feat_z.shape)
+                        print(feat_out.shape)
+                        exit(1)
                         feat_z = feat_out
                         train_feat_z.append(feat_z.cpu().data.numpy())
 
