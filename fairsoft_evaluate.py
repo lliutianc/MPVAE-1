@@ -211,7 +211,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
                     if eval_fairness:
                         # feat_z = model.feat_reparameterize(
                         #     feat_mu, feat_logvar)
-                        feat_z = feat_out
+                        feat_z = indiv_prob
                         valid_feat_z.append(feat_z.cpu().data.numpy())
 
                 valid_indiv_prob = np.array(valid_indiv_prob)
