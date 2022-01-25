@@ -356,14 +356,14 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
         dist_metric = dist_metric.replace(
             '.npy', '').split('/')[-1].split('-')[1]
         fair_results[dist_metric] = {}
-        perform_result[model_trained]
+
         for model_stat in model_paths:
             print(f'Fair model: {model_stat}')
             model = VAE(args).to(args.device)
             model.load_state_dict(torch.load(model_stat))
             train, valid = evaluate_mpvae(
                 model, data, target_fair_labels, label_dist, args, logger=logger)
-            
+
             if 'unfair' in model_stat:
                 model_trained = 'unfair'
             else:
@@ -371,7 +371,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
             fair_results[dist_metric][
                 model_trained] = [train['fair_mean_diff'], valid['fair_mean_diff']]
-            
+
             if model_trained not in perform_result:
                 perform_result[model_trained] = {}
 
