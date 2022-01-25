@@ -25,7 +25,7 @@ def train_fair_through_regularize(args):
 
 
 def train_fair_demparity_through_regularize(args):
-    hparams = f'constant_function'
+    hparams = f'constant'
     label_dist_path = os.path.join(
         args.model_dir, f'label_dist-{hparams}.npy')
 
@@ -63,10 +63,10 @@ def train_fair_demparity_through_regularize(args):
 
     if args.penalize_unfair:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, f'fair_vae_prior-{hparams}-{args.label_z_fair_coeff:.2f}-{args.seed:04d}.pkl')
+            args.model_dir, f'fair_vae_prior-{hparams}-{args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
     else:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, f'unfair_vae_prior-{args.label_z_fair_coeff:.2f}-{args.seed:04d}.pkl')
+            args.model_dir, f'unfair_vae_prior-{args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
 
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
         print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
@@ -93,7 +93,7 @@ def train_fair_demparity_through_regularize(args):
 
 
 def train_fair_equalodds_through_regularize(args):
-    hparams = f'indication_function'
+    hparams = f'indication'
     label_dist_path = os.path.join(
         args.model_dir, f'label_dist-{hparams}.npy')
 
@@ -130,10 +130,10 @@ def train_fair_equalodds_through_regularize(args):
 
     if args.penalize_unfair:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, f'fair_vae_prior-{hparams}-{args.seed:04d}.pkl')
+            args.model_dir, f'fair_vae_prior-{hparams}-{args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
     else:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, f'unfair_vae_prior-{args.seed:04d}.pkl')
+            args.model_dir, f'unfair_vae_prior-{args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
 
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
         print(f'find trained mpvae: {fair_vae_checkpoint_path}...')

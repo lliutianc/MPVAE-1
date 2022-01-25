@@ -338,7 +338,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             if args.mask_target_label:
                 model_prior += '_masked'
         model_files = search_files(os.path.join(
-            args.model_dir,  model_prior), postfix=f'-{args.label_z_fair_coeff:.2f}-{args.seed:04d}.pkl')
+            args.model_dir,  model_prior), postfix=f'-{args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
         if len(model_files):
             model_paths += [os.path.join(
                 args.model_dir, model_prior, model_file) for
@@ -354,23 +354,20 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
         label_dist = pickle.load(open(dist_metric, 'rb'))
 
         dist_metric = dist_metric.replace(
-            '.npy', '').split('/')[-1].split('-')[1:]
+            '.npy', '').split('/')[-1].split('-')[1]
         dist_metric = '-'.join(dist_metric)
         fair_results[dist_metric] = {}
-        met_perform = []
         for model_stat in model_paths:
             print(f'Fair model: {model_stat}')
             model = VAE(args).to(args.device)
             model.load_state_dict(torch.load(model_stat))
             train, valid = evaluate_mpvae(
                 model, data, target_fair_labels, label_dist, args, logger=logger)
-
-            model_trained = model_stat.replace(
-                f'-{args.seed:04d}.pkl', '').split('/')[-1]
-            if 'unfair' in model_trained:
+            
+            if 'unfair' in model_stat:
                 model_trained = 'unfair'
             else:
-                model_trained = '-'.join(model_trained.split('-')[1:])
+                model_trained = model_stat.split('/')[-1].split('-')[1]
 
             fair_results[dist_metric][
                 model_trained] = [train['fair_mean_diff'], valid['fair_mean_diff']]
