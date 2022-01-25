@@ -83,9 +83,9 @@ def eval_fairsoft_allmodels(args):
             args.model_dir, f'evaluation-{args.target_label_idx}')
     build_path(eval_results_path)
     fair_results_path = os.path.join(
-        eval_results_path, f'fair_eval_gamma={args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
+        eval_results_path, f'fair_eval_lambda={args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
     perform_results_path = os.path.join(
-        eval_results_path, f'perform_eval_gamma={args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
+        eval_results_path, f'perform_eval_lambda={args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
 
     if allexists(fair_results_path, perform_results_path) and bool(args.train_new) is False:
         print(
@@ -144,7 +144,7 @@ def eval_fairsoft_allmodels(args):
 
 
 if __name__ == '__main__':
-    from faircluster_train import parser
+    from main import parser
     parser.add_argument('-min_support', type=float, default=None)
     parser.add_argument('-min_confidence', type=float, default=0.25)
     parser.add_argument('-dist_gamma', type=float, default=None)

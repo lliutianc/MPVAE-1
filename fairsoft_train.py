@@ -65,11 +65,11 @@ def train_mpvae_softfair_one_epoch(
                         np.sqrt(6.0 / (args.label_dim + args.z_dim)),
                         (args.label_dim, args.z_dim))).to(
                     args.device)
-                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob, indiv_prob_label = compute_loss(
                     input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
                     r_sqrt_sigma, args)
             else:
-                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob, indiv_prob_label = compute_loss(
                     input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
                     model.r_sqrt_sigma, args)
 
@@ -78,7 +78,7 @@ def train_mpvae_softfair_one_epoch(
                 # feat_z = model.feat_reparameterize(feat_mu, feat_logvar)
                 # label_z = label_out
                 # feat_z = feat_out
-                label_z = indiv_prob
+                label_z = indiv_prob_label
                 feat_z = indiv_prob
 
                 sensitive_feat = torch.from_numpy(
@@ -125,10 +125,9 @@ def train_mpvae_softfair_one_epoch(
                                 reg_feat_z_unfair += torch.sum(
                                     torch.pow(reg_feat_z_sen - feat_z_weighted, 2))
 
-                # fairloss = args.label_z_fair_coeff * reg_label_z_unfair + \
-                #     args.feat_z_fair_coeff * reg_feat_z_unfair
+                fairloss = args.fair_coeff * (reg_label_z_unfair + reg_feat_z_unfair)
 
-                fairloss = args.label_z_fair_coeff * reg_label_z_unfair
+                # fairloss = args.label_z_fair_coeff * reg_label_z_unfair
 
                 if not isinstance(fairloss, float):
                     total_loss += fairloss
@@ -235,7 +234,7 @@ def validate_mpvae(model, feat, labels, valid_idx, args):
 
                 label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
                     input_label, input_feat)
-                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob = compute_loss(
+                total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob, indiv_prob_label = compute_loss(
                     input_label, label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar,
                     model.r_sqrt_sigma, args)
 

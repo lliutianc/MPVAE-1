@@ -201,9 +201,10 @@ def compute_loss(input_label, fe_out, fe_mu, fe_logvar, fx_out, fx_mu, fx_logvar
 
     # if in the training phase, the prediction
     indiv_prob = torch.mean(E_x, axis=0)
+    indiv_prob_label = torch.mean(E, axis=0)
 
     # total loss: refer to equation (5)
     total_loss = (nll_loss + nll_loss_x) * args.nll_coeff + \
         (c_loss + c_loss_x) * args.c_coeff + kl_loss * 1.1
 
-    return total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob
+    return total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob, indiv_prob_label

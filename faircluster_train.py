@@ -31,8 +31,6 @@ parser.add_argument('-labels_cluster_distance_threshold',
 parser.add_argument('-labels_cluster_num', type=int, default=None)
 parser.add_argument('-labels_cluster_min_size', type=int, default=50)
 # fair regularizer
-parser.add_argument('-label_z_fair_coeff', type=float, default=1.0)
-parser.add_argument('-feat_z_fair_coeff', type=float, default=1.0)
 
 
 sys.path.append('./')

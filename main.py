@@ -54,6 +54,9 @@ parser.add_argument('-max_keep', "--max_keep", default=3,
 parser.add_argument('-check_freq', "--check_freq",
                     default=120, type=int, help='checking frequency')
 
+
+parser.add_argument('-fair_coeff', "--fair_coeff", default=10.,
+                    type=float, help='nll_loss coefficient')
 parser.add_argument('-nll_coeff', "--nll_coeff", default=0.1,
                     type=float, help='nll_loss coefficient')
 parser.add_argument('-l2_coeff', "--l2_coeff", default=1.0,
