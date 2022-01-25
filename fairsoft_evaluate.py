@@ -356,6 +356,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
         dist_metric = dist_metric.replace(
             '.npy', '').split('/')[-1].split('-')[1]
         fair_results[dist_metric] = {}
+        perform_result[model_trained]
         for model_stat in model_paths:
             print(f'Fair model: {model_stat}')
             model = VAE(args).to(args.device)
@@ -370,6 +371,11 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
             fair_results[dist_metric][
                 model_trained] = [train['fair_mean_diff'], valid['fair_mean_diff']]
+            
+            if model_trained not in perform_result:
+                perform_result[model_trained] = {}
+
+            print(args.perform_metric)
             for perform_metric in args.perform_metric:
                 perform_result[model_trained][perform_metric] = [
                     train[perform_metric], valid[perform_metric]]
