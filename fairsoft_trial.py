@@ -104,7 +104,7 @@ def eval_fairsoft_allmodels(args):
     fair_metrics_sorted = []
     should_add_eo = False
     for met_hparam in fair_metrics:
-        met = met_hparam.split('-')[0]
+        met = met_hparam.split('_')[0]
         if met not in fair_metrics_nested:
             fair_metrics_nested[met] = []
         fair_metrics_nested[met].append(met_hparam)
