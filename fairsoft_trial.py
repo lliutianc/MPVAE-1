@@ -83,9 +83,9 @@ def eval_fairsoft_allmodels(args):
             args.model_dir, f'evaluation-{args.target_label_idx}')
     build_path(eval_results_path)
     fair_results_path = os.path.join(
-        eval_results_path, f'fair_eval_gamma={args.label_z_fair_coeff:.2f}_seed{args.seed:04d}.pkl')
+        eval_results_path, f'fair_eval_gamma={args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
     perform_results_path = os.path.join(
-        eval_results_path, f'perform_eval_gamma={args.label_z_fair_coeff:.2f}_seed{args.seed:04d}.pkl')
+        eval_results_path, f'perform_eval_gamma={args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
 
     if allexists(fair_results_path, perform_results_path) and bool(args.train_new) is False:
         print(
@@ -128,7 +128,7 @@ def eval_fairsoft_allmodels(args):
         for mod in fair_metrics:
             train, valid = fair_results[met][mod]
             result.append(f"{round(train, 5)}~({round(valid, 5)})")
-        
+
         train, valid = fair_results[met]['unfair']
         result.append(f"{round(train, 5)}~({round(valid, 5)})")
         resultrow = met + ' & ' + ' & '.join(result)
