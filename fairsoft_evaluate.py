@@ -355,7 +355,6 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
         dist_metric = dist_metric.replace(
             '.npy', '').split('/')[-1].split('-')[1]
-        dist_metric = '-'.join(dist_metric)
         fair_results[dist_metric] = {}
         for model_stat in model_paths:
             print(f'Fair model: {model_stat}')
