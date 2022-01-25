@@ -63,10 +63,10 @@ def train_fair_demparity_through_regularize(args):
 
     if args.penalize_unfair:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, f'fair_vae_prior-{hparams}-{args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
+            args.model_dir, f'fair_vae_prior-{hparams}-{args.fair_coeff:.2f}_{args.seed:04d}.pkl')
     else:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, f'unfair_vae_prior-{args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
+            args.model_dir, f'unfair_vae_prior-{args.fair_coeff:.2f}_{args.seed:04d}.pkl')
 
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
         print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
@@ -130,10 +130,10 @@ def train_fair_equalodds_through_regularize(args):
 
     if args.penalize_unfair:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, f'fair_vae_prior-{hparams}-{args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
+            args.model_dir, f'fair_vae_prior-{hparams}-{args.fair_coeff:.2f}_{args.seed:04d}.pkl')
     else:
         fair_vae_checkpoint_path = os.path.join(
-            args.model_dir, f'unfair_vae_prior-{args.label_z_fair_coeff:.2f}_{args.seed:04d}.pkl')
+            args.model_dir, f'unfair_vae_prior-{args.fair_coeff:.2f}_{args.seed:04d}.pkl')
 
     if args.train_new == 0 and os.path.exists(fair_vae_checkpoint_path):
         print(f'find trained mpvae: {fair_vae_checkpoint_path}...')
@@ -179,7 +179,3 @@ if __name__ == '__main__':
     build_path(args.model_dir, args.summary_dir)
 
     train_fair_through_regularize(args)
-
-# python fairsoft_baseline.py -dataset adult -latent_dim 8 -epoch 20 -cuda 5 -target_label_idx 0 -penalize_unfair 0
-
-# python fairsoft_baseline.py -dataset adult -latent_dim 8 -epoch 20 -cuda 5 -target_label_idx 0
