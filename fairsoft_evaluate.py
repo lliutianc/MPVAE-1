@@ -370,8 +370,11 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
             fair_results[dist_metric][
                 model_trained] = [train['fair_mean_diff'], valid['fair_mean_diff']]
-            perform_result[model_trained] = [
-                train[args.perform_metric], valid[args.perform_metric]]
+            for perform_metric in args.perform_metric:
+                perform_result[model_trained][perform_metric] = [
+                    train[perform_metric], valid[perform_metric]]
+            # perform_result[model_trained] = [
+            #     train[args.perform_metric], valid[args.perform_metric]]
 
     return fair_results, perform_result
 

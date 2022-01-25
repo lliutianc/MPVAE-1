@@ -82,6 +82,7 @@ def eval_fairsoft_allmodels(args):
         eval_results_path = os.path.join(
             args.model_dir, f'evaluation-{args.target_label_idx}')
     build_path(eval_results_path)
+
     fair_results_path = os.path.join(
         eval_results_path, f'fair_eval_lambda={args.fair_coeff:.2f}_{args.seed:04d}.pkl')
     perform_results_path = os.path.join(
@@ -125,21 +126,20 @@ def eval_fairsoft_allmodels(args):
     logger.logging('\\midrule')
     for met in fair_metrics:
         result = []
-        for mod in fair_metrics:
+        for mod in fair_metrics + ['unfair']:
             train, valid = fair_results[met][mod]
             result.append(f"{round(train, 5)}~({round(valid, 5)})")
 
-        train, valid = fair_results[met]['unfair']
-        result.append(f"{round(train, 5)}~({round(valid, 5)})")
         resultrow = met + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
 
-    result = []
-    for mod in fair_metrics + ['unfair']:
-        train, valid = perform_results[mod]
-        result.append(f"{round(train, 5)}~({round(valid, 5)})")
-    resultrow = args.perform_metric + ' & ' + ' & '.join(result)
-    logger.logging(resultrow + '\\\\')
+    for perform_metric in args.perform_metric:
+        result = []
+        for mod in fair_metrics + ['unfair']:
+            train, valid = perform_results[mod][perform_metric]
+            result.append(f"{round(train, 5)}~({round(valid, 5)})")
+        resultrow = args.perform_metric + ' & ' + ' & '.join(result)
+        logger.logging(resultrow + '\\\\')
     logger.logging('\\bottomrule')
 
 
@@ -151,8 +151,7 @@ if __name__ == '__main__':
     parser.add_argument('-target_label_idx', type=int, default=None)
     parser.add_argument('-target_label', type=str, default=None)
     parser.add_argument('-mask_target_label', type=int, default=0)
-    parser.add_argument('-perform_metric', type=str, default='HA',
-                        choices=['ACC', 'HA', 'ebF1', 'maF1', 'miF1'])
+    parser.add_argument('-perform_metric', type=list, default=['ACC', 'HA', 'ebF1', 'maF1', 'miF1'])
     args = parser.parse_args()
 
     args.device = torch.device(
