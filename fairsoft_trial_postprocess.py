@@ -42,7 +42,7 @@ def train_fairsoft_postprocess(args):
 def eval_fairsoft_allmodels_postprocess(args):
 
     args.model_dir = f"fair_through_postprocess/model/{args.dataset}"
-    
+
     if args.mask_target_label:
         logger = Logger(os.path.join(
             args.model_dir, f'evaluation-{args.target_label_idx}_masked.txt'))
@@ -147,7 +147,7 @@ if __name__ == '__main__':
             eval_fairsoft_allmodels_postprocess(args)
 
 
-# python fairsoft_trial.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -cuda 5
+# python fairsoft_trial_postprocess.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -cuda 5
 
 
-# python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed 1 -epoch 50 -bs 16 -label_z_fair_coeff 1.
+

@@ -9,7 +9,6 @@ import numpy as np
 import torch.nn as nn
 import torch
 from torch import optim
-from zmq import device
 
 from logger import Logger
 from utils import allexists, build_path, search_files
