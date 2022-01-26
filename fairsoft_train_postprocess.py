@@ -64,7 +64,6 @@ def postprocess_threshold_one_epoch(
 
     np.random.shuffle(data.train_idx)
     args.device = threshold.device
-    print(args.device)
 
     print(next(model.parameters()).device)
     smooth_total_loss = 0.
@@ -225,7 +224,7 @@ def train_fair_through_postprocess(args):
         if args.train_new == 0 and os.path.exists(label_dist_path):
             label_dist = pickle.load(open(label_dist_path, 'rb'))
         else:
-            label_dist = constant_similarity(args)
+            label_dist = indication_similarity(args)
             pickle.dump(label_dist, open(label_dist_path, 'wb'))
     else:
         raise NotImplementedError()
