@@ -264,7 +264,7 @@ def train_fair_through_postprocess(args):
 
         threshold = torch.rand(1, labels.shape[1], len(
             np.unique(sensitive_feat, axis=0))) * .1 + .45
-        threshold = nn.parameter(threshold, requires_grad=True)
+        threshold = nn.Parameter(threshold, requires_grad=True)
 
         optimizer = optim.Adam(threshold,
                                 lr=args.learning_rate, weight_decay=1e-5)
