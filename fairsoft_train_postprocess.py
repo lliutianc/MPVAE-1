@@ -9,6 +9,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 from torch import optim
+from torch.autograd import Variable
 
 from logger import Logger
 from utils import allexists, build_path, search_files
@@ -264,9 +265,9 @@ def train_fair_through_postprocess(args):
 
         threshold = torch.rand(1, labels.shape[1], len(
             np.unique(sensitive_feat, axis=0))) * .1 + .45
-        threshold = nn.Parameter(threshold, requires_grad=True)
+        threshold = Variable(threshold, requires_grad=True)
 
-        optimizer = optim.Adam(threshold,
+        optimizer = optim.Adam([threshold],
                                 lr=args.learning_rate, weight_decay=1e-5)
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
