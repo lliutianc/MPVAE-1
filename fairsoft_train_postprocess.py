@@ -64,6 +64,7 @@ def postprocess_threshold_one_epoch(
 
     np.random.shuffle(data.train_idx)
     args.device = threshold.device
+    print(args.device)
 
     print(next(model.parameters()).device)
     smooth_total_loss = 0.
