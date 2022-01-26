@@ -50,11 +50,10 @@ def calibrate_p(p, threshold):
 
 
 def postprocess_threshold_one_epoch(
-        data, model, threshold, optimizer, scheduler, penalize_unfair, target_fair_labels, label_distances, args):
+        data, model, threshold, optimizer, scheduler, target_fair_labels, label_distances, args):
     model.eval()
 
-    if penalize_unfair and target_fair_labels is None:
-        target_fair_labels = list(label_distances.keys())
+    if target_fair_labels is None:
         raise NotImplementedError('Have not supported smooth-OD yet.')
 
     target_fair_labels_str = []
@@ -275,14 +274,13 @@ def train_fair_through_postprocess(args):
 
         args.feature_dim = data.input_feat.shape[1]
         args.label_dim = data.labels.shape[1]
-        
+
         trained_mpvae = load_trained_mpvae_unfair(args)
 
         print('start calibrating probablity...')
         for _ in range(args.max_epoch):
             postprocess_threshold_one_epoch(
                 data, trained_mpvae, threshold, optimizer, scheduler,
-                penalize_unfair=args.penalize_unfair,
                 target_fair_labels=target_fair_labels,
                 label_distances=label_dist,
                 eval_after_one_epoch=True,
