@@ -1,3 +1,4 @@
+from fairsoft_utils import has_finite_grad
 from mpvae import VAE, compute_loss
 import evals
 import numpy as np
@@ -126,7 +127,7 @@ def train_mpvae_softfair_one_epoch(
                                     torch.pow(reg_feat_z_sen - feat_z_weighted, 2))
 
                 fairloss = args.fair_coeff * (reg_label_z_unfair + reg_feat_z_unfair)
-                
+
                 if not isinstance(fairloss, float):
                     total_loss += fairloss
                     smooth_reg_fair += fairloss.item()
@@ -190,17 +191,6 @@ def train_mpvae_softfair_one_epoch(
 
         current_loss, val_metrics = validate_mpvae(
             model, data.input_feat, data.labels, data.valid_idx, args)
-
-
-def has_finite_grad(model):
-    finite_grad = True
-    for param in model.parameters():
-        if param.grad is not None:
-            valid_gradients = not (torch.isnan(
-                param.grad).any() or torch.isinf(param.grad).any())
-            finite_grad = finite_grad and valid_gradients
-
-    return finite_grad
 
 
 def validate_mpvae(model, feat, labels, valid_idx, args):

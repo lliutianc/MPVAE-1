@@ -8,68 +8,41 @@ import numpy as np
 from utils import allexists, build_path
 from logger import Logger
 from fairsoft_utils import retrieve_target_label_idx
+from fairsoft_train_postprocess import train_fair_through_postprocess, evaluate_target_labels
 
 sys.path.append('./')
 
 IMPLEMENTED_METHODS = ['baseline', 'unfair', 'jaccard']
 
 
-def train_fairsoft_arule(args):
-    from fairsoft_arule import train_fair_through_regularize
+def train_fairsoft_postprocess(args):
+    for label_dist in ['constant', 'indication']:
+        param_setting = f"baseline_{args.target_label_idx}"
+        if args.mask_target_label:
+            param_setting += '_masked'
 
-    param_setting = f"arule_{args.target_label_idx}"
-    if args.mask_target_label:
-        param_setting += '_masked'
-    args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
-    args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
-    build_path(args.model_dir, args.summary_dir)
-
-    train_fair_through_regularize(args)
-
-
-def train_fairsoft_baseline(args):
-    from fairsoft_baseline import train_fair_through_regularize
-
-    param_setting = f"baseline_{args.target_label_idx}" if args.penalize_unfair else f"unfair"
-    if args.mask_target_label:
-        param_setting += '_masked'
-    args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
-    args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
-    build_path(args.model_dir, args.summary_dir)
-
-    train_fair_through_regularize(args)
-
-
-def train_fairsoft_hamming(args):
-    from fairsoft_hamming import train_fair_through_regularize
-
-    param_setting = f"hamming_{args.target_label_idx}"
-    if args.mask_target_label:
-        param_setting += '_masked'
-    args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
-    args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
-    build_path(args.model_dir, args.summary_dir)
-
-    train_fair_through_regularize(args)
-
-
-def train_fairsoft_jaccard(args):
-    from fairsoft_jaccard import train_fair_through_regularize
-
+        args.model_dir = f"fair_through_postprocess/model/{args.dataset}/{param_setting}"
+        build_path(args.model_dir)
+        args.label_dist = label_dist
+        train_fair_through_postprocess(args)
+    
     param_setting = f"jaccard_{args.target_label_idx}"
     if args.mask_target_label:
         param_setting += '_masked'
-    args.model_dir = f"fair_through_distance/model/{args.dataset}/{param_setting}"
-    args.summary_dir = f"fair_through_distance/summary/{args.dataset}/{param_setting}"
-    build_path(args.model_dir, args.summary_dir)
 
-    train_fair_through_regularize(args)
+    args.model_dir = f"fair_through_postprocess/model/{args.dataset}/{param_setting}"
+    build_path(args.model_dir)
+    args.label_dist = 'jaccard'
+    for dist_gamma in [.01, 1., 5., 10.]:
+        args.dist_gamma = dist_gamma
+        train_fair_through_postprocess(args)
 
 
-def eval_fairsoft_allmodels(args):
-    from fairsoft_evaluate import evaluate_target_labels
 
-    args.model_dir = f'fair_through_distance/model/{args.dataset}'
+def eval_fairsoft_allmodels_postprocess(args):
+
+    args.model_dir = f"fair_through_postprocess/model/{args.dataset}"
+    
     if args.mask_target_label:
         logger = Logger(os.path.join(
             args.model_dir, f'evaluation-{args.target_label_idx}_masked.txt'))
@@ -109,7 +82,6 @@ def eval_fairsoft_allmodels(args):
             fair_metrics_nested[met] = []
         fair_metrics_nested[met].append(met_hparam)
 
-    # for met in ['constant_function', 'jaccard', 'hamming', 'arule', 'indication_function']:
     for met in ['constant', 'jaccard', 'indication']:
         if met in fair_metrics_nested:
             if len(fair_metrics_nested[met]) > 1:
@@ -160,54 +132,19 @@ if __name__ == '__main__':
     if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
             args, args.target_label)
-        args.penalize_unfair = 0
-        train_fairsoft_baseline(args)
-
-        args.penalize_unfair = 1
-        for dist_gamma in [.01, 1., 5., 10.]:
-            args.dist_gamma = dist_gamma
-            train_fairsoft_jaccard(args)
-            # train_fairsoft_arule(args)
-
-        # train_fairsoft_hamming(args)
-        train_fairsoft_baseline(args)
-        eval_fairsoft_allmodels(args)
+        train_fair_through_postprocess(args)
+        eval_fairsoft_allmodels_postprocess(args)
 
     elif args.target_label_idx is not None:
-        args.penalize_unfair = 0
-        train_fairsoft_baseline(args)
-
-        args.penalize_unfair = 1
-        for dist_gamma in [.01, 1., 5., 10.]:
-            args.dist_gamma = dist_gamma
-            train_fairsoft_jaccard(args)
-
-            # train_fairsoft_arule(args)  # 20308 samples
-
-        # train_fairsoft_hamming(args)  # 21587 samples
-        # train_fairsoft_jaccard(args)  # 19604 samples
-        train_fairsoft_baseline(args)  # eo: 641 samples, dp: 21587 samples
-        eval_fairsoft_allmodels(args)
+        train_fair_through_postprocess(args)
+        eval_fairsoft_allmodels_postprocess(args)
 
     else:
-        args.penalize_unfair = 0
-        train_fairsoft_baseline(args)
-
+    
         for target_label_idx in [0, 10, 20, 50]:
             args.target_label_idx = target_label_idx
-
-            args.penalize_unfair = 0
-            train_fairsoft_baseline(args)
-
-            args.penalize_unfair = 1
-            for dist_gamma in [.01, 1., 5., 10.]:
-                args.dist_gamma = dist_gamma
-                train_fairsoft_jaccard(args)
-                # train_fairsoft_arule(args)
-
-            # train_fairsoft_hamming(args)
-            train_fairsoft_baseline(args)
-            eval_fairsoft_allmodels(args)
+            train_fair_through_postprocess(args)
+            eval_fairsoft_allmodels_postprocess(args)
 
 
 # python fairsoft_trial.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -cuda 5

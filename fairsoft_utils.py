@@ -19,3 +19,14 @@ def retrieve_target_label_idx(args, target_label):
             return idx
 
     return None
+
+
+def has_finite_grad(model):
+    finite_grad = True
+    for param in model.parameters():
+        if param.grad is not None:
+            valid_gradients = not (torch.isnan(
+                param.grad).any() or torch.isinf(param.grad).any())
+            finite_grad = finite_grad and valid_gradients
+
+    return finite_grad
