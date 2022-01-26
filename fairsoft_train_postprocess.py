@@ -283,7 +283,6 @@ def train_fair_through_postprocess(args):
                 data, trained_mpvae, threshold, optimizer, scheduler,
                 target_fair_labels=target_fair_labels,
                 label_distances=label_dist,
-                eval_after_one_epoch=True,
                 args=args)
         
         threshold_np = threshold.cpu().data.numpy()
