@@ -251,7 +251,7 @@ def train_fair_through_postprocess(args):
         else:
             nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
                 args.dataset, args.mode, True, 'onehot')
-
+        
         # Test fairness on some labels
         label_type, count = np.unique(labels, axis=0, return_counts=True)
         count_sort_idx = np.argsort(-count)
@@ -273,6 +273,9 @@ def train_fair_through_postprocess(args):
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
+        args.feature_dim = data.input_feat.shape[1]
+        args.label_dim = data.labels.shape[1]
+        
         trained_mpvae = load_trained_mpvae_unfair(args)
 
         print('start calibrating probablity...')
