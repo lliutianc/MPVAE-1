@@ -163,7 +163,7 @@ def postprocess_threshold_one_epoch(
                 smooth_fair_loss += fair_loss.item()
 
             total_loss.backward()
-            nn.utils.clip_grad_norm_(threshold.parameters(), 10.)
+            nn.utils.clip_grad_norm_(threshold, 10.)
             if has_finite_grad(threshold):
                 optimizer.step()
                 if scheduler:
