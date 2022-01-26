@@ -22,6 +22,11 @@ def retrieve_target_label_idx(args, target_label):
 
 
 def has_finite_grad(model):
+    if isinstance(model, torch.Tensor):
+        valid_gradients = not (torch.isnan(
+            model.grad).any() or torch.isinf(model.grad).any())
+        return valid_gradients
+
     finite_grad = True
     for param in model.parameters():
         if param.grad is not None:
