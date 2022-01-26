@@ -179,7 +179,7 @@ def postprocess_threshold_one_epoch(
             smooth_bce_loss += bce_loss.item()
             smooth_macro_f1 += macro_f1.item()
             smooth_micro_f1 += micro_f1.item()
-
+            smooth_total_loss += total_loss.item()
             # log the labels
 
             running_postfix = {'total_loss': smooth_total_loss / float(i + 1),
