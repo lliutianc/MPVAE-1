@@ -658,8 +658,8 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             print(f'Fair threshold: {threshold_path}')
             model = load_trained_mpvae_unfair(args)
 
-            threshold_path = pickle.load(open(threshold_path, 'rb'))
-            threshold = torch.from_numpy(threshold_path).to(args.device)
+            threshold = pickle.load(open(threshold_path, 'rb'))
+            threshold = torch.from_numpy(threshold).to(args.device)
             train, valid = evaluate_fair_through_postprocess(
                 model, data, target_fair_labels, label_dist, threshold, args, logger=logger)
 
