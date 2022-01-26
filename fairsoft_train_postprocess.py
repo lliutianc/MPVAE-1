@@ -493,9 +493,6 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                             data.sensitive_feat[idx]).to(args.device)
                         sen_belong = torch.all(
                             torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
-
-                        print(threshold) 
-                        print(indiv_prob)
                         cal_prob = calibrate_p(
                             indiv_prob.unsqueeze(-1), logit_threshold)
                         cal_prob = cal_prob.transpose(1, 2)[sen_belong]
