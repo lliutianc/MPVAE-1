@@ -1,4 +1,7 @@
 
+import torch
+
+
 def retrieve_target_label_idx(args, target_label):
     from data import load_data
 
