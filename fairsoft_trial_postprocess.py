@@ -97,7 +97,7 @@ def eval_fairsoft_allmodels_postprocess(args):
     logger.logging('\\midrule')
     for met in fair_metrics:
         result = []
-        for mod in fair_metrics + ['unfair']:
+        for mod in fair_metrics:
             train, valid = fair_results[met][mod]
             result.append(f"{round(train, 5)}~({round(valid, 5)})")
 
@@ -106,7 +106,7 @@ def eval_fairsoft_allmodels_postprocess(args):
 
     for perform_metric in args.perform_metric:
         result = []
-        for mod in fair_metrics + ['unfair']:
+        for mod in fair_metrics:
             train, valid = perform_results[mod][perform_metric]
             result.append(f"{round(train, 5)}~({round(valid, 5)})")
         resultrow = perform_metric + ' & ' + ' & '.join(result)
