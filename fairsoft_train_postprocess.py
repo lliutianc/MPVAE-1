@@ -654,16 +654,16 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             '.npy', '').split('/')[-1].split('-')[1]
         fair_results[dist_metric] = {}
 
-        for threshold in threshold_paths:
+        for threshold_path in threshold_paths:
             print(f'Fair threshold: {threshold}')
             model = load_trained_mpvae_unfair(args)
 
-            threshold = pickle.load(open(threshold, 'rb'))
-            threshold = torch.from_numpy(threshold).to(args.device)
+            threshold_path = pickle.load(open(threshold_path, 'rb'))
+            threshold = torch.from_numpy(threshold_path).to(args.device)
             train, valid = evaluate_fair_through_postprocess(
                 model, data, target_fair_labels, label_dist, threshold, args, logger=logger)
 
-            threshold_trained = threshold.split('/')[-1].split('-')[1]
+            threshold_trained = threshold_path.split('/')[-1].split('-')[1]
 
             fair_results[dist_metric][
                 threshold_trained] = [train['fair_mean_diff'], valid['fair_mean_diff']]
