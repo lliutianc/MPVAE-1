@@ -128,6 +128,7 @@ if __name__ == '__main__':
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
+    print(args.device)
     if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
             args, args.target_label)
