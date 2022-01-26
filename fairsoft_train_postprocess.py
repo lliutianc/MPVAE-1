@@ -65,7 +65,8 @@ def postprocess_threshold_one_epoch(
     succses_updates = 0
     print(data.batch_size)
 
-    sen_centroids = torch.unique(data.sensitive_feat, dim=0)
+    sen_centroids = np.unique(data.sensitive_feat, axis=0)
+    sen_centroids = torch.from_numpy(sen_centroids).to(args.device)
 
     with tqdm(range(int(len(data.train_idx) / float(data.batch_size)) + 1), desc='Train VAE') as t:
         for i in t:
@@ -262,7 +263,7 @@ def train_fair_through_postprocess(args):
             train_idx=train_idx, valid_idx=valid_idx, batch_size=args.batch_size)
 
         threshold = torch.rand(1, labels.shape[1], len(
-            torch.unique(sensitive_feat, dim=0))) * .1 + .45
+            np.unique(sensitive_feat, axis=0))) * .1 + .45
         threshold = nn.parameter(threshold, requires_grad=True)
 
         optimizer = optim.Adam(threshold,
