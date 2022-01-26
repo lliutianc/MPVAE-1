@@ -304,6 +304,9 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
         target_fair_labels_str.append(target_fair_label)
     target_fair_labels = target_fair_labels_str
 
+    sen_centroids = np.unique(data.sensitive_feat, axis=0)
+    sen_centroids = torch.from_numpy(sen_centroids).to(args.device)
+
     with torch.no_grad():
         model.eval()
 
@@ -350,8 +353,14 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                         train_label.append(j)
 
                     if eval_fairness:
-                        feat_z = calibrate_p(indiv_prob, threshold)
-                        calibrated_prob.append(feat_z.cpu().data.numpy())
+                        sensitive_feat = torch.from_numpy(
+                            data.sensitive_feat[idx]).to(args.device)
+                        sen_belong = torch.all(
+                            torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
+
+                        cal_prob = calibrate_p(indiv_prob.unsqueeze(-1), threshold)
+                        cal_prob = cal_prob.transpose(1, 2)[sen_belong]
+                        calibrated_prob.append(cal_prob.cpu().data.numpy())
 
                 train_indiv_prob = np.array(train_indiv_prob)
                 train_label = np.array(train_label)
@@ -480,8 +489,14 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                         valid_label.append(j)
 
                     if eval_fairness:
-                        feat_z = calibrate_p(indiv_prob, threshold)
-                        valid_feat_z.append(feat_z.cpu().data.numpy())
+                        sensitive_feat = torch.from_numpy(
+                            data.sensitive_feat[idx]).to(args.device)
+                        sen_belong = torch.all(
+                            torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
+
+                        cal_prob = calibrate_p(indiv_prob.unsqueeze(-1), threshold)
+                        cal_prob = cal_prob.transpose(1, 2)[sen_belong]
+                        calibrated_prob.append(cal_prob.cpu().data.numpy())
 
                 valid_indiv_prob = np.array(valid_indiv_prob)
                 valid_label = np.array(valid_label)
