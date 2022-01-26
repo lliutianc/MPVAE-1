@@ -291,7 +291,7 @@ def train_fair_through_postprocess(args):
         pickle.dump(threshold_np, open(fair_threshold_path, 'wb'))
 
 
-def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_distances, threshold, args, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
+def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_distances, logit_threshold, args, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
     if eval_fairness and target_fair_labels is None:
         target_fair_labels = list(label_distances.keys())
         raise NotImplementedError('Have not supported smooth-OD yet.')
@@ -358,7 +358,7 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                             torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
 
                         cal_prob = calibrate_p(
-                            indiv_prob.unsqueeze(-1), threshold)
+                            indiv_prob.unsqueeze(-1), logit_threshold)
                         cal_prob = cal_prob.transpose(1, 2)[sen_belong]
                         calibrated_prob.append(cal_prob.cpu().data.numpy())
 
@@ -497,7 +497,7 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                         print(threshold) 
                         print(indiv_prob)
                         cal_prob = calibrate_p(
-                            indiv_prob.unsqueeze(-1), threshold)
+                            indiv_prob.unsqueeze(-1), logit_threshold)
                         cal_prob = cal_prob.transpose(1, 2)[sen_belong]
                         calibrated_prob.append(cal_prob.cpu().data.numpy())
 
