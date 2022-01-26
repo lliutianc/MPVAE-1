@@ -655,7 +655,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
         fair_results[dist_metric] = {}
 
         for threshold_path in threshold_paths:
-            print(f'Fair threshold: {threshold}')
+            print(f'Fair threshold: {threshold_path}')
             model = load_trained_mpvae_unfair(args)
 
             threshold_path = pickle.load(open(threshold_path, 'rb'))
