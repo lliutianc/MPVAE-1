@@ -25,6 +25,17 @@ IMPLEMENTED_METHODS = ['baseline', 'unfair', 'jaccard']
 sys.path.append('./')
 
 
+def load_trained_mpvae_unfair(args):
+    trained_mpvae_path = os.path.join(
+        f'fair_through_distance/model/{args.dataset}/unfair',
+        f'unfair_vae_prior-500.00_{args.seed:04d}.pkl')
+    trained_mpvae = VAE(args).to(args.device)
+    trained_mpvae.load_state_dict(torch.load(trained_mpvae_path))
+
+    trained_mpvae.eval()
+    return trained_mpvae
+
+    
 def logit(p):
     return torch.log(p / (1 - p + 1e-6))
 
@@ -181,16 +192,6 @@ def postprocess_threshold_one_epoch(
 
             t.set_postfix(running_postfix)
 
-
-def load_trained_mpvae_unfair(args):
-    trained_mpvae_path = os.path.join(
-        f'fair_through_distance/model/{args.dataset}/unfair',
-        f'unfair_vae_prior-{args.fair_coeff:.2f}_{args.seed:04d}.pkl')
-    trained_mpvae = VAE(args).to(args.device)
-    trained_mpvae.load_state_dict(torch.load(trained_mpvae_path))
-
-    trained_mpvae.eval()
-    return trained_mpvae
 
 
 def train_fair_through_postprocess(args):
