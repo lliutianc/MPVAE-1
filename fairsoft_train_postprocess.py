@@ -35,7 +35,7 @@ def load_trained_mpvae_unfair(args):
     trained_mpvae.eval()
     return trained_mpvae
 
-    
+
 def logit(p):
     return torch.log(p / (1 - p + 1e-6))
 
@@ -120,7 +120,7 @@ def postprocess_threshold_one_epoch(
             cal_prob = cal_prob.transpose(1, 2)[sen_belong]
 
             bce_loss = -(input_label * torch.log(cal_prob + 1e-6) +
-                        (1 - input_label) * torch.log(1 - cal_prob + 1e-6))
+                         (1 - input_label) * torch.log(1 - cal_prob + 1e-6))
             bce_loss = bce_loss.sum(1).mean()
 
             sensitive_centroids = torch.unique(sensitive_feat, dim=0)
@@ -145,7 +145,7 @@ def postprocess_threshold_one_epoch(
                 if weights.sum() > 0:
                     cal_prob_weighted = torch.sum(
                         cal_prob * weights, axis=0) / weights.sum()
-                    
+
                     for sensitive in sensitive_centroids:
                         target_sensitive = torch.all(
                             torch.eq(sensitive_feat, sensitive), dim=1)
@@ -157,7 +157,7 @@ def postprocess_threshold_one_epoch(
                                 cal_prob_sensitive * weight_sensitive, 0) / weight_sensitive.sum()
                             fair_loss += torch.sum(
                                 torch.pow(reg_cal_prob_sen - cal_prob_weighted, 2))
-                    
+
             if not isinstance(fair_loss, float):
                 total_loss += fair_loss * args.fair_coeff
                 smooth_fair_loss += fair_loss.item()
@@ -185,14 +185,13 @@ def postprocess_threshold_one_epoch(
             running_postfix = {'total_loss': smooth_total_loss / float(i + 1),
                                'smooth_bce_loss': smooth_bce_loss / float(i + 1),
                                'smooth_fair_loss': smooth_fair_loss / float(i + 1),
-                               'maF1': smooth_macro_f1 / float(i + 1) ,
-                               'miF1': smooth_micro_f1 / float(i + 1), 
+                               'maF1': smooth_macro_f1 / float(i + 1),
+                               'miF1': smooth_micro_f1 / float(i + 1),
                                'success_updates': succses_updates,
                                'contributed samples': contributed_reg_fair_sample
                                }
 
             t.set_postfix(running_postfix)
-
 
 
 def train_fair_through_postprocess(args):
@@ -234,7 +233,7 @@ def train_fair_through_postprocess(args):
     fair_threshold_path = os.path.join(
         args.model_dir, f'thresold-{hparams}-{args.fair_coeff:.2f}_{args.seed:04d}.pkl'
     )
-    
+
     if allexists(fair_threshold_path) and bool(args.train_new) is False:
         print(
             f'find fair threshold: {fair_threshold_path}')
@@ -252,7 +251,7 @@ def train_fair_through_postprocess(args):
         else:
             nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
                 args.dataset, args.mode, True, 'onehot')
-        
+
         # Test fairness on some labels
         label_type, count = np.unique(labels, axis=0, return_counts=True)
         count_sort_idx = np.argsort(-count)
@@ -271,7 +270,7 @@ def train_fair_through_postprocess(args):
         # threshold = Variable(threshold.data.cp, requires_grad=True).to(args.device)
 
         optimizer = optim.Adam([threshold],
-                                lr=args.learning_rate, weight_decay=1e-5)
+                               lr=args.learning_rate, weight_decay=1e-5)
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
@@ -287,11 +286,11 @@ def train_fair_through_postprocess(args):
                 target_fair_labels=target_fair_labels,
                 label_distances=label_dist,
                 args=args)
-        
-        threshold_np = threshold.cpu().data.numpy()
-        pickle.dump(threshold_np, open(fair_threshold_path, 'wb'))        
 
-    
+        threshold_np = threshold.cpu().data.numpy()
+        pickle.dump(threshold_np, open(fair_threshold_path, 'wb'))
+
+
 def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_distances, threshold, args, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
     if eval_fairness and target_fair_labels is None:
         target_fair_labels = list(label_distances.keys())
@@ -358,7 +357,8 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                         sen_belong = torch.all(
                             torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
 
-                        cal_prob = calibrate_p(indiv_prob.unsqueeze(-1), threshold)
+                        cal_prob = calibrate_p(
+                            indiv_prob.unsqueeze(-1), threshold)
                         cal_prob = cal_prob.transpose(1, 2)[sen_belong]
                         calibrated_prob.append(cal_prob.cpu().data.numpy())
 
@@ -494,7 +494,8 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                         sen_belong = torch.all(
                             torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
 
-                        cal_prob = calibrate_p(indiv_prob.unsqueeze(-1), threshold)
+                        cal_prob = calibrate_p(
+                            indiv_prob.unsqueeze(-1), threshold)
                         cal_prob = cal_prob.transpose(1, 2)[sen_belong]
                         calibrated_prob.append(cal_prob.cpu().data.numpy())
 
@@ -616,7 +617,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
         param_setting += f'_{args.target_label_idx}'
         if args.mask_target_label:
             param_setting += '_masked'
-        
+
         label_dist_files = search_files(
             os.path.join(args.model_dir, param_setting), postfix='.npy')
 
@@ -664,7 +665,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
                 model, data, target_fair_labels, label_dist, threshold, args, logger=logger)
 
             threshold_trained = threshold.split('/')[-1].split('-')[1]
-            
+
             fair_results[dist_metric][
                 threshold_trained] = [train['fair_mean_diff'], valid['fair_mean_diff']]
 
