@@ -91,6 +91,7 @@ def eval_fairsoft_allmodels_postprocess(args):
             fair_metrics_sorted += met_sorted
     fair_metrics = fair_metrics_sorted
 
+    print(fair_metrics)
     colnames = ' & ' + ' & '.join(fair_metrics)
     logger.logging(colnames + '\\\\')
     logger.logging('\\midrule')
