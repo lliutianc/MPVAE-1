@@ -392,7 +392,7 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                     best_val_metrics['miF1']
 
                 if eval_fairness:
-                    train_feat_z = np.concatenate(train_feat_z)
+                    train_feat_z = np.concatenate(calibrated_prob)
                     assert train_feat_z.shape[0] == len(data.train_idx) and \
                         train_feat_z.shape[1] == data.labels.shape[1]
                     # train_feat_z.shape[1] = args.latent_dim
@@ -528,7 +528,7 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                     best_val_metrics['miF1']
 
                 if eval_fairness:
-                    valid_feat_z = np.concatenate(valid_feat_z)
+                    valid_feat_z = np.concatenate(calibrated_prob)
                     assert valid_feat_z.shape[0] == len(data.valid_idx) and \
                         valid_feat_z.shape[1] == data.labels.shape[1]
                     # valid_feat_z.shape[1] == args.latent_dim
