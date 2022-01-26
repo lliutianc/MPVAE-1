@@ -8,11 +8,10 @@ import numpy as np
 from utils import allexists, build_path
 from logger import Logger
 from fairsoft_utils import retrieve_target_label_idx
-from fairsoft_train_postprocess import train_fair_through_postprocess, evaluate_target_labels
+from fairsoft_train_postprocess import train_fair_through_postprocess, evaluate_target_labels, IMPLEMENTED_METHODS
 
 sys.path.append('./')
 
-IMPLEMENTED_METHODS = ['baseline', 'unfair', 'jaccard']
 
 
 def train_fairsoft_postprocess(args):

@@ -18,7 +18,8 @@ import evals
 from main import THRESHOLDS, METRICS
 from data import load_data, load_data_masked
 from label_distance_obs import jaccard_similarity, constant_similarity, indication_similarity
-from fairsoft_trial_postprocess import IMPLEMENTED_METHODS
+
+IMPLEMENTED_METHODS = ['baseline', 'unfair', 'jaccard']
 
 sys.path.append('./')
 
