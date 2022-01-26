@@ -455,13 +455,13 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
             valid_indiv_prob = []
             valid_label = []
 
+            calibrated_prob = []
             if eval_fairness:
                 valid_feat_z = []
                 valid_sensitive = data.sensitive_feat[data.valid_idx]
             with tqdm(
                     range(int(len(data.valid_idx) / float(data.batch_size)) + 1),
                     desc='Evaluate on validation set') as t:
-
                 for i in t:
                     start = i * data.batch_size
                     end = min(data.batch_size * (i + 1), len(data.valid_idx))
