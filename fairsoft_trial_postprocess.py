@@ -131,18 +131,18 @@ if __name__ == '__main__':
     if args.target_label is not None:
         args.target_label_idx = retrieve_target_label_idx(
             args, args.target_label)
-        train_fair_through_postprocess(args)
+        train_fairsoft_postprocess(args)
         eval_fairsoft_allmodels_postprocess(args)
 
     elif args.target_label_idx is not None:
-        train_fair_through_postprocess(args)
+        train_fairsoft_postprocess(args)
         eval_fairsoft_allmodels_postprocess(args)
 
     else:
     
         for target_label_idx in [0, 10, 20, 50]:
             args.target_label_idx = target_label_idx
-            train_fair_through_postprocess(args)
+            train_fairsoft_postprocess(args)
             eval_fairsoft_allmodels_postprocess(args)
 
 
