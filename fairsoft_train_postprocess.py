@@ -623,7 +623,7 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                 train_sensitive = data.sensitive_feat[subset_idx]
             with tqdm(
                     range(int(len(subset_idx) / float(data.batch_size)) + 1),
-                    desc='Evaluate on training set') as t:
+                    desc=f'Evaluate on {subset} set') as t:
 
                 for i in t:
                     start = i * data.batch_size
