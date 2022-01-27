@@ -224,7 +224,7 @@ def validate_mpvae_softfair(
         contributed_reg_fair_sample = 0
         succses_updates = 0
         print(data.batch_size)
-        with tqdm(range(int(len(data.valid_idx) / float(data.batch_size)) + 1), desc='Train VAE') as t:
+        with tqdm(range(int(len(data.valid_idx) / float(data.batch_size)) + 1), desc='Validate VAE') as t:
             for i in t:
                 start = i * data.batch_size
                 end = min(data.batch_size * (i + 1), len(data.valid_idx))
