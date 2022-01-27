@@ -9,17 +9,87 @@ from utils import allexists
 DATASETPATH = 'dataset/'
 
 
-def load_adult(subset):
+# def load_adult(subset):
+#     _header = [
+#         'age', 'workclass', 'fnlwgt', 'education', 'education_num',
+#         'marital_stat', 'occupation', 'relationship', 'race', 'sex',
+#         'capital_gain', 'capital_loss', 'hours_per_week', 'native_country',
+#         'income_level'
+#     ]
+#     if subset != 'test':
+#         dfpath = DATASETPATH + 'adult/adult.data'
+#     else:
+#         dfpath = DATASETPATH + 'adult/adult.test'
+#     df = pd.read_csv(dfpath, header=None)
+#     df.columns = _header
+#     df['income_level'] = (df['income_level'] == ' <=50K')
+
+#     label_cols = ['income_level', 'occupation', 'workclass']
+#     labels = df[label_cols]
+#     feat = df.drop(label_cols, axis=1)
+#     # The exact computation of fnlwgt is unclear, while it is likely to be highly correlated to sensitive features
+#     feat = feat.drop('fnlwgt', axis=1)
+#     # feat['fnlwgt'] = feat['fnlwgt'] / feat['fnlwgt'].sum()
+#     feat['capital_gain'] = (feat['capital_gain'] - feat['capital_gain'].min()) / \
+#                            (feat['capital_gain'].max() -
+#                             feat['capital_gain'].min())
+#     feat['capital_loss'] = (feat['capital_loss'] - feat['capital_loss'].min()) / \
+#                            (feat['capital_loss'].max() -
+#                             feat['capital_loss'].min())
+
+#     # labels['occupation'] = labels['occupation'].apply(lambda x: x in [' Handlers-cleaners',' Craft-repair', ' Transport-moving', ' Farming-fishing']).astype(int)
+#     # labels['workclass'] = labels['workclass'].apply(lambda x: x in [' Self-emp-not-inc', ' Private', ' Self-emp-inc']).astype(int)
+
+#     sensitive = ['race', 'sex']
+#     return feat, labels, sensitive
+
+
+# def load_credit(subset):
+#     _header = [
+#         'stat_exist_check_account', 'duration', 'cred_hist', 'purpose', 'cred_amt', 'sav_bonds', 'present_employment',
+#         'install_rate', 'gender_marriage', 'guarantor', 'residence_dura', 'property', 'age', 'other_install', 'housing',
+#         'cred_num', 'job', 'people_provide_maintain', 'has_telephone', 'is_foreign', 'is_good'
+#     ]
+#     dfpath = DATASETPATH + 'credit/german.data'
+#     df = pd.read_csv(dfpath, header=None, sep=' ')
+#     df.columns = _header
+#     df['is_good'] = (df['is_good'] == 1)
+
+#     label_cols = ['job', 'present_employment', 'is_good']
+#     labels = df[label_cols]
+#     feat = df.drop(label_cols, axis=1)
+
+#     feat['duration'] = (feat['duration'] - feat['duration'].min()) / \
+#                         (feat['duration'].max() -
+#                         feat['duration'].min())
+#     feat['cred_amt'] = (feat['cred_amt'] - feat['cred_amt'].min()) / \
+#                         (feat['cred_amt'].max() -
+#                         feat['cred_amt'].min())
+#     feat['age'] = np.ceil(feat['age'] / 20).astype(int).astype(str)
+
+#     train_cnt = int(len(feat) * .9)
+#     print(train_cnt)
+#     print(feat.shape)
+#     if subset != 'test':
+#         feat = feat[:train_cnt]
+#         labels = labels[:train_cnt]
+#     else:
+#         feat = feat[train_cnt:]
+#         labels = labels[train_cnt:]
+
+#     sensitive = ['gender_marriage', 'age']
+#     return feat, labels, sensitive
+
+
+def load_adult():
     _header = [
         'age', 'workclass', 'fnlwgt', 'education', 'education_num',
         'marital_stat', 'occupation', 'relationship', 'race', 'sex',
         'capital_gain', 'capital_loss', 'hours_per_week', 'native_country',
         'income_level'
     ]
-    if subset != 'test':
-        dfpath = DATASETPATH + 'adult/adult.data'
-    else:
-        dfpath = DATASETPATH + 'adult/adult.test'
+
+    dfpath = DATASETPATH + 'adult/adult.data'
     df = pd.read_csv(dfpath, header=None)
     df.columns = _header
     df['income_level'] = (df['income_level'] == ' <=50K')
@@ -44,9 +114,9 @@ def load_adult(subset):
     return feat, labels, sensitive
 
 
-def load_credit(subset):
+def load_credit():
     _header = [
-        'stat_exist_check_account', 'duration', 'cred_hist', 'purpose', 'cred_amt', 'sav_bonds', 'present_employment', 
+        'stat_exist_check_account', 'duration', 'cred_hist', 'purpose', 'cred_amt', 'sav_bonds', 'present_employment',
         'install_rate', 'gender_marriage', 'guarantor', 'residence_dura', 'property', 'age', 'other_install', 'housing',
         'cred_num', 'job', 'people_provide_maintain', 'has_telephone', 'is_foreign', 'is_good'
     ]
@@ -60,20 +130,12 @@ def load_credit(subset):
     feat = df.drop(label_cols, axis=1)
 
     feat['duration'] = (feat['duration'] - feat['duration'].min()) / \
-                        (feat['duration'].max() -
-                        feat['duration'].min())
+        (feat['duration'].max() -
+         feat['duration'].min())
     feat['cred_amt'] = (feat['cred_amt'] - feat['cred_amt'].min()) / \
-                        (feat['cred_amt'].max() -
-                        feat['cred_amt'].min())
+        (feat['cred_amt'].max() -
+         feat['cred_amt'].min())
     feat['age'] = np.ceil(feat['age'] / 20).astype(int).astype(str)
-
-    train_cnt = int(len(feat) * .9)
-    if subset != 'test':
-        feat = feat[:train_cnt]
-        labels = labels[:train_cnt]
-    else:
-        feat = feat[train_cnt:]
-        labels = labels[train_cnt:]
 
     sensitive = ['gender_marriage', 'age']
     return feat, labels, sensitive
@@ -178,7 +240,7 @@ def _load_donor_projects(subset=None):
     return feat, sensitive
 
 
-def load_donor(subset):
+def load_donor(subset=None):
     if subset == 'test':
         subset = _load_test_projectid()
     else:
@@ -267,20 +329,20 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
 
     datapath = DATASETPATH + dataset
     sensitive_featfile = os.path.join(
-        datapath, f'sensitive_{categorical_encode}_{mode}.npy')
+        datapath, f'sensitive_{categorical_encode}.npy')
     nonsensitive_featfile = os.path.join(
-        datapath, f'nonsensitive_{categorical_encode}_{mode}.npy')
+        datapath, f'nonsensitive_{categorical_encode}.npy')
     labelfile = os.path.join(
-        datapath, f'label_{categorical_encode}_{mode}.npy')
+        datapath, f'label_{categorical_encode}.npy')
 
     if not allexists(sensitive_featfile, nonsensitive_featfile, labelfile):
         print(f'prepare dataset: {dataset}...')
         if dataset == 'adult':
-            feat, labels, sensitive = load_adult(mode)
+            feat, labels, sensitive = load_adult()
         elif dataset == 'donor':
-            feat, labels, sensitive = load_donor(mode)
+            feat, labels, sensitive = load_donor()
         elif dataset == 'credit':
-            feat, labels, sensitive = load_credit(mode)
+            feat, labels, sensitive = load_credit()
         else:
             raise NotImplementedError()
 
@@ -309,13 +371,23 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
     sensitive_feat = cast_to_float(sensitive_feat)
     nonsensitive_feat = cast_to_float(nonsensitive_feat)
     labels = cast_to_float(labels)
-    
+
+    train_val_cnt = int(0.9 * len(nonsensitive_feat))
     if mode != 'test':
+        nonsensitive_feat = nonsensitive_feat[:train_val_cnt]
+        sensitive_feat = sensitive_feat[:train_val_cnt]
+        labels = labels[:train_val_cnt]
+
         train_cnt, valid_cnt = int(
             len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .3)
         train_idx = np.arange(train_cnt)
         valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+
     else:
+        nonsensitive_feat = nonsensitive_feat[train_val_cnt:]
+        sensitive_feat = sensitive_feat[train_val_cnt:]
+        labels = labels[train_val_cnt:]
+
         train_idx = None
         valid_idx = np.arange(len(nonsensitive_feat))
 
@@ -355,14 +427,25 @@ def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode
     masked_idx = np.arange(len(nonsensitive_feat))[
         np.all([sensitive_mask, label_mask], axis=0)]
 
+    train_val_cnt = int(0.9 * len(nonsensitive_feat))
     if mode != 'test':
+        nonsensitive_feat = nonsensitive_feat[:train_val_cnt]
+        sensitive_feat = sensitive_feat[:train_val_cnt]
+        labels = labels[:train_val_cnt]
+
         train_cnt, valid_cnt = int(
             len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .3)
         train_idx = np.arange(train_cnt)
         valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+
     else:
+        nonsensitive_feat = nonsensitive_feat[train_val_cnt:]
+        sensitive_feat = sensitive_feat[train_val_cnt:]
+        labels = labels[train_val_cnt:]
+
         train_idx = None
         valid_idx = np.arange(len(nonsensitive_feat))
+
 
     if separate_sensitive:
         return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx
