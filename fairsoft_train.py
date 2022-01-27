@@ -5,9 +5,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 from main import THRESHOLDS, METRICS
-from data import load_data
 from tqdm import tqdm
-from torch import optim
 
 import sys
 import datetime

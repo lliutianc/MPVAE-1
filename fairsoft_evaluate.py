@@ -171,12 +171,12 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, subse
 def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
     np.random.seed(args.seed)
-    nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
+    nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx, test_idx = load_data(
         args.dataset, args.mode, True, 'onehot')
 
     data = types.SimpleNamespace(
         input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx,
-        valid_idx=valid_idx, batch_size=args.batch_size, label_clusters=None,
+        valid_idx=valid_idx,  test_idx=test_idx, batch_size=args.batch_size, label_clusters=None,
         sensitive_feat=sensitive_feat)
     args.feature_dim = data.input_feat.shape[1]
     args.label_dim = data.labels.shape[1]
@@ -295,7 +295,7 @@ def evaluate_nearest_neighbor_labels(args, logger=Logger()):
 
 def evaluate_target_labels(args, logger=Logger()):
     np.random.seed(args.seed)
-    _, _, labels, _, _ = load_data(args.dataset, args.mode, True)
+    _, _, labels, _, _, _ = load_data(args.dataset, args.mode, True)
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]

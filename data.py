@@ -395,7 +395,7 @@ def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode
     if not separate_sensitive:
         raise ValueError(
             'can only create masked dataset when `separate_sensitive=True`...')
-    nonsensitive_feat, sensitive_feat, labels, _, _ = load_data(
+    nonsensitive_feat, sensitive_feat, labels, _, _, _ = load_data(
         dataset, mode, separate_sensitive, categorical_encode)
 
     if masked_label is None:

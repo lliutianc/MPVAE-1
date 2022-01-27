@@ -38,10 +38,10 @@ def train_fair_demparity_through_regularize(args):
 
     np.random.seed(args.seed)
     if args.mask_target_label:
-        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
+        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx, test_idx = load_data_masked(
             args.dataset, args.mode, True, 'onehot')
     else:
-        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
+        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx, test_idx = load_data(
             args.dataset, args.mode, True, 'onehot')
 
     # Test fairness on some labels
@@ -55,7 +55,7 @@ def train_fair_demparity_through_regularize(args):
 
     data = types.SimpleNamespace(
         input_feat=nonsensitive_feat, labels=labels, sensitive_feat=sensitive_feat,
-        train_idx=train_idx, valid_idx=valid_idx, batch_size=args.batch_size)
+        train_idx=train_idx, valid_idx=valid_idx, test_idx=test_idx, batch_size=args.batch_size)
     args.feature_dim = data.input_feat.shape[1]
     args.label_dim = data.labels.shape[1]
 
@@ -117,10 +117,10 @@ def train_fair_equalodds_through_regularize(args):
 
     np.random.seed(args.seed)
     if args.mask_target_label:
-        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data_masked(
+        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx, test_idx = load_data_masked(
             args.dataset, args.mode, True, 'onehot')
     else:
-        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
+        nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx, test_idx = load_data(
             args.dataset, args.mode, True, 'onehot')
 
     # Test fairness on some labels
@@ -131,9 +131,10 @@ def train_fair_equalodds_through_regularize(args):
     target_fair_labels = label_type[idx: idx + 1].astype(int)
 
     one_epoch_iter = np.ceil(len(train_idx) / args.batch_size)
+
     data = types.SimpleNamespace(
         input_feat=nonsensitive_feat, labels=labels, sensitive_feat=sensitive_feat,
-        train_idx=train_idx, valid_idx=valid_idx, batch_size=args.batch_size)
+        train_idx=train_idx, valid_idx=valid_idx, test_idx=test_idx, batch_size=args.batch_size)
     args.feature_dim = data.input_feat.shape[1]
     args.label_dim = data.labels.shape[1]
 
