@@ -87,14 +87,14 @@ def train_fair_demparity_through_regularize(args):
                 penalize_unfair=args.penalize_unfair,
                 target_fair_labels=target_fair_labels,
                 label_distances=label_dist,
-                eval_after_one_epoch=True,
+                eval_after_one_epoch=False,
                 args=args)
             eval_total_loss = validate_mpvae_softfair(
                 data, fair_vae,
                 penalize_unfair=args.penalize_unfair,
                 target_fair_labels=target_fair_labels,
-                label_distances=label_dist
-            )
+                label_distances=label_dist,
+                args=args)
 
             if eval_total_loss < best_total_loss:
                 best_total_loss = eval_total_loss
@@ -164,14 +164,14 @@ def train_fair_equalodds_through_regularize(args):
                 penalize_unfair=args.penalize_unfair,
                 target_fair_labels=target_fair_labels,
                 label_distances=label_dist,
-                eval_after_one_epoch=True,
+                eval_after_one_epoch=False,
                 args=args)
             eval_total_loss = validate_mpvae_softfair(
                 data, fair_vae,
                 penalize_unfair=args.penalize_unfair,
                 target_fair_labels=target_fair_labels,
-                label_distances=label_dist
-            )
+                label_distances=label_dist,
+                args=args)
 
             if eval_total_loss < best_total_loss:
                 best_total_loss = eval_total_loss
