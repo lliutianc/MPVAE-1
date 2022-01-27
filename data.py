@@ -421,15 +421,17 @@ def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode
     train_cnt, valid_cnt = int(
         len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
     train_idx = np.arange(train_cnt)
+    
     valid_idx = np.concatenate([
         unmasked_idx[train_cnt: (train_cnt + valid_cnt)],
         masked_idx], axis=0)
 
     test_idx = np.setdiff1d(
         np.arange(len(nonsensitive_feat)),
-        np.concatenate([train_idx, valid_idx]))
+        np.concatenate([train_idx, valid_idx])
+        )
 
     if separate_sensitive:
-        nonsensitive_feat, nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx, test_idx
+        return nonsensitive_feat, nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx, test_idx
     else:
         return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels, train_idx, valid_idx, test_idx
