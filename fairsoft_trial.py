@@ -127,8 +127,8 @@ def eval_fairsoft_allmodels(args):
     for met in fair_metrics:
         result = []
         for mod in fair_metrics + ['unfair']:
-            train, valid = fair_results[met][mod]
-            result.append(f"{round(train, 5)}~({round(valid, 5)})")
+            valid = fair_results[met][mod]
+            result.append(f"{valid:.5f})")
 
         resultrow = met + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
@@ -136,8 +136,8 @@ def eval_fairsoft_allmodels(args):
     for perform_metric in args.perform_metric:
         result = []
         for mod in fair_metrics + ['unfair']:
-            train, valid = perform_results[mod][perform_metric]
-            result.append(f"{round(train, 5)}~({round(valid, 5)})")
+            valid = perform_results[mod][perform_metric]
+            result.append(f"{valid:.5f})")
         resultrow = perform_metric + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
     logger.logging('\\bottomrule')

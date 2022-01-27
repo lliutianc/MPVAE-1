@@ -370,7 +370,8 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
                 model_trained = model_stat.split('/')[-1].split('-')[1]
 
             fair_results[dist_metric][
-                model_trained] = [train['fair_mean_diff'], valid['fair_mean_diff']]
+                # model_trained] = [train['fair_mean_diff'], valid['fair_mean_diff']]
+                model_trained] = [valid['fair_mean_diff']]
 
             if model_trained not in perform_result:
                 perform_result[model_trained] = {}
@@ -378,7 +379,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             print(args.perform_metric)
             for perform_metric in args.perform_metric:
                 perform_result[model_trained][perform_metric] = [
-                    train[perform_metric], valid[perform_metric]]
+                    valid[perform_metric]]
             # perform_result[model_trained] = [
             #     train[args.perform_metric], valid[args.perform_metric]]
 
