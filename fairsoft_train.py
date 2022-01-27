@@ -334,7 +334,7 @@ def validate_mpvae_softfair(
                     running_postfix['contributed_sample'] = contributed_reg_fair_sample
                 t.set_postfix(running_postfix)
 
-    return smooth_total_loss
+    return smooth_total_loss / float(i + 1)
 
 
 def validate_mpvae(model, feat, labels, valid_idx, args):
