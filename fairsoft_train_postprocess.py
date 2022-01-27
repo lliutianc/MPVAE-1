@@ -50,7 +50,7 @@ def calibrate_p(p, threshold):
 
 
 def postprocess_threshold_one_epoch(
-        data, model, threshold, optimizer, scheduler, target_fair_labels, label_distances, args):
+        data, model, threshold_logit, optimizer, scheduler, target_fair_labels, label_distances, args):
     model.eval()
 
     if target_fair_labels is None:
@@ -65,7 +65,6 @@ def postprocess_threshold_one_epoch(
     np.random.shuffle(data.train_idx)
     args.device = threshold.device
 
-    print(next(model.parameters()).device)
     smooth_total_loss = 0.
     smooth_bce_loss = 0.
     smooth_fair_loss = 0.
@@ -115,6 +114,7 @@ def postprocess_threshold_one_epoch(
             sen_belong = torch.all(
                 torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
 
+            threshold = sigmoid(threshold_logit)
             cal_prob = calibrate_p(indiv_prob.unsqueeze(-1), threshold)
             cal_prob = cal_prob.transpose(1, 2)[sen_belong]
 
@@ -162,8 +162,8 @@ def postprocess_threshold_one_epoch(
                 smooth_fair_loss += fair_loss.item()
 
             total_loss.backward()
-            nn.utils.clip_grad_norm_(threshold, 10.)
-            if has_finite_grad(threshold):
+            nn.utils.clip_grad_norm_(threshold_logit, 10.)
+            if has_finite_grad(threshold_logit):
                 optimizer.step()
                 if scheduler:
                     scheduler.step()
@@ -263,12 +263,11 @@ def train_fair_through_postprocess(args):
             input_feat=nonsensitive_feat, labels=labels, sensitive_feat=sensitive_feat,
             train_idx=train_idx, valid_idx=valid_idx, batch_size=args.batch_size)
 
-        threshold = torch.rand(1, labels.shape[1], len(
-            np.unique(sensitive_feat, axis=0)), device=args.device) * .1 + .45
-        threshold.requires_grad = True
-        # threshold = Variable(threshold.data.cp, requires_grad=True).to(args.device)
+        threshold_logit = logit(torch.rand(1, labels.shape[1], len(
+            np.unique(sensitive_feat, axis=0)), device=args.device) * .1 + .45)
+        threshold_logit.requires_grad = True
 
-        optimizer = optim.Adam([threshold],
+        optimizer = optim.Adam([threshold_logit],
                                lr=args.learning_rate, weight_decay=1e-5)
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
@@ -281,16 +280,16 @@ def train_fair_through_postprocess(args):
         print('start calibrating probablity...')
         for _ in range(args.max_epoch):
             postprocess_threshold_one_epoch(
-                data, trained_mpvae, threshold, optimizer, scheduler,
+                data, trained_mpvae, threshold_logit, optimizer, scheduler,
                 target_fair_labels=target_fair_labels,
                 label_distances=label_dist,
                 args=args)
 
-        threshold_np = threshold.cpu().data.numpy()
-        pickle.dump(threshold_np, open(fair_threshold_path, 'wb'))
+        threshold_logit_np = threshold_logit.cpu().data.numpy()
+        pickle.dump(threshold_logit_np, open(fair_threshold_path, 'wb'))
 
 
-def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_distances, logit_threshold, args, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
+def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_distances, threshold_, args, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
     if eval_fairness and target_fair_labels is None:
         target_fair_labels = list(label_distances.keys())
         raise NotImplementedError('Have not supported smooth-OD yet.')
@@ -357,7 +356,7 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                             torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
 
                         cal_prob = calibrate_p(
-                            indiv_prob.unsqueeze(-1), logit_threshold)
+                            indiv_prob.unsqueeze(-1), threshold_)
                         cal_prob = cal_prob.transpose(1, 2)[sen_belong]
                         calibrated_prob.append(cal_prob.cpu().data.numpy())
 
@@ -493,7 +492,7 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                         sen_belong = torch.all(
                             torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
                         cal_prob = calibrate_p(
-                            indiv_prob.unsqueeze(-1), logit_threshold)
+                            indiv_prob.unsqueeze(-1), threshold_)
                         cal_prob = cal_prob.transpose(1, 2)[sen_belong]
                         calibrated_prob.append(cal_prob.cpu().data.numpy())
 
@@ -657,8 +656,9 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             print(f'Fair threshold: {threshold_path}')
             model = load_trained_mpvae_unfair(args)
 
-            threshold = pickle.load(open(threshold_path, 'rb'))
-            threshold = torch.from_numpy(threshold).to(args.device)
+            threshold_logit = pickle.load(open(threshold_path, 'rb'))
+            threshold_logit = torch.from_numpy(threshold_logit).to(args.device)
+            threshold = sigmoid(threshold_logit)
             train, valid = evaluate_fair_through_postprocess(
                 model, data, target_fair_labels, label_dist, threshold, args, logger=logger)
 
