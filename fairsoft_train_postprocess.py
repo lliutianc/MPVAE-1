@@ -289,7 +289,309 @@ def train_fair_through_postprocess(args):
         pickle.dump(threshold_logit_np, open(fair_threshold_path, 'wb'))
 
 
-def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_distances, threshold_, args, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
+# def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_distances, threshold_, args, eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
+#     if eval_fairness and target_fair_labels is None:
+#         target_fair_labels = list(label_distances.keys())
+#         raise NotImplementedError('Have not supported smooth-OD yet.')
+
+#     target_fair_labels_str = []
+#     for target_fair_label in target_fair_labels:
+#         if isinstance(target_fair_label, np.ndarray):
+#             target_fair_label = ''.join(target_fair_label.astype(str))
+#         target_fair_labels_str.append(target_fair_label)
+#     target_fair_labels = target_fair_labels_str
+
+#     sen_centroids = np.unique(data.sensitive_feat, axis=0)
+#     sen_centroids = torch.from_numpy(sen_centroids).to(args.device)
+
+#     with torch.no_grad():
+#         model.eval()
+
+#         if eval_train:
+#             train_nll_loss = 0
+#             train_c_loss = 0
+#             train_total_loss = 0
+
+#             train_indiv_prob = []
+#             train_label = []
+
+#             calibrated_prob = []
+#             if eval_fairness:
+#                 train_feat_z = []
+#                 train_sensitive = data.sensitive_feat[data.train_idx]
+#             with tqdm(
+#                     range(int(len(data.train_idx) / float(data.batch_size)) + 1),
+#                     desc='Evaluate on training set') as t:
+
+#                 for i in t:
+#                     start = i * data.batch_size
+#                     end = min(data.batch_size * (i + 1), len(data.train_idx))
+#                     idx = data.train_idx[start:end]
+
+#                     input_feat = torch.from_numpy(
+#                         data.input_feat[idx]).to(args.device)
+
+#                     input_label = torch.from_numpy(data.labels[idx])
+#                     input_label = deepcopy(input_label).float().to(args.device)
+
+#                     label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
+#                         input_label, input_feat)
+#                     total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob, _ = compute_loss(
+#                         input_label, label_out, label_mu, label_logvar, feat_out, feat_mu,
+#                         feat_logvar, model.r_sqrt_sigma, args)
+
+#                     train_nll_loss += nll_loss.item() * (end - start)
+#                     train_c_loss += c_loss.item() * (end - start)
+#                     train_total_loss += total_loss.item() * (end - start)
+
+#                     for j in deepcopy(indiv_prob).cpu().data.numpy():
+#                         train_indiv_prob.append(j)
+#                     for j in deepcopy(input_label).cpu().data.numpy():
+#                         train_label.append(j)
+
+#                     if eval_fairness:
+#                         sensitive_feat = torch.from_numpy(
+#                             data.sensitive_feat[idx]).to(args.device)
+#                         sen_belong = torch.all(
+#                             torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
+
+#                         cal_prob = calibrate_p(
+#                             indiv_prob.unsqueeze(-1), threshold_)
+#                         cal_prob = cal_prob.transpose(1, 2)[sen_belong]
+#                         calibrated_prob.append(cal_prob.cpu().data.numpy())
+
+#                 train_indiv_prob = np.array(train_indiv_prob)
+#                 train_label = np.array(train_label)
+
+#                 nll_loss = train_nll_loss / len(data.train_idx)
+#                 c_loss = train_c_loss / len(data.train_idx)
+#                 total_loss = train_total_loss / len(data.train_idx)
+
+#                 best_val_metrics = None
+#                 for threshold in THRESHOLDS:
+#                     val_metrics = evals.compute_metrics(
+#                         train_indiv_prob, train_label, threshold, all_metrics=True)
+
+#                     if best_val_metrics is None:
+#                         best_val_metrics = {}
+#                         for metric in METRICS:
+#                             best_val_metrics[metric] = val_metrics[metric]
+#                     else:
+#                         for metric in METRICS:
+#                             if 'FDR' in metric:
+#                                 best_val_metrics[metric] = min(
+#                                     best_val_metrics[metric], val_metrics[metric])
+#                             else:
+#                                 best_val_metrics[metric] = max(
+#                                     best_val_metrics[metric], val_metrics[metric])
+
+#                 acc, ha, ebf1, maf1, mif1 = best_val_metrics['ACC'], best_val_metrics['HA'], \
+#                     best_val_metrics['ebF1'], best_val_metrics['maF1'], \
+#                     best_val_metrics['miF1']
+
+#                 if eval_fairness:
+#                     train_feat_z = np.concatenate(calibrated_prob)
+#                     assert train_feat_z.shape[0] == len(data.train_idx) and \
+#                         train_feat_z.shape[1] == data.labels.shape[1]
+#                     # train_feat_z.shape[1] = args.latent_dim
+
+#                     sensitive_centroid = np.unique(train_sensitive, axis=0)
+#                     idxs = np.arange(len(data.train_idx))
+
+#                     mean_diffs = []
+#                     for target_fair_label in target_fair_labels:
+#                         target_label_dist = label_distances[target_fair_label]
+#                         weights = []
+#                         for label in data.labels[idxs]:
+#                             label = label.astype(int)
+#                             distance = target_label_dist.get(
+#                                 ''.join(label.astype(str)), 0.)
+#                             weights.append(distance)
+#                         weights = np.array(weights).reshape(-1, 1)
+#                         if weights.sum() > 0:
+#                             feat_z_weighted = np.sum(
+#                                 train_feat_z * weights, axis=0) / weights.sum()
+
+#                             for sensitive in sensitive_centroid:
+#                                 target_sensitive = np.all(
+#                                     np.equal(train_sensitive, sensitive), axis=1)
+#                                 feat_z_sensitive = train_feat_z[idxs[target_sensitive]]
+#                                 weights_sensitive = weights[idxs[target_sensitive]]
+#                                 if weights_sensitive.sum() > 0:
+#                                     unfair_feat_z_sen = np.sum(
+#                                         feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
+#                                     mean_diffs.append(
+#                                         np.sum(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
+
+#                     mean_diffs = np.mean(mean_diffs)
+#                     # mean_diffs = np.max(mean_diffs) / \
+#                     #     (np.min(mean_diffs) + 1e-6)
+
+#                     logger.logging(
+#                         "********************train********************")
+#                     logger.logging(
+#                         ' & '.join([
+#                             str(round(m, 4)) for m in [
+#                                 acc, ha, ebf1, maf1, mif1, mean_diffs]]))
+#                     best_val_metrics['fair_mean_diff'] = mean_diffs
+#                 else:
+#                     logger.logging(
+#                         "********************train********************")
+#                     logger.logging(
+#                         ' & '.join(
+#                             [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
+
+#             train_best_metrics = best_val_metrics
+#         else:
+#             train_best_metrics = None
+
+#         if eval_valid:
+#             valid_nll_loss = 0
+#             valid_c_loss = 0
+#             valid_total_loss = 0
+
+#             valid_indiv_prob = []
+#             valid_label = []
+
+#             calibrated_prob = []
+#             if eval_fairness:
+#                 valid_feat_z = []
+#                 valid_sensitive = data.sensitive_feat[data.valid_idx]
+#             with tqdm(
+#                     range(int(len(data.valid_idx) / float(data.batch_size)) + 1),
+#                     desc='Evaluate on validation set') as t:
+#                 for i in t:
+#                     start = i * data.batch_size
+#                     end = min(data.batch_size * (i + 1), len(data.valid_idx))
+#                     idx = data.valid_idx[start:end]
+
+#                     input_feat = torch.from_numpy(
+#                         data.input_feat[idx]).to(args.device)
+
+#                     input_label = torch.from_numpy(data.labels[idx])
+#                     input_label = deepcopy(input_label).float().to(args.device)
+
+#                     label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
+#                         input_label, input_feat)
+#                     total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob, _ = compute_loss(
+#                         input_label, label_out, label_mu, label_logvar, feat_out, feat_mu,
+#                         feat_logvar, model.r_sqrt_sigma, args)
+
+#                     valid_nll_loss += nll_loss.item() * (end - start)
+#                     valid_c_loss += c_loss.item() * (end - start)
+#                     valid_total_loss += total_loss.item() * (end - start)
+
+#                     for j in deepcopy(indiv_prob).cpu().data.numpy():
+#                         valid_indiv_prob.append(j)
+#                     for j in deepcopy(input_label).cpu().data.numpy():
+#                         valid_label.append(j)
+
+#                     if eval_fairness:
+#                         sensitive_feat = torch.from_numpy(
+#                             data.sensitive_feat[idx]).to(args.device)
+#                         sen_belong = torch.all(
+#                             torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
+#                         cal_prob = calibrate_p(
+#                             indiv_prob.unsqueeze(-1), threshold_)
+#                         cal_prob = cal_prob.transpose(1, 2)[sen_belong]
+#                         calibrated_prob.append(cal_prob.cpu().data.numpy())
+
+#                 valid_indiv_prob = np.array(valid_indiv_prob)
+#                 valid_label = np.array(valid_label)
+
+#                 nll_loss = valid_nll_loss / len(data.valid_idx)
+#                 c_loss = valid_c_loss / len(data.valid_idx)
+#                 total_loss = valid_total_loss / len(data.valid_idx)
+
+#                 best_val_metrics = None
+#                 for threshold in THRESHOLDS:
+#                     val_metrics = evals.compute_metrics(
+#                         valid_indiv_prob, valid_label, threshold, all_metrics=True)
+
+#                     if best_val_metrics is None:
+#                         best_val_metrics = {}
+#                         for metric in METRICS:
+#                             best_val_metrics[metric] = val_metrics[metric]
+#                     else:
+#                         for metric in METRICS:
+#                             if 'FDR' in metric:
+#                                 best_val_metrics[metric] = min(
+#                                     best_val_metrics[metric], val_metrics[metric])
+#                             else:
+#                                 best_val_metrics[metric] = max(
+#                                     best_val_metrics[metric], val_metrics[metric])
+
+#                 acc, ha, ebf1, maf1, mif1 = best_val_metrics['ACC'], best_val_metrics['HA'], \
+#                     best_val_metrics['ebF1'], best_val_metrics['maF1'], \
+#                     best_val_metrics['miF1']
+
+#                 if eval_fairness:
+#                     valid_feat_z = np.concatenate(calibrated_prob)
+#                     assert valid_feat_z.shape[0] == len(data.valid_idx) and \
+#                         valid_feat_z.shape[1] == data.labels.shape[1]
+#                     # valid_feat_z.shape[1] == args.latent_dim
+
+#                     sensitive_centroid = np.unique(valid_sensitive, axis=0)
+#                     idxs = np.arange(len(data.valid_idx))
+
+#                     mean_diffs = []
+#                     for target_fair_label in target_fair_labels:
+#                         target_label_dist = label_distances[target_fair_label]
+#                         weights = []
+#                         for label in data.labels[idxs]:
+#                             label = label.astype(int)
+#                             distance = target_label_dist.get(
+#                                 ''.join(label.astype(str)), 0.)
+#                             weights.append(distance)
+#                         weights = np.array(weights).reshape(-1, 1)
+
+#                         if weights.sum() > 0:
+#                             feat_z_weighted = np.sum(
+#                                 valid_feat_z * weights, axis=0) / weights.sum()
+
+#                             for sensitive in sensitive_centroid:
+#                                 target_sensitive = np.all(
+#                                     np.equal(valid_sensitive, sensitive), axis=1)
+#                                 feat_z_sensitive = valid_feat_z[idxs[target_sensitive]]
+#                                 weights_sensitive = weights[idxs[target_sensitive]]
+#                                 if weights_sensitive.sum() > 0:
+#                                     unfair_feat_z_sen = np.sum(
+#                                         feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
+#                                     mean_diffs.append(
+#                                         np.sum(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
+
+#                     mean_diffs = np.mean(mean_diffs)
+#                     # mean_diffs = np.max(mean_diffs) / \
+#                     #     (np.min(mean_diffs) + 1e-6)
+
+#                     logger.logging(
+#                         "********************valid********************")
+#                     logger.logging(
+#                         ' & '.join(
+#                             [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1, mean_diffs]]))
+#                     best_val_metrics['fair_mean_diff'] = mean_diffs
+#                 else:
+#                     logger.logging(
+#                         "********************valid********************")
+#                     logger.logging(
+#                         ' & '.join(
+#                             [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
+
+#             valid_best_metrics = best_val_metrics
+#         else:
+#             valid_best_metrics = None
+
+#     return train_best_metrics, valid_best_metrics
+
+
+def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_distances, threshold_, args, subset='train', eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
+    if subset == 'train':
+        subset_idx = data.train_idx
+    elif subset == 'valid':
+        subset_idx = data.valid_idx
+    else:
+        subset_idx = data.test_idx
+
     if eval_fairness and target_fair_labels is None:
         target_fair_labels = list(label_distances.keys())
         raise NotImplementedError('Have not supported smooth-OD yet.')
@@ -318,15 +620,15 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
             calibrated_prob = []
             if eval_fairness:
                 train_feat_z = []
-                train_sensitive = data.sensitive_feat[data.train_idx]
+                train_sensitive = data.sensitive_feat[subset_idx]
             with tqdm(
-                    range(int(len(data.train_idx) / float(data.batch_size)) + 1),
+                    range(int(len(subset_idx) / float(data.batch_size)) + 1),
                     desc='Evaluate on training set') as t:
 
                 for i in t:
                     start = i * data.batch_size
-                    end = min(data.batch_size * (i + 1), len(data.train_idx))
-                    idx = data.train_idx[start:end]
+                    end = min(data.batch_size * (i + 1), len(subset_idx))
+                    idx = subset_idx[start:end]
 
                     input_feat = torch.from_numpy(
                         data.input_feat[idx]).to(args.device)
@@ -363,9 +665,9 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                 train_indiv_prob = np.array(train_indiv_prob)
                 train_label = np.array(train_label)
 
-                nll_loss = train_nll_loss / len(data.train_idx)
-                c_loss = train_c_loss / len(data.train_idx)
-                total_loss = train_total_loss / len(data.train_idx)
+                nll_loss = train_nll_loss / len(subset_idx)
+                c_loss = train_c_loss / len(subset_idx)
+                total_loss = train_total_loss / len(subset_idx)
 
                 best_val_metrics = None
                 for threshold in THRESHOLDS:
@@ -391,12 +693,11 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
 
                 if eval_fairness:
                     train_feat_z = np.concatenate(calibrated_prob)
-                    assert train_feat_z.shape[0] == len(data.train_idx) and \
+                    assert train_feat_z.shape[0] == len(subset_idx) and \
                         train_feat_z.shape[1] == data.labels.shape[1]
-                    # train_feat_z.shape[1] = args.latent_dim
 
                     sensitive_centroid = np.unique(train_sensitive, axis=0)
-                    idxs = np.arange(len(data.train_idx))
+                    idxs = np.arange(len(subset_idx))
 
                     mean_diffs = []
                     for target_fair_label in target_fair_labels:
@@ -441,147 +742,8 @@ def evaluate_fair_through_postprocess(model, data, target_fair_labels, label_dis
                         ' & '.join(
                             [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
 
-            train_best_metrics = best_val_metrics
-        else:
-            train_best_metrics = None
+        return best_val_metrics
 
-        if eval_valid:
-            valid_nll_loss = 0
-            valid_c_loss = 0
-            valid_total_loss = 0
-
-            valid_indiv_prob = []
-            valid_label = []
-
-            calibrated_prob = []
-            if eval_fairness:
-                valid_feat_z = []
-                valid_sensitive = data.sensitive_feat[data.valid_idx]
-            with tqdm(
-                    range(int(len(data.valid_idx) / float(data.batch_size)) + 1),
-                    desc='Evaluate on validation set') as t:
-                for i in t:
-                    start = i * data.batch_size
-                    end = min(data.batch_size * (i + 1), len(data.valid_idx))
-                    idx = data.valid_idx[start:end]
-
-                    input_feat = torch.from_numpy(
-                        data.input_feat[idx]).to(args.device)
-
-                    input_label = torch.from_numpy(data.labels[idx])
-                    input_label = deepcopy(input_label).float().to(args.device)
-
-                    label_out, label_mu, label_logvar, feat_out, feat_mu, feat_logvar = model(
-                        input_label, input_feat)
-                    total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob, _ = compute_loss(
-                        input_label, label_out, label_mu, label_logvar, feat_out, feat_mu,
-                        feat_logvar, model.r_sqrt_sigma, args)
-
-                    valid_nll_loss += nll_loss.item() * (end - start)
-                    valid_c_loss += c_loss.item() * (end - start)
-                    valid_total_loss += total_loss.item() * (end - start)
-
-                    for j in deepcopy(indiv_prob).cpu().data.numpy():
-                        valid_indiv_prob.append(j)
-                    for j in deepcopy(input_label).cpu().data.numpy():
-                        valid_label.append(j)
-
-                    if eval_fairness:
-                        sensitive_feat = torch.from_numpy(
-                            data.sensitive_feat[idx]).to(args.device)
-                        sen_belong = torch.all(
-                            torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
-                        cal_prob = calibrate_p(
-                            indiv_prob.unsqueeze(-1), threshold_)
-                        cal_prob = cal_prob.transpose(1, 2)[sen_belong]
-                        calibrated_prob.append(cal_prob.cpu().data.numpy())
-
-                valid_indiv_prob = np.array(valid_indiv_prob)
-                valid_label = np.array(valid_label)
-
-                nll_loss = valid_nll_loss / len(data.valid_idx)
-                c_loss = valid_c_loss / len(data.valid_idx)
-                total_loss = valid_total_loss / len(data.valid_idx)
-
-                best_val_metrics = None
-                for threshold in THRESHOLDS:
-                    val_metrics = evals.compute_metrics(
-                        valid_indiv_prob, valid_label, threshold, all_metrics=True)
-
-                    if best_val_metrics is None:
-                        best_val_metrics = {}
-                        for metric in METRICS:
-                            best_val_metrics[metric] = val_metrics[metric]
-                    else:
-                        for metric in METRICS:
-                            if 'FDR' in metric:
-                                best_val_metrics[metric] = min(
-                                    best_val_metrics[metric], val_metrics[metric])
-                            else:
-                                best_val_metrics[metric] = max(
-                                    best_val_metrics[metric], val_metrics[metric])
-
-                acc, ha, ebf1, maf1, mif1 = best_val_metrics['ACC'], best_val_metrics['HA'], \
-                    best_val_metrics['ebF1'], best_val_metrics['maF1'], \
-                    best_val_metrics['miF1']
-
-                if eval_fairness:
-                    valid_feat_z = np.concatenate(calibrated_prob)
-                    assert valid_feat_z.shape[0] == len(data.valid_idx) and \
-                        valid_feat_z.shape[1] == data.labels.shape[1]
-                    # valid_feat_z.shape[1] == args.latent_dim
-
-                    sensitive_centroid = np.unique(valid_sensitive, axis=0)
-                    idxs = np.arange(len(data.valid_idx))
-
-                    mean_diffs = []
-                    for target_fair_label in target_fair_labels:
-                        target_label_dist = label_distances[target_fair_label]
-                        weights = []
-                        for label in data.labels[idxs]:
-                            label = label.astype(int)
-                            distance = target_label_dist.get(
-                                ''.join(label.astype(str)), 0.)
-                            weights.append(distance)
-                        weights = np.array(weights).reshape(-1, 1)
-
-                        if weights.sum() > 0:
-                            feat_z_weighted = np.sum(
-                                valid_feat_z * weights, axis=0) / weights.sum()
-
-                            for sensitive in sensitive_centroid:
-                                target_sensitive = np.all(
-                                    np.equal(valid_sensitive, sensitive), axis=1)
-                                feat_z_sensitive = valid_feat_z[idxs[target_sensitive]]
-                                weights_sensitive = weights[idxs[target_sensitive]]
-                                if weights_sensitive.sum() > 0:
-                                    unfair_feat_z_sen = np.sum(
-                                        feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
-                                    mean_diffs.append(
-                                        np.sum(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
-
-                    mean_diffs = np.mean(mean_diffs)
-                    # mean_diffs = np.max(mean_diffs) / \
-                    #     (np.min(mean_diffs) + 1e-6)
-
-                    logger.logging(
-                        "********************valid********************")
-                    logger.logging(
-                        ' & '.join(
-                            [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1, mean_diffs]]))
-                    best_val_metrics['fair_mean_diff'] = mean_diffs
-                else:
-                    logger.logging(
-                        "********************valid********************")
-                    logger.logging(
-                        ' & '.join(
-                            [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
-
-            valid_best_metrics = best_val_metrics
-        else:
-            valid_best_metrics = None
-
-    return train_best_metrics, valid_best_metrics
 
 
 def evaluate_target_labels(args, logger=Logger()):
@@ -659,13 +821,16 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             threshold_logit = pickle.load(open(threshold_path, 'rb'))
             threshold_logit = torch.from_numpy(threshold_logit).to(args.device)
             threshold = sigmoid(threshold_logit)
-            train, valid = evaluate_fair_through_postprocess(
-                model, data, target_fair_labels, label_dist, threshold, args, logger=logger)
+
+            results = []
+            for subset in ['train', 'valid', 'test']:
+                subset.append(evaluate_fair_through_postprocess(
+                    model, data, target_fair_labels, label_dist, threshold, args, subset=subset, logger=logger))
 
             threshold_trained = threshold_path.split('/')[-1].split('-')[1]
 
             fair_results[dist_metric][
-                threshold_trained] = [train['fair_mean_diff'], valid['fair_mean_diff']]
+                threshold_trained] = [subset['fair_mean_diff'] for subset in results]
 
             if threshold_trained not in perform_result:
                 perform_result[threshold_trained] = {}
@@ -673,6 +838,6 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             print(args.perform_metric)
             for perform_metric in args.perform_metric:
                 perform_result[threshold_trained][perform_metric] = [
-                    train[perform_metric], valid[perform_metric]]
+                    subset[perform_metric] for subset in results]
 
     return fair_results, perform_result
