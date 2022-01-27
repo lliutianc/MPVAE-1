@@ -14,7 +14,7 @@ from data import load_data, load_data_masked
 from label_distance_obs import jaccard_similarity
 
 from main import THRESHOLDS, METRICS
-from fairsoft_train import train_mpvae_softfair_one_epoch
+from fairsoft_train import train_mpvae_softfair_one_epoch, validate_mpvae_softfair
 
 
 def train_fair_through_regularize(args):
@@ -67,6 +67,7 @@ def train_fair_through_regularize(args):
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
 
         print('start training fair mpvae...')
+        best_total_loss = np.inf
         for _ in range(args.max_epoch):
             train_mpvae_softfair_one_epoch(
                 data, fair_vae, optimizer, scheduler,
@@ -75,8 +76,17 @@ def train_fair_through_regularize(args):
                 label_distances=label_dist,
                 eval_after_one_epoch=True,
                 args=args)
+            eval_total_loss = validate_mpvae_softfair(
+                data, fair_vae,
+                penalize_unfair=args.penalize_unfair,
+                target_fair_labels=target_fair_labels,
+                label_distances=label_dist
+            )
 
-        torch.save(fair_vae.cpu().state_dict(), fair_vae_checkpoint_path)
+            if eval_total_loss < best_total_loss:
+                best_total_loss = eval_total_loss
+                torch.save(fair_vae.cpu().state_dict(),
+                           fair_vae_checkpoint_path)
 
 
 if __name__ == '__main__':

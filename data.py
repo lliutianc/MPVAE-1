@@ -44,7 +44,7 @@ def load_adult(subset):
     return feat, labels, sensitive
 
 
-def load_credit(unused_subset):
+def load_credit(subset):
     _header = [
         'stat_exist_check_account', 'duration', 'cred_hist', 'purpose', 'cred_amt', 'sav_bonds', 'present_employment', 
         'install_rate', 'gender_marriage', 'guarantor', 'residence_dura', 'property', 'age', 'other_install', 'housing',
@@ -66,6 +66,14 @@ def load_credit(unused_subset):
                         (feat['cred_amt'].max() -
                         feat['cred_amt'].min())
     feat['age'] = np.ceil(feat['age'] / 20).astype(int).astype(str)
+
+    train_cnt = int(len(feat) * .9)
+    if subset != 'test':
+        feat = feat[:train_cnt]
+        labels = labels[:train_cnt]
+    else:
+        feat = feat[train_cnt:]
+        labels = labels[train_cnt:]
 
     sensitive = ['gender_marriage', 'age']
     return feat, labels, sensitive
@@ -259,11 +267,11 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
 
     datapath = DATASETPATH + dataset
     sensitive_featfile = os.path.join(
-        datapath, f'sensitive_{categorical_encode}.npy')
+        datapath, f'sensitive_{categorical_encode}_{mode}.npy')
     nonsensitive_featfile = os.path.join(
-        datapath, f'nonsensitive_{categorical_encode}.npy')
+        datapath, f'nonsensitive_{categorical_encode}_{mode}.npy')
     labelfile = os.path.join(
-        datapath, f'label_{categorical_encode}.npy')
+        datapath, f'label_{categorical_encode}_{mode}.npy')
 
     if not allexists(sensitive_featfile, nonsensitive_featfile, labelfile):
         print(f'prepare dataset: {dataset}...')
@@ -301,11 +309,15 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
     sensitive_feat = cast_to_float(sensitive_feat)
     nonsensitive_feat = cast_to_float(nonsensitive_feat)
     labels = cast_to_float(labels)
-
-    train_cnt, valid_cnt = int(
-        len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .3)
-    train_idx = np.arange(train_cnt)
-    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+    
+    if mode != 'test':
+        train_cnt, valid_cnt = int(
+            len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .3)
+        train_idx = np.arange(train_cnt)
+        valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+    else:
+        train_idx = None
+        valid_idx = np.arange(nonsensitive_feat)
 
     if separate_sensitive:
         return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx
@@ -343,12 +355,14 @@ def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode
     masked_idx = np.arange(len(nonsensitive_feat))[
         np.all([sensitive_mask, label_mask], axis=0)]
 
-    train_cnt, valid_cnt = int(
-        len(unmasked_idx) * 0.7), int(len(unmasked_idx) * .3)
-    train_idx = unmasked_idx[:train_cnt]
-    valid_idx = np.concatenate([
-        unmasked_idx[train_cnt: (train_cnt + valid_cnt)],
-        masked_idx], axis=0)
+    if mode != 'test':
+        train_cnt, valid_cnt = int(
+            len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .3)
+        train_idx = np.arange(train_cnt)
+        valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+    else:
+        train_idx = None
+        valid_idx = np.arange(nonsensitive_feat)
 
     if separate_sensitive:
         return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx

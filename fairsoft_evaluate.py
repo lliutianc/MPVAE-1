@@ -34,7 +34,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
     with torch.no_grad():
         model.eval()
 
-        if eval_train:
+        if eval_train and data.train_idx is not None:
             train_nll_loss = 0
             train_c_loss = 0
             train_total_loss = 0
@@ -167,7 +167,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, eval_
         else:
             train_best_metrics = None
 
-        if eval_valid:
+        if eval_valid and data.valid_idx is not None:
             valid_nll_loss = 0
             valid_c_loss = 0
             valid_total_loss = 0

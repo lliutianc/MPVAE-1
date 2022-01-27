@@ -67,6 +67,7 @@ def train_fairsoft_jaccard(args):
 
 
 def eval_fairsoft_allmodels(args):
+    args.mode = 'test'
     from fairsoft_evaluate import evaluate_target_labels
 
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
