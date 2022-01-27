@@ -317,7 +317,7 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
         valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
     else:
         train_idx = None
-        valid_idx = np.arange(nonsensitive_feat)
+        valid_idx = np.arange(len(nonsensitive_feat))
 
     if separate_sensitive:
         return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx
@@ -362,7 +362,7 @@ def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode
         valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
     else:
         train_idx = None
-        valid_idx = np.arange(nonsensitive_feat)
+        valid_idx = np.arange(len(nonsensitive_feat))
 
     if separate_sensitive:
         return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx
