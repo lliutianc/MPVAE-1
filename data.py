@@ -373,28 +373,19 @@ def load_data(dataset, mode, separate_sensitive=False, categorical_encode='oneho
     labels = cast_to_float(labels)
 
     train_val_cnt = int(0.9 * len(nonsensitive_feat))
-    if mode != 'test':
-        nonsensitive_feat = nonsensitive_feat[:train_val_cnt]
-        sensitive_feat = sensitive_feat[:train_val_cnt]
-        labels = labels[:train_val_cnt]
 
-        train_cnt, valid_cnt = int(
-            len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .3)
-        train_idx = np.arange(train_cnt)
-        valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
-
-    else:
-        nonsensitive_feat = nonsensitive_feat[train_val_cnt:]
-        sensitive_feat = sensitive_feat[train_val_cnt:]
-        labels = labels[train_val_cnt:]
-
-        train_idx = None
-        valid_idx = np.arange(len(nonsensitive_feat))
+    train_cnt, valid_cnt = int(
+    len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
+    train_idx = np.arange(train_cnt)
+    valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
+    test_idx = np.setdiff1d(
+        np.arange(len(nonsensitive_feat)),
+        np.concatenate([train_idx, valid_idx]))
 
     if separate_sensitive:
-        return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx
+        return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx, test_idx
     else:
-        return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels, train_idx, valid_idx
+        return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels, train_idx, valid_idx, test_idx
 
 
 def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode='onehot', masked_label=None, unmasked_sensitive=None):
@@ -427,27 +418,18 @@ def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode
     masked_idx = np.arange(len(nonsensitive_feat))[
         np.all([sensitive_mask, label_mask], axis=0)]
 
-    train_val_cnt = int(0.9 * len(nonsensitive_feat))
-    if mode != 'test':
-        nonsensitive_feat = nonsensitive_feat[:train_val_cnt]
-        sensitive_feat = sensitive_feat[:train_val_cnt]
-        labels = labels[:train_val_cnt]
+    train_cnt, valid_cnt = int(
+        len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
+    train_idx = np.arange(train_cnt)
+    valid_idx = np.concatenate([
+        unmasked_idx[train_cnt: (train_cnt + valid_cnt)],
+        masked_idx], axis=0)
 
-        train_cnt, valid_cnt = int(
-            len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .3)
-        train_idx = np.arange(train_cnt)
-        valid_idx = np.arange(train_cnt, valid_cnt + train_cnt)
-
-    else:
-        nonsensitive_feat = nonsensitive_feat[train_val_cnt:]
-        sensitive_feat = sensitive_feat[train_val_cnt:]
-        labels = labels[train_val_cnt:]
-
-        train_idx = None
-        valid_idx = np.arange(len(nonsensitive_feat))
-
+    test_idx = np.setdiff1d(
+        np.arange(len(nonsensitive_feat)),
+        np.concatenate([train_idx, valid_idx]))
 
     if separate_sensitive:
-        return nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx
+        nonsensitive_feat, nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx, test_idx
     else:
-        return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels, train_idx, valid_idx
+        return np.concatenate([nonsensitive_feat, sensitive_feat], axis=1), labels, train_idx, valid_idx, test_idx
