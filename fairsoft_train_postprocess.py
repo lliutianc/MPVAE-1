@@ -63,7 +63,7 @@ def postprocess_threshold_one_epoch(
     target_fair_labels = target_fair_labels_str
 
     np.random.shuffle(data.train_idx)
-    args.device = threshold.device
+    args.device = threshold_logit.device
 
     smooth_total_loss = 0.
     smooth_bce_loss = 0.
