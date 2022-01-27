@@ -136,6 +136,7 @@ def train_fair_equalodds_through_regularize(args):
     args.label_dim = data.labels.shape[1]
 
     fair_vae = VAE(args).to(args.device)
+    print(next(fair_vae.parameters()).device)
     fair_vae.train()
 
     if args.penalize_unfair:

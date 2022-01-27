@@ -31,8 +31,8 @@ def train_mpvae_softfair_one_epoch(
 
     np.random.shuffle(data.train_idx)
     print(args.device)
-    args.device = next(model.parameters()).device
-    print(args.device)
+    # args.device = next(model.parameters()).device
+    # print(args.device)
     smooth_nll_loss = 0.0  # label encoder decoder cross entropy loss
     smooth_nll_loss_x = 0.0  # feature encoder decoder cross entropy loss
     smooth_c_loss = 0.0  # label encoder decoder ranking loss
