@@ -1,3 +1,4 @@
+from copy import deepcopy
 import sys
 import os
 import pickle
@@ -98,7 +99,8 @@ def train_fair_demparity_through_regularize(args):
 
             if eval_total_loss < best_total_loss:
                 best_total_loss = eval_total_loss
-                torch.save(fair_vae.cpu().state_dict(),
+                checkpoint = deepcopy(fair_vae)
+                torch.save(checkpoint.cpu().state_dict(),
                            fair_vae_checkpoint_path)
 
 
@@ -176,7 +178,8 @@ def train_fair_equalodds_through_regularize(args):
 
             if eval_total_loss < best_total_loss:
                 best_total_loss = eval_total_loss
-                torch.save(fair_vae.cpu().state_dict(),
+                checkpoint = deepcopy(fair_vae)
+                torch.save(checkpoint.cpu().state_dict(),
                            fair_vae_checkpoint_path)
 
 
