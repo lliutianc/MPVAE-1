@@ -194,7 +194,7 @@ def train_mpvae_softfair_one_epoch(
 
 def validate_mpvae_softfair(
         data, model, penalize_unfair, target_fair_labels, label_distances, args):
-    args.device = next(model.parameters()).device
+    # args.device = next(model.parameters()).device
     with torch.no_grad():
         model.eval()
 
