@@ -1,4 +1,5 @@
 import sys
+from copy import deepcopy
 import os
 import pickle
 import types
