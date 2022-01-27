@@ -327,7 +327,6 @@ def validate_mpvae_softfair(
                 running_postfix = {'total_loss': smooth_total_loss / float(i + 1),
                                    'nll_loss_label': smooth_nll_loss / float(i + 1),
                                    'nll_loss_feat': smooth_nll_loss_x / float(i + 1),
-                                   'success_updates': succses_updates,
                                    }
                 if penalize_unfair:
                     running_postfix['fair_loss'] = smooth_reg_fair / \
