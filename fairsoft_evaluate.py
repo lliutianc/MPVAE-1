@@ -24,6 +24,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, subse
         target_fair_labels = list(label_distances.keys())
         raise NotImplementedError('Have not supported smooth-OD yet.')
 
+    print(next(model.parameters()).device)
     if subset == 'train':
         subset_idx = data.train_idx
     elif subset == 'valid':
@@ -240,7 +241,7 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
 
             fair_results[dist_metric][
                 model_trained] = [subset['fair_mean_diff'] for subset in results]
-                
+
             if model_trained not in perform_result:
                 perform_result[model_trained] = {}
 
