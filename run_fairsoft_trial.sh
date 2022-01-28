@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=run_fairsoft_trial
-#SBATCH --gres=gpu:k20:1
+#SBATCH --gres=gpu:k80:1
 #SBATCH --mem-per-cpu=8G
 #SBATCH --mail-type=END
 
