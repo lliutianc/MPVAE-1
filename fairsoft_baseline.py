@@ -98,10 +98,11 @@ def train_fair_demparity_through_regularize(args):
                 args=args)
 
             if eval_total_loss < best_total_loss:
-                best_total_loss = eval_total_loss
+                # best_total_loss = eval_total_loss
                 checkpoint = deepcopy(fair_vae)
                 torch.save(checkpoint.cpu().state_dict(),
                            fair_vae_checkpoint_path)
+                del checkpoint
 
 
 def train_fair_equalodds_through_regularize(args):
@@ -177,10 +178,11 @@ def train_fair_equalodds_through_regularize(args):
                 args=args)
 
             if eval_total_loss < best_total_loss:
-                best_total_loss = eval_total_loss
+                # best_total_loss = eval_total_loss
                 checkpoint = deepcopy(fair_vae)
                 torch.save(checkpoint.cpu().state_dict(),
                            fair_vae_checkpoint_path)
+                del checkpoint
 
 
 if __name__ == '__main__':
