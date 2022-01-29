@@ -40,7 +40,7 @@ def run_one_instance(seed=0, dataset='credit', batch_size=32, epochs=200, fair_c
 
 def run_parallel_setting(dataset, batch_size, epochs, fair_coeff):
     # different seed, same fair coeff
-    seeds = list(range(10))
+    seeds = list(range(1, 11))
     Parallel(
         n_jobs=len(seeds),
         verbose=100,
