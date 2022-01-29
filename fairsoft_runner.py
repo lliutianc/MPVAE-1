@@ -70,15 +70,15 @@ if __name__ == '__main__':
             dataset='credit',
             mask_target_label=args.mask_target_label,
             batch_size=32,
-            epochs=200,
+            epochs=500,
             fair_coeff=fair_coeff
         )
-        run_parallel_setting(
-            dataset='adult',
-            mask_target_label=args.mask_target_label,
-            batch_size=128,
-            epochs=20,
-            fair_coeff=fair_coeff
-        )
+        # run_parallel_setting(
+        #     dataset='adult',
+        #     mask_target_label=args.mask_target_label,
+        #     batch_size=128,
+        #     epochs=20,
+        #     fair_coeff=fair_coeff
+        # )
 
 # python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -seed 1 -epoch 200 -bs 32 -fair_coeff 0.1
