@@ -63,19 +63,18 @@ def run_parallel_setting(dataset, mask_target_label, batch_size, epochs, fair_co
 if __name__ == '__main__':
 
     args = parser.parse_args()
-    args.device = torch.device(
-        f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
+    os.environ["CUDA_VISIBLE_DEVICES"] = f"{args.device}"
 
     for fair_coeff in [0.1, 1., 10., 100., 500., 1000., 5000]:
         run_parallel_setting(
-            dataset='credit', 
+            dataset='credit',
             mask_target_label=args.mask_target_label,
             batch_size=32,
             epochs=200,
             fair_coeff=fair_coeff
         )
         run_parallel_setting(
-            dataset='adult', 
+            dataset='adult',
             mask_target_label=args.mask_target_label,
             batch_size=128,
             epochs=20,
