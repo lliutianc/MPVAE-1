@@ -63,7 +63,7 @@ def run_parallel_setting(dataset, mask_target_label, batch_size, epochs, fair_co
 if __name__ == '__main__':
 
     args = parser.parse_args()
-    os.environ["CUDA_VISIBLE_DEVICES"] = f"{args.device}"
+    os.environ["CUDA_VISIBLE_DEVICES"] = f"{args.cuda}"
 
     for fair_coeff in [0.1, 1., 10., 100., 500., 1000., 5000]:
         run_parallel_setting(
