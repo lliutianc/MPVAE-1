@@ -14,12 +14,9 @@ def generate_script_call_args(**kwargs):
         os.path.join(my_dir, 'fairsoft_trial.py')
     ] + list(itertools.chain(*[(f'-{k}', str(v)) for k, v in kwargs.items()]))
 
-
-# def run_one_instance(seed=0, dataset='credit', batch_size=32, epochs=200, fair_coeff=0.1, debug=False):
     
 
 def submit_one_instance(dataset='credit', mask_target_label=1, batch_size=32, epochs=200, fair_coeff=0.1, debug=False):
-
     def run_one_instance(seed):
         args = generate_script_call_args(dataset=dataset,
                                          latent_dim=8,
