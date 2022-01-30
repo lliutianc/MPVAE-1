@@ -68,5 +68,5 @@ if __name__ == '__main__':
         #     fair_coeff=fair_coeff
         # )
         submit_one_instance(dataset='adult', mask_target_label=1,
-                            batch_size=128, epochs=20, fair_coeff=1)(4)
+                            batch_size=128, epochs=20, fair_coeff=1, debug=True)(4)
 # python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -seed 1 -epoch 200 -bs 32 -fair_coeff 0.1
