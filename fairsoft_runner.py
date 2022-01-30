@@ -42,7 +42,7 @@ def submit_one_instance(dataset='credit', mask_target_label=1, batch_size=32, ep
             kwargs = {
                 'capture_output': False,
                 'stdout': subprocess.DEVNULL,
-                'stderr': subprocess.DEVNULL
+                'stderr': subprocess.STDOUT
             }
         subprocess.run(args, check=True, **kwargs)
 
@@ -81,4 +81,4 @@ if __name__ == '__main__':
         #     fair_coeff=fair_coeff
         # )
 
-# python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -seed 1 -epoch 200 -bs 32 -fair_coeff 0.1
+# python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -seed 1 -epoch 500 -bs 32 -fair_coeff 0.1
