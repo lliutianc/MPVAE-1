@@ -37,6 +37,8 @@ def submit_one_instance(dataset='credit', mask_target_label=1, batch_size=32, ep
                 'stderr': subprocess.STDOUT
             }
         subprocess.run(args, check=True, **kwargs)
+        
+        print(args)
 
     return run_one_instance
 
