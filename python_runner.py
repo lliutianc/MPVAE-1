@@ -56,17 +56,17 @@ def run_parallel_setting(dataset, mask_target_label, batch_size, epochs, fair_co
 if __name__ == '__main__':
 
     for fair_coeff in [0.1, 1., 10., 100., 500., 1000., 5000]:
-        run_parallel_setting(
-            dataset='credit', mask_target_label=1,  
-            batch_size=32, 
-            epochs=200, 
-            fair_coeff=fair_coeff
-            )
-        run_parallel_setting(
-            dataset='adult', mask_target_label=1,
-            batch_size=128,
-            epochs=20,
-            fair_coeff=fair_coeff
-        )
-        
+        # run_parallel_setting(
+        #     dataset='credit', mask_target_label=1,  
+        #     batch_size=32, 
+        #     epochs=200, 
+        #     fair_coeff=fair_coeff
+        #     )
+        # run_parallel_setting(
+        #     dataset='adult', mask_target_label=1,
+        #     batch_size=128,
+        #     epochs=20,
+        #     fair_coeff=fair_coeff
+        # )
+        submit_one_instance(dataset='adult', mask_target_label=1, batch_size=128, epoch=20, fair_coeff=1)
 # python fairsoft_trial.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -seed 1 -epoch 200 -bs 32 -fair_coeff 0.1
