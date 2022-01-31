@@ -79,10 +79,11 @@ def evaluate_models_over_label_distances(args):
         else:
             model_trained = '-'.join(model_trained.split('-')[1:])
         results[model_trained] = {}
+        print(model_trained)
 
-        for gamma in [.01, 0.05, .1, .5, 1., 1.5,  2., 5., 10.]:
-            args.gamma = gamma
-            dist_metric = f'{hparam_distance}_{gamma}'
+        for dist_gamma in [.01, 0.05, .1, .5, 1., 1.5,  2., 5., 10.]:
+            args.dist_gamma = dist_gamma
+            dist_metric = f'{hparam_distance}_{args.dist_gamma}'
             label_dist_path = os.path.join(
                 args.model_dir, 'sim_evaluation',
                 f'label_dist-{dist_metric}.npy')
