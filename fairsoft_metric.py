@@ -55,8 +55,8 @@ def evaluate_models_over_label_distances(args):
     for model in args.eval_models:
         if model != 'unfair':
             model += f'_{args.target_label_idx}'
-            if args.mask_target_label:
-                model += '_masked'
+        if args.mask_target_label:
+            model += '_masked'
         model_files = search_files(os.path.join(
             args.model_dir, model), postfix=f'-{args.fair_coeff:.2f}_{args.seed:04d}.pkl')
         # avoid adding more results
