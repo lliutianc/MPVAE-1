@@ -26,7 +26,7 @@ sys.path.append('./')
 
 def evaluate_models_over_label_distances(args):
     np.random.seed(args.seed)
-    _, _, labels, _, _ = load_data(args.dataset, args.mode, True)
+    _, _, labels, _, _, _ = load_data(args.dataset, args.mode, True)
     label_type, count = np.unique(labels, axis=0, return_counts=True)
     count_sort_idx = np.argsort(-count)
     label_type = label_type[count_sort_idx]
@@ -34,12 +34,12 @@ def evaluate_models_over_label_distances(args):
     target_fair_labels = label_type[idx: idx + 1].astype(int)
 
     np.random.seed(args.seed)
-    nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx = load_data(
+    nonsensitive_feat, sensitive_feat, labels, train_idx, valid_idx, test_idx = load_data(
         args.dataset, args.mode, True, 'onehot')
 
     data = types.SimpleNamespace(
         input_feat=nonsensitive_feat, labels=labels, train_idx=train_idx,
-        valid_idx=valid_idx, batch_size=args.batch_size, label_clusters=None,
+        valid_idx=valid_idx, test_idx=test_idx, batch_size=args.batch_size, label_clusters=None,
         sensitive_feat=sensitive_feat)
     args.feature_dim = data.input_feat.shape[1]
     args.label_dim = data.labels.shape[1]
@@ -58,12 +58,15 @@ def evaluate_models_over_label_distances(args):
             if args.mask_target_label:
                 model += '_masked'
         model_files = search_files(os.path.join(
-            args.model_dir, model), postfix='.pkl')
+            args.model_dir, model), postfix=f'-{args.fair_coeff:.2f}_{args.seed:04d}.pkl')
+        # avoid adding more results
         if len(model_files) > 1:
+            print(model_files)
             model_files = model_files[:1]
         if len(model_files):
             model_paths += [os.path.join(
                 args.model_dir, model, mod) for mod in model_files]
+
     logger.logging('\n' * 5)
     logger.logging(f"""Fair Models to evaluate: {model_paths}""")
 
@@ -81,7 +84,7 @@ def evaluate_models_over_label_distances(args):
             model_trained = '-'.join(model_trained.split('-')[1:])
         results[model_trained] = {}
 
-        for gamma in [.01, .1, .5, 1., 1.5,  2., 5., 10.]:
+        for gamma in [.01, 0.05, .1, .5, 1., 1.5,  2., 5., 10.]:
             args.gamma = gamma
             dist_metric = f'{hparam_distance}_{gamma}'
             label_dist_path = os.path.join(
@@ -94,9 +97,14 @@ def evaluate_models_over_label_distances(args):
                 label_dist = similarity(args)
                 pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
-            train, valid = evaluate_mpvae(
-                model, data, target_fair_labels, label_dist, args, logger=logger)
-            results[model_trained][dist_metric] = f"{round(train['fair_mean_diff'], 5)}~({round(valid['fair_mean_diff'], 5)})"
+            subset_results = []
+            for subset in ['train', 'valid', 'test']:
+                subset_results.append(evaluate_mpvae(
+                    model, data, target_fair_labels, label_dist, args, subset=subset, logger=logger))
+            fair_loss = [
+                f"{result['fair_mean_diff']:.5f}" for result in subset_results]
+            results[model_trained][dist_metric] = '(' + \
+                ')('.join(fair_loss) + ')'
 
         # run two baseline methods: EO and DP.
         dist_metric = f'indication_function'
@@ -109,9 +117,14 @@ def evaluate_models_over_label_distances(args):
             label_dist = indication_similarity(args)
             pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
-        train, valid = evaluate_mpvae(
-            model, data, target_fair_labels, label_dist, args, logger=logger)
-        results[model_trained][dist_metric] = f"{round(train['fair_mean_diff'], 5)}~({round(valid['fair_mean_diff'], 5)})"
+            subset_results = []
+            for subset in ['train', 'valid', 'test']:
+                subset_results.append(evaluate_mpvae(
+                    model, data, target_fair_labels, label_dist, args, subset=subset, logger=logger))
+            fair_loss = [
+                f"{result['fair_mean_diff']:.5f}" for result in subset_results]
+            results[model_trained][dist_metric] = '(' + \
+                ')('.join(fair_loss) + ')'
 
         dist_metric = f'constant_function'
         label_dist_path = os.path.join(
@@ -123,9 +136,14 @@ def evaluate_models_over_label_distances(args):
             label_dist = constant_similarity(args)
             pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
-        train, valid = evaluate_mpvae(
-            model, data, target_fair_labels, label_dist, args, logger=logger)
-        results[model_trained][dist_metric] = f"{round(train['fair_mean_diff'], 5)}~({round(valid['fair_mean_diff'], 5)})"
+            subset_results = []
+            for subset in ['train', 'valid', 'test']:
+                subset_results.append(evaluate_mpvae(
+                    model, data, target_fair_labels, label_dist, args, subset=subset, logger=logger))
+            fair_loss = [
+                f"{result['fair_mean_diff']:.5f}" for result in subset_results]
+            results[model_trained][dist_metric] = '(' + \
+                ')('.join(fair_loss) + ')'
 
     models = list(results.keys())
     fair_metrics = [k for k in results[models[0]].keys()
@@ -149,7 +167,7 @@ def evaluate_models_over_label_distances(args):
 if __name__ == '__main__':
     from faircluster_train import parser
     parser.add_argument('-eval_models', type=str,
-                        nargs='+', default=['unfair'])
+                        nargs='+', default=['unfair', 'constant', 'indication'])
     parser.add_argument('-eval_distance', type=str, default='jac')
     parser.add_argument('-min_support', type=float, default=None)
     parser.add_argument('-min_confidence', type=float, default=0.25)
