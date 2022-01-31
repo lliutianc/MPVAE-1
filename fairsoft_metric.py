@@ -94,7 +94,8 @@ def evaluate_models_over_label_distances(args):
                 pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
             subset_results = []
-            for subset in ['train', 'valid', 'test']:
+            # for subset in ['train', 'valid', 'test']:
+            for subset in ['valid']:
                 subset_results.append(evaluate_mpvae(
                     model, data, target_fair_labels, label_dist, args, subset=subset, logger=logger))
             fair_loss = [
@@ -114,7 +115,8 @@ def evaluate_models_over_label_distances(args):
             pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
         subset_results = []
-        for subset in ['train', 'valid', 'test']:
+        # for subset in ['train', 'valid', 'test']:
+        for subset in ['valid']:
             subset_results.append(evaluate_mpvae(
                 model, data, target_fair_labels, label_dist, args, subset=subset, logger=logger))
         fair_loss = [
