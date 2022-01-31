@@ -113,14 +113,14 @@ def evaluate_models_over_label_distances(args):
             label_dist = indication_similarity(args)
             pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
-            subset_results = []
-            for subset in ['train', 'valid', 'test']:
-                subset_results.append(evaluate_mpvae(
-                    model, data, target_fair_labels, label_dist, args, subset=subset, logger=logger))
-            fair_loss = [
-                f"{result['fair_mean_diff']:.5f}" for result in subset_results]
-            results[model_trained][dist_metric] = '(' + \
-                ')('.join(fair_loss) + ')'
+        subset_results = []
+        for subset in ['train', 'valid', 'test']:
+            subset_results.append(evaluate_mpvae(
+                model, data, target_fair_labels, label_dist, args, subset=subset, logger=logger))
+        fair_loss = [
+            f"{result['fair_mean_diff']:.5f}" for result in subset_results]
+        results[model_trained][dist_metric] = '(' + \
+            ')('.join(fair_loss) + ')'
 
         dist_metric = f'constant_function'
         label_dist_path = os.path.join(
@@ -132,14 +132,14 @@ def evaluate_models_over_label_distances(args):
             label_dist = constant_similarity(args)
             pickle.dump(label_dist, open(label_dist_path, 'wb'))
 
-            subset_results = []
-            for subset in ['train', 'valid', 'test']:
-                subset_results.append(evaluate_mpvae(
-                    model, data, target_fair_labels, label_dist, args, subset=subset, logger=logger))
-            fair_loss = [
-                f"{result['fair_mean_diff']:.5f}" for result in subset_results]
-            results[model_trained][dist_metric] = '(' + \
-                ')('.join(fair_loss) + ')'
+        subset_results = []
+        for subset in ['train', 'valid', 'test']:
+            subset_results.append(evaluate_mpvae(
+                model, data, target_fair_labels, label_dist, args, subset=subset, logger=logger))
+        fair_loss = [
+            f"{result['fair_mean_diff']:.5f}" for result in subset_results]
+        results[model_trained][dist_metric] = '(' + \
+            ')('.join(fair_loss) + ')'
 
     models = list(results.keys())
     fair_metrics = [k for k in results[models[0]].keys()
@@ -154,6 +154,7 @@ def evaluate_models_over_label_distances(args):
     print(results.keys())
     for mod in models:
         result = []
+        print(fair_metrics)
         for met in fair_metrics:
             print(results[mod].keys())
             result.append(results[mod][met])
