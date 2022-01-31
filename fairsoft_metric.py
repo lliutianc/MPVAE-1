@@ -145,6 +145,12 @@ def evaluate_models_over_label_distances(args):
         results[model_trained][dist_metric] = '(' + \
             ')('.join(fair_loss) + ')'
 
+    eval_result_path = os.path.join(
+        args.model_dir, 'sim_evaluation', 
+        'eval_results.pkl')
+    if args.train_new == 1 or os.path.exists(eval_result_path) == False: 
+        pickle.dump(results, open(eval_result_path, 'rb'))
+        
     models = list(results.keys())
     fair_metrics = [k for k in results[models[0]].keys()
                     if 'function' not in k]
