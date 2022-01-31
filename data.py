@@ -420,7 +420,8 @@ def load_data_masked(dataset, mode, separate_sensitive=False, categorical_encode
 
     train_cnt, valid_cnt = int(
         len(nonsensitive_feat) * 0.7), int(len(nonsensitive_feat) * .2)
-    train_idx = np.arange(train_cnt)
+
+    train_idx = unmasked_idx[:train_cnt]
 
     valid_idx = np.concatenate([
         unmasked_idx[train_cnt: (train_cnt + valid_cnt)],
