@@ -167,7 +167,7 @@ def evaluate_models_over_label_distances(args):
 if __name__ == '__main__':
     from faircluster_train import parser
     parser.add_argument('-eval_models', type=str,
-                        nargs='+', default=['unfair', 'constant', 'indication'])
+                        nargs='+', default=['unfair', 'baseline'])
     parser.add_argument('-eval_distance', type=str, default='jac')
     parser.add_argument('-min_support', type=float, default=None)
     parser.add_argument('-min_confidence', type=float, default=0.25)
@@ -218,4 +218,4 @@ if __name__ == '__main__':
             break
 
 
-# python fairsoft_metric.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -cuda 5 -eval_distance jac
+# python fairsoft_metric.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -cuda 5 -eval_distance jac
