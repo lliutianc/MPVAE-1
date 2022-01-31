@@ -151,9 +151,11 @@ def evaluate_models_over_label_distances(args):
     colnames = ' & ' + ' & '.join(fair_metrics)
     logger.logging(colnames + '\\\\')
     logger.logging('\\midrule')
+    print(results.keys())
     for mod in models:
         result = []
         for met in fair_metrics:
+            print(results[mod].keys())
             result.append(results[mod][met])
         resultrow = mod + ' & ' + ' & '.join(result) + '\\\\'
         logger.logging(resultrow)
