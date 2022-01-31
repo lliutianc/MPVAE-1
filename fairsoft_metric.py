@@ -59,10 +59,6 @@ def evaluate_models_over_label_distances(args):
             model += '_masked'
         model_files = search_files(os.path.join(
             args.model_dir, model), postfix=f'-{args.fair_coeff:.2f}_{args.seed:04d}.pkl')
-        # avoid adding more results
-        if len(model_files) > 1:
-            print(model_files)
-            model_files = model_files[:1]
         if len(model_files):
             model_paths += [os.path.join(
                 args.model_dir, model, mod) for mod in model_files]
