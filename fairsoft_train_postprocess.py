@@ -115,7 +115,7 @@ def postprocess_threshold_one_epoch(
                 torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
 
             threshold = threshold_
-            if args.learn_logit: 
+            if args.learn_logit:
                 threshold = sigmoid(threshold)
 
             cal_prob = calibrate_p(indiv_prob.unsqueeze(-1), threshold)
@@ -170,7 +170,7 @@ def postprocess_threshold_one_epoch(
                 if scheduler:
                     scheduler.step()
                 if args.learn_logit:
-                    torch.clip(threshold_, 0., 1.)
+                    torch.clip(threshold_, 1e-6, 1. - 1e-6)
                 succses_updates += 1
 
             # evaluation
@@ -294,15 +294,15 @@ def train_fair_through_postprocess(args):
                 args=args)
             print(threshold_[0].cpu().data.numpy())
             print(threshold_.shape)
-            exit(1)
+            # exit(1)
 
         threshold_np = threshold_.cpu().data.numpy()
         pickle.dump(threshold_np, open(fair_threshold_path, 'wb'))
 
 
 def evaluate_fair_through_postprocess(
-    model, data, target_fair_labels, label_distances, threshold_, args, 
-    subset='train', eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
+        model, data, target_fair_labels, label_distances, threshold_, args,
+        subset='train', eval_fairness=True, eval_train=True, eval_valid=True, logger=Logger()):
     if subset == 'train':
         subset_idx = data.train_idx
     elif subset == 'valid':
@@ -461,7 +461,6 @@ def evaluate_fair_through_postprocess(
                             [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
 
         return best_val_metrics
-
 
 
 def evaluate_target_labels(args, logger=Logger()):
