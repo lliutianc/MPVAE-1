@@ -13,7 +13,6 @@ from fairsoft_train_postprocess import train_fair_through_postprocess, evaluate_
 sys.path.append('./')
 
 
-
 def train_fairsoft_postprocess(args):
     for label_dist in ['constant', 'indication']:
         param_setting = f"baseline_{args.target_label_idx}"
@@ -24,7 +23,7 @@ def train_fairsoft_postprocess(args):
         build_path(args.model_dir)
         args.label_dist = label_dist
         train_fair_through_postprocess(args)
-    
+
     param_setting = f"jaccard_{args.target_label_idx}"
     if args.mask_target_label:
         param_setting += '_masked'
@@ -35,7 +34,6 @@ def train_fairsoft_postprocess(args):
     for dist_gamma in [.01, 1., 5., 10.]:
         args.dist_gamma = dist_gamma
         train_fair_through_postprocess(args)
-
 
 
 def eval_fairsoft_allmodels_postprocess(args):
@@ -74,7 +72,6 @@ def eval_fairsoft_allmodels_postprocess(args):
     fair_metrics = list(fair_results.keys())
     fair_metrics_nested = {}
     fair_metrics_sorted = []
-    should_add_eo = False
     for met_hparam in fair_metrics:
         met = met_hparam.split('_')[0]
         if met not in fair_metrics_nested:
@@ -98,8 +95,8 @@ def eval_fairsoft_allmodels_postprocess(args):
     for met in fair_metrics:
         result = []
         for mod in fair_metrics:
-            train, valid = fair_results[met][mod]
-            result.append(f"{round(train, 5)}~({round(valid, 5)})")
+            train, valid, test = fair_results[met][mod]
+            result.append(f"{train:.5f}({valid:.5f})({test:.5f})")
 
         resultrow = met + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
@@ -107,8 +104,8 @@ def eval_fairsoft_allmodels_postprocess(args):
     for perform_metric in args.perform_metric:
         result = []
         for mod in fair_metrics:
-            train, valid = perform_results[mod][perform_metric]
-            result.append(f"{round(train, 5)}~({round(valid, 5)})")
+            train, valid, test = perform_results[mod][perform_metric]
+            result.append(f"{train:.5f}({valid:.5f})({test:.5f})")
         resultrow = perform_metric + ' & ' + ' & '.join(result)
         logger.logging(resultrow + '\\\\')
     logger.logging('\\bottomrule')
@@ -141,7 +138,7 @@ if __name__ == '__main__':
         eval_fairsoft_allmodels_postprocess(args)
 
     else:
-    
+
         for target_label_idx in [0, 10, 20, 50]:
             args.target_label_idx = target_label_idx
             train_fairsoft_postprocess(args)
@@ -149,6 +146,3 @@ if __name__ == '__main__':
 
 
 # python fairsoft_trial_postprocess.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -cuda 5
-
-
-
