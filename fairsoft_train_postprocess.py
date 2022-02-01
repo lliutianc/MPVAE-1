@@ -293,6 +293,8 @@ def train_fair_through_postprocess(args):
                 label_distances=label_dist,
                 args=args)
             print(threshold_[0].cpu().data.numpy())
+            print(threshold_.shape)
+            exit(1)
 
         threshold_np = threshold_.cpu().data.numpy()
         pickle.dump(threshold_np, open(fair_threshold_path, 'wb'))
