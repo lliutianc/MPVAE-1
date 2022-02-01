@@ -161,7 +161,7 @@ def postprocess_threshold_one_epoch(
                                 torch.pow(reg_cal_prob_sen - cal_prob_weighted, 2))
 
             if not isinstance(fair_loss, float):
-                total_loss += fair_loss * args.fair_coeff
+                total_loss = fair_loss * args.fair_coeff + bce_loss
                 smooth_fair_loss += fair_loss.item()
 
             total_loss.backward()
