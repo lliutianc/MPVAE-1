@@ -292,8 +292,8 @@ def train_fair_through_postprocess(args):
                 target_fair_labels=target_fair_labels,
                 label_distances=label_dist,
                 args=args)
-            print(threshold_[0].cpu().data.numpy())
-            print(threshold_.shape)
+            # print(threshold_[0][0].cpu().data.numpy())
+            # print(threshold_.shape)
             # exit(1)
 
         threshold_np = threshold_.cpu().data.numpy()
