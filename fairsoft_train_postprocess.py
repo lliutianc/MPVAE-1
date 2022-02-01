@@ -128,7 +128,7 @@ def postprocess_threshold_one_epoch(
             sensitive_centroids = torch.unique(sensitive_feat, dim=0)
             idx_tensor = torch.arange(sensitive_feat.shape[0])
 
-            fair_loss = torch.zeros(1)
+            fair_loss = 0.
             for target_fair_label in target_fair_labels:
                 target_label_dist = label_distances[target_fair_label]
                 # compute weights of each sample
@@ -160,8 +160,9 @@ def postprocess_threshold_one_epoch(
                             fair_loss += torch.sum(
                                 torch.pow(reg_cal_prob_sen - cal_prob_weighted, 2))
 
-            total_loss = fair_loss * args.fair_coeff
-            # smooth_fair_loss += fair_loss.item()
+            if not isinstance(fair_loss, float):
+                total_loss += fair_loss * args.fair_coeff
+                smooth_fair_loss += fair_loss.item()
 
             total_loss.backward()
             # nn.utils.clip_grad_norm_(threshold_, 10.)
