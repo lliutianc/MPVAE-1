@@ -42,3 +42,5 @@ python fairsoft_trial_postprocess.py -dataset adult -latent_dim 8 -target_label_
 python fairsoft_trial_postprocess.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID -epoch 20 -bs 128 -fair_coeff 500
 python fairsoft_trial_postprocess.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID -epoch 20 -bs 128 -fair_coeff 1000
 python fairsoft_trial_postprocess.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label 0 -seed $SLURM_ARRAY_TASK_ID -epoch 20 -bs 128 -fair_coeff 5000
+
+
