@@ -113,8 +113,7 @@ def eval_fairsoft_allmodels_postprocess(args):
 
 if __name__ == '__main__':
     from main import parser
-    parser.add_argument('-min_support', type=float, default=None)
-    parser.add_argument('-min_confidence', type=float, default=0.25)
+    parser.add_argument('-learn_logit', type=int, default=1)
     parser.add_argument('-dist_gamma', type=float, default=None)
     parser.add_argument('-target_label_idx', type=int, default=None)
     parser.add_argument('-target_label', type=str, default=None)

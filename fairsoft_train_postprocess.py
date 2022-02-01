@@ -50,7 +50,7 @@ def calibrate_p(p, threshold):
 
 
 def postprocess_threshold_one_epoch(
-        data, model, threshold_logit, optimizer, scheduler, target_fair_labels, label_distances, args):
+        data, model, threshold_, optimizer, scheduler, target_fair_labels, label_distances, args):
     model.eval()
 
     if target_fair_labels is None:
@@ -63,7 +63,7 @@ def postprocess_threshold_one_epoch(
     target_fair_labels = target_fair_labels_str
 
     np.random.shuffle(data.train_idx)
-    args.device = threshold_logit.device
+    args.device = threshold_.device
 
     smooth_total_loss = 0.
     smooth_bce_loss = 0.
@@ -114,7 +114,10 @@ def postprocess_threshold_one_epoch(
             sen_belong = torch.all(
                 torch.eq(sensitive_feat.unsqueeze(1), sen_centroids), dim=2)
 
-            threshold = sigmoid(threshold_logit)
+            threshold = threshold_
+            if args.learn_logit: 
+                threshold = sigmoid(threshold)
+
             cal_prob = calibrate_p(indiv_prob.unsqueeze(-1), threshold)
             cal_prob = cal_prob.transpose(1, 2)[sen_belong]
 
@@ -162,11 +165,13 @@ def postprocess_threshold_one_epoch(
                 smooth_fair_loss += fair_loss.item()
 
             total_loss.backward()
-            nn.utils.clip_grad_norm_(threshold_logit, 10.)
-            if has_finite_grad(threshold_logit):
+            nn.utils.clip_grad_norm_(threshold_, 10.)
+            if has_finite_grad(threshold_):
                 optimizer.step()
                 if scheduler:
                     scheduler.step()
+                if args.learn_logit:
+                    torch.clip(threshold_, 0., 1.)
                 succses_updates += 1
 
             # evaluation
@@ -263,11 +268,15 @@ def train_fair_through_postprocess(args):
             input_feat=nonsensitive_feat, labels=labels, sensitive_feat=sensitive_feat,
             train_idx=train_idx, valid_idx=valid_idx, test_idx=test_idx, batch_size=args.batch_size)
 
-        threshold_logit = logit(torch.rand(1, labels.shape[1], len(
-            np.unique(sensitive_feat, axis=0)), device=args.device) * .1 + .45)
-        threshold_logit.requires_grad = True
+        if args.learn_logit:
+            threshold_ = logit(torch.rand(1, labels.shape[1], len(
+                np.unique(sensitive_feat, axis=0)), device=args.device) * .1 + .45)
+        else:
+            threshold_ = torch.rand(1, labels.shape[1], len(
+                np.unique(sensitive_feat, axis=0)), device=args.device) * .1 + .45
+        threshold_.requires_grad = True
 
-        optimizer = optim.Adam([threshold_logit],
+        optimizer = optim.Adam([threshold_],
                                lr=args.learning_rate, weight_decay=1e-5)
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, one_epoch_iter * (args.max_epoch / args.lr_decay_times), args.lr_decay_ratio)
@@ -280,13 +289,13 @@ def train_fair_through_postprocess(args):
         print('start calibrating probablity...')
         for _ in range(args.max_epoch):
             postprocess_threshold_one_epoch(
-                data, trained_mpvae, threshold_logit, optimizer, scheduler,
+                data, trained_mpvae, threshold_, optimizer, scheduler,
                 target_fair_labels=target_fair_labels,
                 label_distances=label_dist,
                 args=args)
 
-        threshold_logit_np = threshold_logit.cpu().data.numpy()
-        pickle.dump(threshold_logit_np, open(fair_threshold_path, 'wb'))
+        threshold_np = threshold_.cpu().data.numpy()
+        pickle.dump(threshold_np, open(fair_threshold_path, 'wb'))
 
 
 def evaluate_fair_through_postprocess(
@@ -525,9 +534,11 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             print(f'Fair threshold: {threshold_path}')
             model = load_trained_mpvae_unfair(args)
 
-            threshold_logit = pickle.load(open(threshold_path, 'rb'))
-            threshold_logit = torch.from_numpy(threshold_logit).to(args.device)
-            threshold = sigmoid(threshold_logit)
+            threshold_ = pickle.load(open(threshold_path, 'rb'))
+            threshold_ = torch.from_numpy(threshold_).to(args.device)
+            threshold = threshold_
+            if args.learn_logit:
+                threshold = sigmoid(threshold_)
 
             results = []
             for subset in ['train', 'valid', 'test']:
