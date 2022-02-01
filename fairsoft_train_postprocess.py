@@ -160,8 +160,8 @@ def postprocess_threshold_one_epoch(
                             fair_loss += torch.sum(
                                 torch.pow(reg_cal_prob_sen - cal_prob_weighted, 2))
 
-            total_loss = bce_loss + fair_loss * args.fair_coeff
-            smooth_fair_loss += fair_loss.item()
+            total_loss = fair_loss * args.fair_coeff
+            # smooth_fair_loss += fair_loss.item()
 
             total_loss.backward()
             nn.utils.clip_grad_norm_(threshold_, 10.)
