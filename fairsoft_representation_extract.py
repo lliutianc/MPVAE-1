@@ -151,7 +151,6 @@ def extract_target_labels(args, logger=Logger()):
 if __name__ == '__main__':
     from faircluster_train import parser
 
-    parser.add_argument('-fair_coeff', type=float, default=1.0)
     parser.add_argument('-dist_gamma', type=float, default=1.0)
     parser.add_argument('-target_label', type=str, default=None)
     parser.add_argument('-target_label_idx', type=int, default=0)
@@ -159,6 +158,7 @@ if __name__ == '__main__':
     parser.add_argument('-perform_metric', type=str, default='HA',
                         choices=['ACC', 'HA', 'ebF1', 'maF1', 'miF1'])
     args = parser.parse_args()
+
     args.device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
