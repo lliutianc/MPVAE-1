@@ -67,7 +67,7 @@ def extract_latent_embed_mpvae(model, data, target_fair_labels, args, subset='tr
                 for target_fair_label in target_fair_labels:
                     is_target_label_.append(np.all(
                         np.equal(input_label, target_fair_label), axis=1))
-                is_target_label_ = np.any(np.array(is_target_label), axis=0)
+                is_target_label_ = np.any(np.array(is_target_label_), axis=0)
                 print(is_target_label_)
                 if len(is_target_label_) != len(feat_out):
                     raise ValueError(f'Incorrect shape of is_target_label,'
