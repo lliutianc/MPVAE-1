@@ -68,7 +68,6 @@ def extract_latent_embed_mpvae(model, data, target_fair_labels, args, subset='tr
                     is_target_label_.append(np.all(
                         np.equal(input_label, target_fair_label), axis=1))
                 is_target_label_ = np.any(np.array(is_target_label_), axis=0)
-                print(is_target_label_)
                 if len(is_target_label_) != len(feat_out):
                     raise ValueError(f'Incorrect shape of is_target_label,'
                                      f'expected length: {len(feat_out)}, observed length: {len(is_target_label_)}')
@@ -124,8 +123,8 @@ def extract_over_labels(target_fair_labels, args, logger=Logger()):
             results[subset] = {'latent_mean': latent_mean,
                                'latent_sample': latent_sample,
                                'sensitive_idx': sensitive_idx,
-                               'is_target_label': is_target_label
-                               }
+                               'is_target_label': is_target_label}
+        print(model_stat)
         model_dir, model_prior, model_file = model_stat.split('/')
         result_path = os.path.join(model_dir, model_prior + '_embed', model_file)
         pickle.dump(results, open(result_path, 'wb'))
