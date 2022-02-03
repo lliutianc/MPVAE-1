@@ -18,4 +18,4 @@ python fairsoft_representation_extract.py -dataset adult -latent_dim 8 -target_l
 python fairsoft_representation_extract.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label $mask_target_label -seed $seed -bs 128 -fair_coeff 100 -cuda $cuda
 python fairsoft_representation_extract.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label $mask_target_label -seed $seed -bs 128 -fair_coeff 500 -cuda $cuda
 python fairsoft_representation_extract.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label $mask_target_label -seed $seed -bs 128 -fair_coeff 1000 -cuda $cuda
-python fairsoft_representation_extract.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label $mask_target_label -seed $seed -bs 128 -fair_coeff 5000 -cuda $cudaa
+python fairsoft_representation_extract.py -dataset adult -latent_dim 8 -target_label_idx 0 -mask_target_label $mask_target_label -seed $seed -bs 128 -fair_coeff 5000 -cuda $cuda
