@@ -82,7 +82,7 @@ def extract_latent_embed_mpvae(model, data, target_fair_labels, args, subset='tr
                     raise ValueError(f'Incorrect shape of sen_belong,'
                                      f'expected length: {len(feat_out)}, observed length: {len(sen_belong)}')
                 sensitive_idx.append(sen_belong.cpu().data.numpy())
-                
+
         return latent_mean, latent_sample, sensitive_idx, is_target_label
 
 
@@ -113,7 +113,8 @@ def extract_over_labels(target_fair_labels, args, logger=Logger()):
                 args.model_dir, model_prior, model_file) for
                 model_file in model_files]
         if len(model_files):
-            build_path('embed_' + model_prior)
+            build_path(os.path.join(
+                args.model_dir, 'embed_' + model_prior))
             result_paths += [os.path.join(
                 args.model_dir, 'embed_' + model_prior, model_file) for
                 model_file in model_files]
