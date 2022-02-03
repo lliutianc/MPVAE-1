@@ -145,7 +145,9 @@ def extract_target_labels(args, logger=Logger()):
 if __name__ == '__main__':
     from faircluster_train import parser
 
+    parser.add_argument('-target_label', type=str, default=None)
     parser.add_argument('-target_label_idx', type=int, default=0)
+    parser.add_argument('-mask_target_label', type=int, default=0)
     parser.add_argument('-perform_metric', type=str, default='HA',
                         choices=['ACC', 'HA', 'ebF1', 'maF1', 'miF1'])
     args = parser.parse_args()
