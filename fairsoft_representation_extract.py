@@ -1,3 +1,4 @@
+from distutils.command.build import build
 from multiprocessing.sharedctypes import Value
 from joblib.logger import Logger
 from faircluster_train import parser
@@ -15,7 +16,7 @@ import evals
 from mpvae import VAE, compute_loss
 from data import load_data, load_data_masked
 from faircluster_train import THRESHOLDS, METRICS
-from utils import search_files
+from utils import search_files, build_path
 from logger import Logger
 from fairsoft_trial import IMPLEMENTED_METHODS
 
@@ -112,6 +113,7 @@ def extract_over_labels(target_fair_labels, args, logger=Logger()):
                 args.model_dir, model_prior, model_file) for
                 model_file in model_files]
         if len(model_files):
+            build_path('embed_' + model_prior)
             result_paths += [os.path.join(
                 args.model_dir, 'embed_' + model_prior, model_file) for
                 model_file in model_files]
