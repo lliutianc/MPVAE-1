@@ -99,6 +99,7 @@ def extract_over_labels(target_fair_labels, args, logger=Logger()):
     args.label_dim = data.labels.shape[1]
 
     model_paths = []
+    result_paths = []
     for model_prior in IMPLEMENTED_METHODS:
         if model_prior != 'unfair':
             model_prior += f'_{args.target_label_idx}'
@@ -110,10 +111,14 @@ def extract_over_labels(target_fair_labels, args, logger=Logger()):
             model_paths += [os.path.join(
                 args.model_dir, model_prior, model_file) for
                 model_file in model_files]
+        if len(model_files):
+            result_paths += [os.path.join(
+                args.model_dir, 'embed_' + model_prior, model_file) for
+                model_file in model_files]
     logger.logging('\n' * 5)
     logger.logging(f"""Fair Models: {model_paths}""")
 
-    for model_stat in model_paths:
+    for result_path, model_stat in zip(result_paths, model_paths):
         model = VAE(args).to(args.device)
         model.load_state_dict(torch.load(model_stat))
         results = {}
@@ -124,9 +129,7 @@ def extract_over_labels(target_fair_labels, args, logger=Logger()):
                                'latent_sample': latent_sample,
                                'sensitive_idx': sensitive_idx,
                                'is_target_label': is_target_label}
-        print(model_stat)
-        model_dir, model_prior, model_file = model_stat.split('/')
-        result_path = os.path.join(model_dir, model_prior + '_embed', model_file)
+
         pickle.dump(results, open(result_path, 'wb'))
 
 
