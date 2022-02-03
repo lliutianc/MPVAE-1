@@ -125,8 +125,8 @@ def extract_over_labels(target_fair_labels, args, logger=Logger()):
                                'sensitive_idx': sensitive_idx,
                                'is_target_label': is_target_label
                                }
-        
-        result_path = model_stat.split('/')[:-1] +  '/embed_' + model_stat.split('/')[-1]
+        model_dir, model_prior, model_file = model_stat.split('/')
+        result_path = os.path.join(model_dir, model_prior + '_embed', model_file)
         pickle.dump(results, open(result_path, 'wb'))
 
 
