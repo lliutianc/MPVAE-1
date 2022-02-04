@@ -146,7 +146,7 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, subse
                                 unfair_feat_z_sen = np.sum(
                                     feat_z_sensitive * weights_sensitive, 0) / weights_sensitive.sum()
                                 mean_diffs.append(
-                                    np.sum(np.power(unfair_feat_z_sen - feat_z_weighted, 2)))
+                                    np.sqrt(np.sum(np.power(unfair_feat_z_sen - feat_z_weighted, 2))))
 
                 mean_diffs = np.mean(mean_diffs)
                 # mean_diffs = np.max(mean_diffs) / \
