@@ -2,6 +2,7 @@
 import torch
 import numpy as np
 
+
 def retrieve_target_label_idx(args, target_label):
     from data import load_data
 
@@ -10,7 +11,7 @@ def retrieve_target_label_idx(args, target_label):
             'cannot handle multiple target labels yet...')
 
     np.random.seed(args.seed)
-    _, _, labels, _, _ , _= load_data(
+    _, _, labels, _, _, _ = load_data(
         args.dataset, args.mode, True, 'onehot')
 
     label_type, count = np.unique(labels, axis=0, return_counts=True)
@@ -38,3 +39,36 @@ def has_finite_grad(model):
             finite_grad = finite_grad and valid_gradients
 
     return finite_grad
+
+
+def formal_model_name(name):
+    fairness_name = formal_fairness_name(name)
+    if fairness_name:
+        return f'w/ {fairness_name} reg'
+    else:
+        return 'w/o reg'
+
+
+def formal_metric_name(name):
+    if name == 'maF1':
+        return 'macro-F1'
+    if name == 'miF1':
+        return 'micro-F1'
+    if name == 'ebF1':
+        return 'instance-F1'
+    return None
+
+
+def formal_fairness_name(name, short_sf=True):
+    if name == 'indication':
+        return 'EOp'
+    if name == 'constant':
+        return 'DP'
+    if 'jac' in name:
+        gamma = name.split('_')[1]
+        if short_sf:
+            return fr'\$ s_{{ {gamma} }} \$-SF'
+        else:
+            return fr'\$ s_{{ {gamma} }} \$-SimFair'
+
+    return None
