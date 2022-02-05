@@ -88,8 +88,11 @@ def extract_prediction_mpvae(model, data, target_fair_labels, args, subset='trai
                                      f'expected length: {len(feat_out)}, observed length: {len(sen_belong)}')
                 sensitive_idx.append(sen_belong.cpu().data.numpy())
             
-            y_probs = np.array(y_probs)
-            y_reals = np.array(y_reals)
+            y_probs = np.concatenate(y_probs)
+            
+            y_reals = np.concatenate(y_reals)
+
+            print(y_probs.shape, y_reals.shape)
 
         return y_probs, y_reals, sensitive_idx, is_target_label
 
