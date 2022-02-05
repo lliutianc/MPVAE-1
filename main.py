@@ -1,7 +1,6 @@
 import argparse
 from train import train
 from test import test
-from fairadv import fairtrain
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-dataset', "--dataset", type=str, help='dataset name')
@@ -54,7 +53,6 @@ parser.add_argument('-max_keep', "--max_keep", default=3,
 parser.add_argument('-check_freq', "--check_freq",
                     default=120, type=int, help='checking frequency')
 
-
 parser.add_argument('-fair_coeff', "--fair_coeff", default=10.,
                     type=float, help='nll_loss coefficient')
 parser.add_argument('-nll_coeff', "--nll_coeff", default=0.1,
@@ -96,9 +94,6 @@ if __name__ == "__main__":
 
     if args.mode == 'train':
         train(args)
-    if args.mode == 'fairtrain':
-        args.mode = 'train'
-        fairtrain(args)
     elif args.mode == 'test':
         test(args)
     else:
