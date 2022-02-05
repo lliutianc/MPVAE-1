@@ -1,5 +1,4 @@
 from joblib.logger import Logger
-from faircluster_train import parser
 from copy import deepcopy
 import os
 import types
@@ -13,7 +12,6 @@ from tqdm import tqdm
 import evals
 from mpvae import VAE, compute_loss
 from data import load_data, load_data_masked
-from faircluster_train import THRESHOLDS, METRICS
 from utils import search_files
 from logger import Logger
 from fairsoft_trial import IMPLEMENTED_METHODS
@@ -317,7 +315,7 @@ def eval_fairsoft_allmodels_20replications(args):
 
 
 if __name__ == '__main__':
-    from faircluster_train import parser
+    from main import parser
 
     parser.add_argument('-target_label_idx', type=int, default=0)
     parser.add_argument('-perform_metric', type=str, default='HA',
