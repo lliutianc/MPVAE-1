@@ -63,7 +63,7 @@ def extract_prediction_mpvae(model, data, target_fair_labels, args, subset='trai
                     input_label_, input_feat)
 
                 total_loss, nll_loss, nll_loss_x, c_loss, c_loss_x, kl_loss, indiv_prob, _ = compute_loss(
-                    input_label, label_out, label_mu, label_logvar, feat_out, feat_mu,
+                    input_label_, label_out, label_mu, label_logvar, feat_out, feat_mu,
                     feat_logvar, model.r_sqrt_sigma, args)
 
                 y_probs.append(indiv_prob.cpu().data.numpy())
