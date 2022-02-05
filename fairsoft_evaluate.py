@@ -52,6 +52,8 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, subse
         if eval_fairness:
             train_feat_z = []
             train_sensitive = data.sensitive_feat[subset_idx]
+        else:
+            mean_diffs = None
         with tqdm(
                 range(int(len(subset_idx) / float(data.batch_size)) + 1),
                 desc=f'Evaluate on {subset} set') as t:
@@ -73,14 +75,8 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, subse
                     input_label, label_out, label_mu, label_logvar, feat_out, feat_mu,
                     feat_logvar, model.r_sqrt_sigma, args)
 
-                train_nll_loss += nll_loss.item() * (end - start)
-                train_c_loss += c_loss.item() * (end - start)
-                train_total_loss += total_loss.item() * (end - start)
-
-                for j in deepcopy(indiv_prob).cpu().data.numpy():
-                    train_indiv_prob.append(j)
-                for j in deepcopy(input_label).cpu().data.numpy():
-                    train_label.append(j)
+                train_indiv_prob.append(indiv_prob.cpu().data.numpy())
+                train_label.append(input_label.cpu().data.numpy())
 
                 if eval_fairness:
                     feat_z = indiv_prob
@@ -89,32 +85,8 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, subse
             train_indiv_prob = np.array(train_indiv_prob)
             train_label = np.array(train_label)
 
-            nll_loss = train_nll_loss / len(subset_idx)
-            c_loss = train_c_loss / len(subset_idx)
-            total_loss = train_total_loss / len(subset_idx)
-
-            best_val_metrics = None
-            for threshold in THRESHOLDS:
-                val_metrics = evals.compute_metrics(
-                    train_indiv_prob, train_label, threshold, all_metrics=True)
-
-                if best_val_metrics is None:
-                    best_val_metrics = {}
-                    for metric in METRICS:
-                        best_val_metrics[metric] = val_metrics[metric]
-                else:
-                    for metric in METRICS:
-                        if 'FDR' in metric:
-                            best_val_metrics[metric] = min(
-                                best_val_metrics[metric], val_metrics[metric])
-                        else:
-                            best_val_metrics[metric] = max(
-                                best_val_metrics[metric], val_metrics[metric])
-
-            acc, ha, ebf1, maf1, mif1 = best_val_metrics['ACC'], best_val_metrics['HA'], \
-                best_val_metrics['ebF1'], best_val_metrics['maF1'], \
-                best_val_metrics['miF1']
-
+            miF1 = evals.f1_score(train_label, train_indiv_prob, 'micro')
+            maF1 = evals.f1_score(train_label, train_indiv_prob, 'macro')
             if eval_fairness:
                 train_feat_z = np.concatenate(train_feat_z)
                 assert train_feat_z.shape[0] == len(subset_idx) and \
@@ -149,24 +121,8 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, subse
                                     np.sqrt(np.sum(np.power(unfair_feat_z_sen - feat_z_weighted, 2))))
 
                 mean_diffs = np.mean(mean_diffs)
-                # mean_diffs = np.max(mean_diffs) / \
-                #     (np.min(mean_diffs) + 1e-6)
-
-                logger.logging(
-                    "********************train********************")
-                logger.logging(
-                    ' & '.join([
-                        str(round(m, 4)) for m in [
-                            acc, ha, ebf1, maf1, mif1, mean_diffs]]))
-                best_val_metrics['fair_mean_diff'] = mean_diffs
-            else:
-                logger.logging(
-                    "********************train********************")
-                logger.logging(
-                    ' & '.join(
-                        [str(round(m, 4)) for m in [acc, ha, ebf1, maf1, mif1]]))
-
-        return best_val_metrics
+                
+        return {'fair_mean_diff': mean_diffs, 'miF1': miF1, 'maF1': maF1}
 
 
 def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
@@ -245,7 +201,6 @@ def evaluate_over_labels(target_fair_labels, args, logger=Logger()):
             if model_trained not in perform_result:
                 perform_result[model_trained] = {}
 
-            print(args.perform_metric)
             for perform_metric in args.perform_metric:
                 perform_result[model_trained][perform_metric] = [
                     subset[perform_metric] for subset in results]

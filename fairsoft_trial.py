@@ -152,7 +152,7 @@ if __name__ == '__main__':
     parser.add_argument('-target_label', type=str, default=None)
     parser.add_argument('-mask_target_label', type=int, default=0)
     parser.add_argument('-perform_metric', type=str, nargs='+',
-                        default=['ACC', 'HA', 'ebF1', 'maF1', 'miF1'])
+                        default=['maF1', 'miF1'])
     args = parser.parse_args()
 
     args.device = torch.device(
