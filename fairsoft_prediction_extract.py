@@ -174,4 +174,4 @@ if __name__ == '__main__':
         args.model_dir, f'evalution-{args.target_label_idx}.txt'))
     extract_target_labels(args, logger)
 
-# python fairsoft_representation_extract.py -dataset adult -latent_dim 8 -cuda 6 -target_label_idx 0
+# python fairsoft_prediction_extract.py -dataset adult -latent_dim 8 -cuda 3 -target_label_idx 0
