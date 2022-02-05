@@ -84,7 +84,7 @@ def train_fair_through_regularize(args):
 
 
 if __name__ == '__main__':
-    from faircluster_train import parser
+    from main import parser
 
     parser.add_argument('-min_support', type=float, default=None)
     parser.add_argument('-min_confidence', type=float, default=None)

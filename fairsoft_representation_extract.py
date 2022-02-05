@@ -149,7 +149,7 @@ def extract_target_labels(args, logger=Logger()):
 
 
 if __name__ == '__main__':
-    from faircluster_train import parser
+    from main import parser
 
     parser.add_argument('-dist_gamma', type=float, default=1.0)
     parser.add_argument('-target_label', type=str, default=None)
