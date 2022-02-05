@@ -175,6 +175,9 @@ if __name__ == '__main__':
     args.model_dir = f'fair_through_distance/model/{args.dataset}'
     logger = Logger(os.path.join(
         args.model_dir, f'evalution-{args.target_label_idx}.txt'))
-    extract_target_labels(args, logger)
+
+    for fair_coeff in [.1, 1, 10, 100, 500, 1000, 5000]:
+        args.fair_coeff = fair_coeff
+        extract_target_labels(args, logger)
 
 # python fairsoft_prediction_extract.py -dataset adult -latent_dim 8 -cuda 3 -target_label_idx 0
