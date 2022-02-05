@@ -82,8 +82,8 @@ def evaluate_mpvae(model, data, target_fair_labels, label_distances, args, subse
                     feat_z = indiv_prob
                     train_feat_z.append(feat_z.cpu().data.numpy())
 
-            train_indiv_prob = np.array(train_indiv_prob)
-            train_label = np.array(train_label)
+            train_indiv_prob = np.concatenate(train_indiv_prob)
+            train_label = np.concatenate(train_label)
 
             miF1 = evals.f1_score(train_label, train_indiv_prob, 'micro')
             maF1 = evals.f1_score(train_label, train_indiv_prob, 'macro')
