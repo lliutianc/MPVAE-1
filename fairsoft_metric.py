@@ -146,9 +146,9 @@ def evaluate_models_over_label_distances(args):
             ')('.join(fair_loss) + ')'
 
     eval_result_path = os.path.join(
-        args.model_dir, 'sim_evaluation', 
+        args.model_dir, 'sim_evaluation',
         'eval_results.pkl')
-    if args.train_new == 1 or os.path.exists(eval_result_path) == False: 
+    if args.train_new == 1 or os.path.exists(eval_result_path) == False:
         pickle.dump(results, open(eval_result_path, 'wb'))
 
     models = list(results.keys())
@@ -172,7 +172,7 @@ def evaluate_models_over_label_distances(args):
 
 
 if __name__ == '__main__':
-    from faircluster_train import parser
+    from main import parser
     parser.add_argument('-eval_models', type=str,
                         nargs='+', default=['unfair', 'baseline'])
     parser.add_argument('-eval_distance', type=str, default='jac')
@@ -203,9 +203,6 @@ if __name__ == '__main__':
         similarity = jaccard_similarity
         hparam_distance = 'jaccard'
 
-    elif args.eval_distance in ['apriori' 'arule']:
-        similarity = apriori_similarity
-        hparam_distance = 'arule'
     else:
         raise ValueError(
             f'unrecognized `args.eval_distance` value: {args.distance}')
@@ -225,4 +222,4 @@ if __name__ == '__main__':
             break
 
 
-# python fairsoft_metric.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -cuda 5 -eval_distance jac
+# python fairsoft_metric.py -dataset credit -latent_dim 8 -target_label_idx 0 -mask_target_label 1 -cuda 3 -eval_distance jac
