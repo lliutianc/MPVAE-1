@@ -74,8 +74,8 @@ def evaluate_mpvae(model, data, eval_fairness=True, eval_train=True, eval_valid=
                             feat_mu, feat_logvar)
                         train_feat_z.append(feat_z.cpu().data.numpy())
 
-                train_indiv_prob = np.array(train_indiv_prob)
-                train_label = np.array(train_label)
+                train_indiv_prob = np.concatenate(train_indiv_prob)
+                train_label = np.concatenate(train_label)
 
                 nll_loss = train_nll_loss / len(data.train_idx)
                 c_loss = train_c_loss / len(data.train_idx)
