@@ -1,0 +1,19 @@
+nohup ./simple_run_fairsoft.sh 1 1 0 2>&1 &
+nohup ./simple_run_fairsoft.sh 2 1 0 2>&1 &
+nohup ./simple_run_fairsoft.sh 3 1 0 2>&1 &
+nohup ./simple_run_fairsoft.sh 4 1 1 2>&1 &
+nohup ./simple_run_fairsoft.sh 5 1 1 2>&1 &
+nohup ./simple_run_fairsoft.sh 6 1 1 2>&1 &
+nohup ./simple_run_fairsoft.sh 7 1 2 2>&1 &
+nohup ./simple_run_fairsoft.sh 8 1 2 2>&1 &
+nohup ./simple_run_fairsoft.sh 9 1 2 2>&1 &
+
+nohup ./simple_run_fairsoft.sh 1 0 3 2>&1 &
+nohup ./simple_run_fairsoft.sh 2 0 3 2>&1 &
+nohup ./simple_run_fairsoft.sh 3 0 3 2>&1 &
+nohup ./simple_run_fairsoft.sh 4 0 3 2>&1 &
+nohup ./simple_run_fairsoft.sh 5 0 2 2>&1 &
+nohup ./simple_run_fairsoft.sh 6 0 1 2>&1 &
+nohup ./simple_run_fairsoft.sh 7 0 0 2>&1 &
+nohup ./simple_run_fairsoft.sh 8 0 2 2>&1 &
+nohup ./simple_run_fairsoft.sh 9 0 3 2>&1 &
