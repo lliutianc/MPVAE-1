@@ -111,18 +111,28 @@ def train_mpvae_softfair_one_epoch(
                             weight_sensitive = weights[idx_tensor[target_sensitive]]
 
                             if weight_sensitive.sum() > 0:
-                                reg_label_z_sen = torch.sum(
+                                if args.fairness_loss_norm == 'l1':
+                                    reg_label_z_sen = torch.sum(
+                                        label_z_sensitive * weight_sensitive, 0) / weight_sensitive.sum()
+                                    reg_feat_z_sen = torch.sum(
+                                        feat_z_sensitive * weight_sensitive, 0) / weight_sensitive.sum()
+                                    reg_label_z_unfair += torch.sum(
+                                        torch.absolute(reg_label_z_sen - label_z_weighted))
+                                    reg_feat_z_unfair += torch.sum(
+                                        torch.absolute(reg_feat_z_sen - feat_z_weighted))
+                                elif args.fairness_loss_norm == 'l2':
+                                    reg_label_z_sen = torch.sum(
                                     label_z_sensitive * weight_sensitive, 0) / weight_sensitive.sum()
-                                reg_feat_z_sen = torch.sum(
-                                    feat_z_sensitive * weight_sensitive, 0) / weight_sensitive.sum()
-                                reg_label_z_unfair += torch.sum(
-                                    torch.pow(reg_label_z_sen - label_z_weighted, 2))
-                                reg_feat_z_unfair += torch.sum(
-                                    torch.pow(reg_feat_z_sen - feat_z_weighted, 2))
+                                    reg_feat_z_sen = torch.sum(
+                                        feat_z_sensitive * weight_sensitive, 0) / weight_sensitive.sum()
+                                    reg_label_z_unfair += torch.sum(
+                                        torch.pow(reg_label_z_sen - label_z_weighted, 2))
+                                    reg_feat_z_unfair += torch.sum(
+                                        torch.pow(reg_feat_z_sen - feat_z_weighted, 2))
 
                 fairloss = args.fair_coeff * \
                     (reg_label_z_unfair + reg_feat_z_unfair)
-
+                
                 if not isinstance(fairloss, float):
                     total_loss += fairloss
                     smooth_reg_fair += fairloss.item()
